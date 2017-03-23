@@ -76,6 +76,7 @@ public class SampleMetadataDAOTest {
   }
 
   @Test
+  @SneakyThrows
   public void testFetchSampleMetadata(){
     val sampleMetadataDAO = newSampleMetadataDAO();
     val nonUsFilename = "10cb8ac6-c622-11e3-bf01-24c6515278c0.dkfz-copyNumberEstimation_1-0-189-hpc-fix.1508271624.somatic.cnv.vcf.gz";
