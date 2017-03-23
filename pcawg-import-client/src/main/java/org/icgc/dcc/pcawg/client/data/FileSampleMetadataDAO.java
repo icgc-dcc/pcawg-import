@@ -86,14 +86,20 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
     return uuid2BarcodeSheetList.size();
   }
 
-  private SampleSheetModel getFirstSampleSheet(String aliquotId){
+  private SampleSheetModel getFirstSampleSheet(String aliquotId) throws SampleMetadataNotFoundException{
     val aliquotIdStream= sampleSheetList.stream()
         .filter(s -> s.getAliquotId().equals(aliquotId));
 
     val aliquotIdResult = aliquotIdStream.findFirst();
-    checkState(aliquotIdResult.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquotId);
+    if (! aliquotIdResult.isPresent()){
+      throw new SampleMetadataNotFoundException(
+      String.format("Could not find first SampleSheet for aliquot_id [%s]", aliquotId));
+
+    }
+//    checkState(aliquotIdResult.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquotId);
     return aliquotIdResult.get();
   }
+
 
   private String getAnalyzedSampleId(boolean isUsProject, String submitterSampleId ){
     if (isUsProject){
@@ -114,7 +120,7 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
   }
 
   @Override
-  public SampleMetadata fetchSampleMetadata(PortalFilename portalFilename){
+  public SampleMetadata fetchSampleMetadata(PortalFilename portalFilename) throws SampleMetadataNotFoundException{
     val aliquotId = portalFilename.getAliquotId();
     val workflowType = WorkflowTypes.parseStartsWith(portalFilename.getWorkflow(), F_CHECK_CORRECT_WORKTYPE);
     val dataType = DataTypes.parseMatch(portalFilename.getDataType(), F_CHECK_CORRECT_DATATYPE);
