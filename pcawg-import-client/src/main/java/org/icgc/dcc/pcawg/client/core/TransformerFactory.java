@@ -5,13 +5,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.core.writer.FileWriterContext;
+import org.icgc.dcc.pcawg.client.core.writer.HdfsFileWriter;
+import org.icgc.dcc.pcawg.client.core.writer.LocalFileWriter;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 
 import java.io.IOException;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.pcawg.client.core.HdfsFileWriter.newDefaultHdfsFileWriter;
-import static org.icgc.dcc.pcawg.client.core.LocalFileWriter.newDefaultLocalFileWriter;
+import static org.icgc.dcc.pcawg.client.core.writer.HdfsFileWriter.newDefaultHdfsFileWriter;
+import static org.icgc.dcc.pcawg.client.core.writer.LocalFileWriter.newDefaultLocalFileWriter;
 import static org.icgc.dcc.pcawg.client.core.Transformer.newTransformer;
 
 @RequiredArgsConstructor(access = PRIVATE)

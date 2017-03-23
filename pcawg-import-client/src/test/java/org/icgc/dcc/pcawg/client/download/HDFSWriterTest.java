@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.download;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.config.ClientProperties;
-import org.icgc.dcc.pcawg.client.core.HdfsFileWriter;
+import org.icgc.dcc.pcawg.client.core.writer.HdfsFileWriter;
 import org.junit.Ignore;
 import org.junit.Test;
 

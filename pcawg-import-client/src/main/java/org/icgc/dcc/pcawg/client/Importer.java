@@ -22,7 +22,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.FileWriterContextFactory;
+import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter;
 
 import static org.icgc.dcc.common.core.util.Joiners.PATH;

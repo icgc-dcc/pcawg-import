@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.core.writer;
 
 import lombok.AccessLevel;
 import lombok.Getter;

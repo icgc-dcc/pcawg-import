@@ -8,7 +8,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.FileWriterContextFactory;
+import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.core.Transformer;
 import org.icgc.dcc.pcawg.client.core.TransformerFactory;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
