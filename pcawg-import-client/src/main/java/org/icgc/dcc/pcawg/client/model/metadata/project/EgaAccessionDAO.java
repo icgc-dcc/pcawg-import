@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import java.io.File;
@@ -29,9 +30,9 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.joining;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
+@Slf4j
 public class EgaAccessionDAO {
 
   private static final char SEPERATOR = '\t';
@@ -57,6 +58,7 @@ public class EgaAccessionDAO {
   }
 
   public void init(){
+    log.info("Initializing {} instance using inputDirname {}", this.getClass().getName(), inputDirname);
     this.lookupMap = getPaths().stream()
         .map(EgaAccessionDAO::process)
         .flatMap(Collection::stream)
@@ -64,17 +66,15 @@ public class EgaAccessionDAO {
     initialized = true;
   }
 
-  public Optional<EgaBean> search(EgaSearchRequest request){
-    checkState(lookupMap.containsKey(request), "The lookup table does not contain the search request [%s]", request);
-    val list = lookupMap.get(request).stream()
-        .filter(x -> x.getFile().endsWith(".bam.bai")).collect(
-        toImmutableList());
-    val isValidSize = list.size() <2 ;
-    checkState(isValidSize, "The SearchRequest [%s] is not unique (i.e there is more than 1 result for this request): %s ", request,
-        list.stream()
-            .map(EgaBean::toString)
-            .collect(joining("\n")) );
-    return list.size() == 0 ? Optional.empty() : Optional.of(list.get(0));
+  public Optional<EgaBean> findFirst(EgaSearchRequest request){
+    return findAll(request)
+        .stream()
+        .findFirst();
+  }
+
+  public List<EgaBean> findAll(EgaSearchRequest request){
+    checkState(lookupMap.containsKey(request), "The lookup table does not contain the findFirst request [%s]", request);
+    return lookupMap.get(request);
   }
 
   @SneakyThrows
