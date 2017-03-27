@@ -8,13 +8,15 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.core.Transformer;
 import org.icgc.dcc.pcawg.client.core.TransformerFactory;
+import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
+import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PlainSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
 
 import java.io.File;
@@ -24,6 +26,7 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newEnumMap;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
+import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
 import static org.icgc.dcc.pcawg.client.model.NACodes.DATA_VERIFIED_TO_BE_UNKNOWN;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
@@ -39,46 +42,41 @@ public class ConsensusVCFConverter {
 
   private static final boolean REQUIRE_INDEX_CFG = false;
   private static final boolean F_CHECK_CORRECT_WORKTYPE = false;
+  private static final boolean DO_VALIDATION = true;
 
-  /**
-   * - take variantContext
-   * - take sampleMetadata
-   * - take File
-   * - take transformerFactory (specify hdfsEnable)
-   * - ensure its consensus only
-   * - create all transformers, and put them into hashmap--> create transformer manager
-   * - for each variantContext
-   *    - create SSMMetadata and SSMPrimary for consensus
-   *    - ensure it has "Callers" field in info field
-   *    - parse out info field, and get callers
-   *    - add caller to member variable Set (for SSMMetadata generation later on)
-   *    - parseContains each caller
-   *    - calculate variation_name
-   *    - get correct transformer for workflowType
-   *    - write ssmPrimary
-   *
-   * - create SSMMetadata's from set of callers
-   *
-   *
-   *
-   *
-   * - generic implementation for transformerManager
-   * - given set of strings, which are
-   */
-
-//  @NonNull private final SampleMetadata sampleMetadata;
-//  @NonNull private final File vcfFile;
   @NonNull private final TransformerFactory<SSMPrimary> primaryTransformerFactory;
   @NonNull private final FileWriterContextFactory primaryFWCtxFactory;
 
   @NonNull private final TransformerFactory<SSMMetadata> metadataTransformerFactory;
   @NonNull private final FileWriterContextFactory metadataFWCtxFactory;
 
+  private static final String ILLEGAL_VALUE_REGEX = "^\\s+$";
   /**
    * State
    */
   private Map<WorkflowTypes , Transformer<SSMPrimary>> primaryTransformerMap;
   private Map<WorkflowTypes , Transformer<SSMMetadata>> metadataTransformerMap;
+
+  private static long countIllegalValues(SSMMetadata ssmMetadata){
+    return stream(SSMMetadataFieldMapping.values())
+        .map( x -> x.extractStringValue(ssmMetadata))
+        .filter(s -> (s==null || s.matches(ILLEGAL_VALUE_REGEX)))
+        .count();
+  }
+
+  private static long countIllegalValues(SSMPrimary ssmPrimary){
+    return stream(SSMPrimaryFieldMapping.values())
+        .map( x -> x.extractStringValue(ssmPrimary))
+        .filter(s -> (s==null || s.matches(ILLEGAL_VALUE_REGEX)))
+        .count();
+  }
+
+  private static void checkForIllegalMetadata(WorkflowTypes workflowType, String filename, SSMMetadata ssmMetadata){
+    val count = countIllegalValues(ssmMetadata);
+    if (count > 0){
+      log.error("The ssmMetadata({}) file {} has {} null values", workflowType.getName(), filename, count);
+    }
+  }
 
   public void process(File vcfFile, SampleMetadata sampleMetadataConsensus){
     checkArgument(sampleMetadataConsensus.getWorkflowType() == CONSENSUS,
@@ -88,32 +86,42 @@ public class ConsensusVCFConverter {
     // Initialize transformer maps for primary and metadata
     buildTransformerMaps(dccProjectCode);
 
-
     // Write SSM Primary to file
     val vcf = new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
     val workflowTypesSet = Sets.<WorkflowTypes>newHashSet();
+    long nullCount = 0;
     for (val variant : vcf){
       val ssmPrimaryConsensus = buildSSMPrimary(sampleMetadataConsensus, variant);
+      nullCount += countIllegalValues(ssmPrimaryConsensus);
       getSSMPrimaryTransformer(CONSENSUS).transform(ssmPrimaryConsensus);
+
       for (val workflowType : extractWorkflowTypes(variant) ){
         workflowTypesSet.add(workflowType);
         val ssmPrimary = createCallerSpecificSSMPrimary(sampleMetadataConsensus, ssmPrimaryConsensus, workflowType);
+        nullCount += countIllegalValues(ssmPrimary);
         getSSMPrimaryTransformer(workflowType).transform(ssmPrimary);
       }
+    }
+    if (nullCount >0 ){
+      log.error("The ssmPrimary file {} has {} null values", vcfFile.getName(), nullCount);
     }
 
     //Write SSM Metadata to file
     val ssmMetadataConsensus = newSSMMetadata(sampleMetadataConsensus);
+    checkForIllegalMetadata(CONSENSUS,vcfFile.getName(), ssmMetadataConsensus);
     getSSMMetadataTransformer(CONSENSUS).transform(ssmMetadataConsensus);
 
     for (val workflowType : workflowTypesSet){
       val ssmMetadata = createCallerSpecificSSMMetadata(sampleMetadataConsensus,ssmMetadataConsensus,workflowType);
+      checkForIllegalMetadata(workflowType,vcfFile.getName(), ssmMetadata);
       getSSMMetadataTransformer(workflowType).transform(ssmMetadata);
     }
 
     // Close transformers and release memory
     closeAllMetadataTransformers();
     closeAllPrimaryTransformers();
+
+
   }
 
   private void convertAndTransform(WorkflowTypes workflowType, SSMPrimary ssmPrimaryConsensus,  SampleMetadata sampleMetadataConsensus){

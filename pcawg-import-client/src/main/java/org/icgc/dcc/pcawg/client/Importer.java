@@ -23,7 +23,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
+import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
@@ -34,12 +40,14 @@ import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformerFactory;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformerFactory;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
+import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
 
 @Slf4j
 @Builder
 public class Importer implements Runnable {
 
   private static final boolean REQUIRE_INDEX_CFG = false;
+  private static final boolean ENABLE_TSV_VALIDATION = true;
 
   @NonNull
   private final String token;
@@ -58,6 +66,10 @@ public class Importer implements Runnable {
 
   @NonNull
   private final String hdfsPort;
+
+
+  private FileWriterContextFactory primaryFWCtxFactory;
+  private FileWriterContextFactory metadataFWCtxFactory;
 
 
   // 1. now need to remove these members, and just make ssm_type_enum (with SSM_M and SMM_P), and then this method
@@ -86,10 +98,10 @@ public class Importer implements Runnable {
 
   private ConsensusVCFConverter buildConsensusVCFConverter(){
     val metadataTransformerFactory = newSSMMetadataTransformerFactory(hdfsEnabled);
-    val metadataFWCtxFactory = buildSSMMetadataFWCtxFactory();
+    this.metadataFWCtxFactory = buildSSMMetadataFWCtxFactory();
 
     val primaryTransformerFactory = newSSMPrimaryTransformerFactory(hdfsEnabled);
-    val primaryFWCtxFactory = buildSSMPrimaryFWCtxFactory();
+    this.primaryFWCtxFactory = buildSSMPrimaryFWCtxFactory();
 
     return ConsensusVCFConverter.builder()
         .metadataFWCtxFactory(metadataFWCtxFactory)
@@ -137,6 +149,29 @@ public class Importer implements Runnable {
 
         // Converter Consensus VCF files
         consensusVCFConverter.process(vcfFile, sampleMetadata);
+
+
+      }
+      if (ENABLE_TSV_VALIDATION){
+        validateOutputFiles(dccProjectCode);
+      }
+    }
+  }
+
+  private void validateOutputFiles(String dccProjectCode){
+    for (val workflowType : WorkflowTypes.values()){
+      val ssm_m_filename = metadataFWCtxFactory.getFileWriterContext(workflowType,dccProjectCode).getOutputFilename();
+      if (Files.exists(Paths.get(ssm_m_filename))){
+        val ssmMValidator = newTsvValidator(ssm_m_filename, SSMMetadataFieldMapping.values().length);
+        ssmMValidator.analyze();
+        ssmMValidator.log();
+      }
+
+      val ssm_p_filename = primaryFWCtxFactory.getFileWriterContext(workflowType,dccProjectCode).getOutputFilename();
+      if (Files.exists(Paths.get(ssm_p_filename))) {
+        val ssmPValidator = newTsvValidator(ssm_p_filename, SSMPrimaryFieldMapping.values().length);
+        ssmPValidator.analyze();
+        ssmPValidator.log();
       }
     }
   }
