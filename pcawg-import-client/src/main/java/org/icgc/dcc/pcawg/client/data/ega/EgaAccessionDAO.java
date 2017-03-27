@@ -1,15 +1,13 @@
-package org.icgc.dcc.pcawg.client.model.metadata.project;
+package org.icgc.dcc.pcawg.client.data.ega;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
@@ -128,23 +126,6 @@ public class EgaAccessionDAO {
     public List<Path> getMatchingPaths(){
       return ImmutableList.copyOf(matchingPaths);
     }
-
-  }
-
-  @Value
-  @Builder
-  public static class EgaSearchRequest {
-
-    public static EgaSearchRequest fromEgaBean(EgaBean b){
-      return new EgaSearchRequest(b.getIcgc_project_code(),
-          b.getAliquot_id(),
-          b.getSubmitter_sample_id(),
-          b.getIcgc_sample_id());
-    }
-    @NonNull private final String dccProjectCode;
-    @NonNull private final String aliquotId;
-    @NonNull private final String submitterSampleId;
-    @NonNull private final String icgcSampleId;
 
   }
 

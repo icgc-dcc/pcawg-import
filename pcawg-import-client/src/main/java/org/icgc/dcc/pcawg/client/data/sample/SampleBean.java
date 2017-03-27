@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.model.metadata.project;
+package org.icgc.dcc.pcawg.client.data.sample;
 
 import com.opencsv.bean.CsvBindByName;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.NonNull;
  * Refer to http://opencsv.sourceforge.net/
  */
 @Data
-public class SampleSheetBean {
+public class SampleBean {
 
   @CsvBindByName(required=true) @NonNull private String  donor_unique_id;
   @CsvBindByName(required=true) @NonNull private String  donor_wgs_exclusion_white_gray;
@@ -24,6 +24,6 @@ public class SampleSheetBean {
   @CsvBindByName(required=true) @NonNull private String  dcc_specimen_type;
   @CsvBindByName(required=true) @NonNull private String  library_strategy;
 
-  public SampleSheetBean(){}
+  public SampleBean(){}
 
 }

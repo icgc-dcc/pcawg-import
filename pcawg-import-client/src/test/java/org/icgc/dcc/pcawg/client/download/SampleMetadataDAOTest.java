@@ -2,12 +2,19 @@ package org.icgc.dcc.pcawg.client.download;
 
 import com.google.common.io.Resources;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleBean;
+import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileReader;
 
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSampleMetadataDAO;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO.newFileSampleMetadataDAO;
@@ -15,11 +22,40 @@ import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPo
 import static org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel.newSampleSheetModel;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModel;
 
+@Slf4j
 public class SampleMetadataDAOTest {
 
   private static final String TEST_SAMPLE_SHEET_FILENAME = "fixtures/test_sample_sheet.tsv";
   private static final String TEST_UUID2BARCODE_SHEET_FILENAME = "fixtures/test_uuid2barcode_sheet.tsv";
 
+  @Test
+  @SneakyThrows
+  public void testSampleDao(){
+    val reader = new FileReader(getTestFile(TEST_SAMPLE_SHEET_FILENAME));
+    val dao = new SampleDao(reader);
+    val aliquotId = "e0fccaf5-925a-41f9-b87c-cd5ee4aecb59";
+    log.info("AliquotId: {}", aliquotId);
+    log.info(dao.findAliquotId(aliquotId)
+        .stream()
+        .map(SampleBean::toString)
+        .collect(joining("\n")));
+
+
+  }
+
+  @Test
+  @SneakyThrows
+  public void testBarcodeDao(){
+    val reader = new FileReader(getTestFile(TEST_UUID2BARCODE_SHEET_FILENAME));
+    val dao = new BarcodeDao(reader);
+    val uuid = "0304b12d-7640-4150-a581-2eea2b1f2ad5";
+    log.info("UUID: {}", uuid);
+    log.info(dao.find(uuid)
+        .stream()
+        .map(BarcodeBean::toString)
+        .collect(joining("\n")));
+
+  }
 
 
   @Test
@@ -97,5 +133,6 @@ public class SampleMetadataDAOTest {
     assertThat(usProjectData.getMatchedSampleId()).isEqualTo("TCGA-BH-A18R-11A-42D-A19H-09");
 
   }
+
 
 }
