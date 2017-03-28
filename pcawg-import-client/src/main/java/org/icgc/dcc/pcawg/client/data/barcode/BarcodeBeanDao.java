@@ -23,17 +23,17 @@ public class BarcodeBeanDao extends AbstractFileDao<BarcodeBean, String> impleme
     super(reader);
   }
 
-  public static BarcodeDao<BarcodeBean, String> newBarcodeBeanDao(String inputFilename){
+  public static BarcodeBeanDao newBarcodeBeanDao(String inputFilename){
     return new BarcodeBeanDao(inputFilename);
   }
 
-  public static BarcodeDao<BarcodeBean, String> newBarcodeBeanDao(Reader reader){
+  public static BarcodeBeanDao newBarcodeBeanDao(Reader reader){
     return new BarcodeBeanDao(reader);
   }
 
   @SneakyThrows
-  public static BarcodeBeanDaoOld restoreBarcodeBeanDao(String storedBarcodeDaoFilename){
-    return (BarcodeBeanDaoOld) ObjectPersistance.restore(storedBarcodeDaoFilename);
+  public static BarcodeBeanDao restoreBarcodeBeanDao(String storedBarcodeDaoFilename){
+    return (BarcodeBeanDao) ObjectPersistance.restore(storedBarcodeDaoFilename);
   }
 
   @Override

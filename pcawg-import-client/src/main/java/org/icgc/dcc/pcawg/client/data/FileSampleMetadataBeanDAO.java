@@ -49,7 +49,7 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
 
   private SampleBean getFirstSampleBean(SampleSearchRequest request) throws SampleMetadataNotFoundException{
     val beans = sampleDao.find(request);
-    if (! beans.isEmpty()){
+    if (beans.isEmpty()){
       throw new SampleMetadataNotFoundException(
           String.format("Could not find first SampleBean for SampleSearchRequest: %s", request ));
     }
@@ -58,7 +58,7 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
 
   private BarcodeBean getFirstBarcodeBean(String uuid) throws  SampleMetadataNotFoundException {
     val beans = barcodeDao.find(uuid);
-    if(!beans.isEmpty()){
+    if(beans.isEmpty()){
       throw new SampleMetadataNotFoundException(
           String.format("Could not find first BarcodeBean for uuid [%s]", uuid));
     }

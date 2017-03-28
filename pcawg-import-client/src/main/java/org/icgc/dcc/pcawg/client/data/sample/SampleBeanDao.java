@@ -11,6 +11,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -50,41 +51,50 @@ public class SampleBeanDao extends AbstractFileDao<SampleBean, SampleSearchReque
     return value == null || isWild;
   }
 
-  private static boolean decide(SampleSearchRequest request, SampleBean sampleBean, Function<SampleSearchRequest, String> requestFunctor, Function<SampleBean, String> actualFunctor) {
+  private static boolean decideAndCompare(SampleSearchRequest request,
+      SampleBean sampleBean, Function<SampleSearchRequest, String> requestFunctor,
+      Function<SampleBean, String> actualFunctor,  BiPredicate<String, String> comparingBiPredicate) {
     val searchValue = requestFunctor.apply(request);
     val actualValue = actualFunctor.apply(sampleBean);
     if (isWildcardSearch(searchValue)){
       return true;
     } else {
-      return actualValue.equals(searchValue);
+      return comparingBiPredicate.test(actualValue, searchValue);
     }
   }
 
-  private static Predicate<SampleBean> createPredicate(SampleSearchRequest request, Function<SampleSearchRequest, String> requestFunctor, Function<SampleBean, String> actualFunctor ){
-    return s -> decide(request, s, requestFunctor, actualFunctor);
+  private static Predicate<SampleBean> createEqualsPredicate(SampleSearchRequest request, Function<SampleSearchRequest,
+      String> requestFunctor, Function<SampleBean, String> actualFunctor ){
+    return s -> decideAndCompare(request, s, requestFunctor, actualFunctor, String::equals);
   }
 
-  public static SampleDao<SampleBean, SampleSearchRequest> newSampleBeanDao(String inputFilename){
+  private static Predicate<SampleBean> createContainsLowercasePredicate(SampleSearchRequest request, Function<SampleSearchRequest,
+      String> requestFunctor, Function<SampleBean, String> actualFunctor ){
+    return s -> decideAndCompare(request, s, requestFunctor, actualFunctor, (actual,req) -> actual.toLowerCase().contains(req.toLowerCase()));
+  }
+
+  public static SampleBeanDao newSampleBeanDao(String inputFilename){
     return new SampleBeanDao(inputFilename);
   }
 
-  public static SampleDao<SampleBean, SampleSearchRequest> newSampleBeanDao(Reader reader){
+  public static SampleBeanDao newSampleBeanDao(Reader reader){
     return new SampleBeanDao(reader);
   }
 
   @SneakyThrows
-  public static SampleBeanDaoOld restoreSampleBeanDao(String storedSampleDaoFilename){
-    return (SampleBeanDaoOld) ObjectPersistance.restore(storedSampleDaoFilename);
+  public static SampleBeanDao restoreSampleBeanDao(String storedSampleDaoFilename){
+    return (SampleBeanDao) ObjectPersistance.restore(storedSampleDaoFilename);
   }
 
   @SneakyThrows
   private Stream<SampleBean>  streamAll(SampleSearchRequest request){
     return getData().stream()
-        .filter(createPredicate(request, SampleSearchRequest::getAliquot_id, SampleBean::getAliquot_id))
-        .filter(createPredicate(request, SampleSearchRequest::getDcc_specimen_type, SampleBean::getDcc_specimen_type))
-        .filter(createPredicate(request, SampleSearchRequest::getDonor_unique_id, SampleBean::getDonor_unique_id))
-        .filter(createPredicate(request, SampleSearchRequest::getLibrary_strategy, SampleBean::getLibrary_strategy));
+        .filter(createEqualsPredicate(request, SampleSearchRequest::getAliquot_id, SampleBean::getAliquot_id))
+        .filter(createContainsLowercasePredicate(request, SampleSearchRequest::getDcc_specimen_type, SampleBean::getDcc_specimen_type))
+        .filter(createEqualsPredicate(request, SampleSearchRequest::getDonor_unique_id, SampleBean::getDonor_unique_id))
+        .filter(createEqualsPredicate(request, SampleSearchRequest::getLibrary_strategy, SampleBean::getLibrary_strategy));
   }
+
 
   @Override
   public List<SampleBean> find(SampleSearchRequest request){

@@ -46,13 +46,14 @@ public abstract class AbstractFileDao<B, R > {
     this.reader = new FileReader(file);
     this.data = convert();
     this.reader.close();
-    log.info("Done Coverting inputFilename: {} ", inputFilename);
+    log.info("Done Converting inputFilename {} to DAO ", inputFilename);
+
   }
 
   protected AbstractFileDao(Reader reader) {
     this.reader = reader;
     this.data = convert();
-    log.info("Done Coverting Reader to SampleBeanDaoOld");
+    log.info("Done Converting Reader to DAO");
   }
 
   public void store(String filename) throws IOException {

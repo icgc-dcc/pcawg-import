@@ -4,10 +4,9 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.FileSampleMetadataFastDAO;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataBeanDAO;
+import org.icgc.dcc.pcawg.client.data.FileSampleMetadataFastDAO;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBeanDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleBeanDaoOld;
@@ -143,7 +142,7 @@ public class Factory {
     downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
     downloadUUID2BarcodeSheet(UUID2BARCODE_SHEET_TSV_FILENAME);
     val sampleDao = SampleBeanDao.newSampleBeanDao(SAMPLE_SHEET_TSV_FILENAME);
-    val barcodeDao = BarcodeBeanDao.<BarcodeBean, String>newBarcodeBeanDao(UUID2BARCODE_SHEET_TSV_FILENAME);
+    val barcodeDao = BarcodeBeanDao.newBarcodeBeanDao(UUID2BARCODE_SHEET_TSV_FILENAME);
     log.info("Done downloading, creating FileSampleMetadataFastDAO");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
   }
