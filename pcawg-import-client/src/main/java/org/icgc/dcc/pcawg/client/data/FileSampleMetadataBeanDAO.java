@@ -19,11 +19,11 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.icgc.dcc.pcawg.client.data.SampleMetadataDAO.isUSProject;
-import static org.icgc.dcc.pcawg.client.data.sample.SampleDao.createWildcardRequestBuilder;
+import static org.icgc.dcc.pcawg.client.data.sample.SampleBeanDaoOld.createWildcardRequestBuilder;
 
 @Slf4j
 @RequiredArgsConstructor
-public class FileSampleMetadataDAO2 implements SampleMetadataDAO {
+public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
 
   private static final String WGS = "WGS";
   private static final String NORMAL = "normal";
@@ -32,12 +32,10 @@ public class FileSampleMetadataDAO2 implements SampleMetadataDAO {
 
 
   @NonNull
-  private final SampleDao sampleDao;
+  private final SampleDao<SampleBean, SampleSearchRequest> sampleDao;
 
   @NonNull
-  private final BarcodeDao barcodeDao;
-
-
+  private final BarcodeDao<BarcodeBean, String> barcodeDao;
 
   private SampleBean getFirstSampleBean(String aliquotId) throws SampleMetadataNotFoundException{
     val aliquotIdResult = sampleDao.findFirstAliquotId(aliquotId);
