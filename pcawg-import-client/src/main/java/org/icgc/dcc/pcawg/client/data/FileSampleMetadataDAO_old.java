@@ -24,16 +24,16 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.pcawg.client.data.SampleMetadataDAO.isUSProject;
 
 @Slf4j
-public class FileSampleMetadataFastDAO implements SampleMetadataDAO {
+public class FileSampleMetadataDAO_old implements SampleMetadataDAO {
 
   private static final String WGS = "WGS";
   private static final String NORMAL = "normal";
   private static final boolean F_CHECK_CORRECT_WORKTYPE = true;
   private static final boolean F_CHECK_CORRECT_DATATYPE = true;
 
-  public static FileSampleMetadataFastDAO newFileSampleMetadataFastDAO(String sampleSheetFilename, boolean sampleSheetHasHeader,
+  public static FileSampleMetadataDAO_old newFileSampleMetadataDAO_old(String sampleSheetFilename, boolean sampleSheetHasHeader,
       String uuid2BarcodeSheetFilename, boolean uuid2BarcodeSheetHasHeader){
-    return new FileSampleMetadataFastDAO(sampleSheetFilename, sampleSheetHasHeader,uuid2BarcodeSheetFilename, uuid2BarcodeSheetHasHeader);
+    return new FileSampleMetadataDAO_old(sampleSheetFilename, sampleSheetHasHeader,uuid2BarcodeSheetFilename, uuid2BarcodeSheetHasHeader);
   }
 
   @SneakyThrows
@@ -68,7 +68,7 @@ public class FileSampleMetadataFastDAO implements SampleMetadataDAO {
   private final List<SampleSheetModel> sampleSheetList;
   private final List<Uuid2BarcodeSheetModel> uuid2BarcodeSheetList;
 
-  private FileSampleMetadataFastDAO(String sampleSheetFilename, boolean sampleSheetHasHeader,
+  private FileSampleMetadataDAO_old(String sampleSheetFilename, boolean sampleSheetHasHeader,
       String uuid2BarcodeSheetFilename, boolean uuid2BarcodeSheetHasHeader) {
     this.sampleSheetFilename = sampleSheetFilename;
     this.uuid2BarcodeSheetFilename = uuid2BarcodeSheetFilename;
