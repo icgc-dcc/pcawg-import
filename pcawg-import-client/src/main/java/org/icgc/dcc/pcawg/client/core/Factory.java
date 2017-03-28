@@ -5,11 +5,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataBeanDAO;
-import org.icgc.dcc.pcawg.client.data.FileSampleMetadataFastDAO;
+import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBeanDao;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeFastDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleBeanDaoOld;
+import org.icgc.dcc.pcawg.client.data.sample.SampleFastDao;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
@@ -35,10 +37,10 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_M
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_HAS_HEADER;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
-import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataFastDAO.newFileSampleMetadataFastDAO;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_HAS_HEADER;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
 import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
@@ -116,7 +118,7 @@ public class Factory {
   }
 
   public static void downloadUUID2BarcodeSheet(String outputFilename){
-    downloadSheet(UUID2BARCODE_SHEET_TSV_URL, outputFilename);
+    downloadSheet(BARCODE_SHEET_TSV_URL, outputFilename);
   }
 
   private static SampleBeanDaoOld initSampleDao(){
@@ -140,26 +142,37 @@ public class Factory {
   @SneakyThrows
   public static FileSampleMetadataBeanDAO newFileSampleMetadataBeanDAOAndDownload(){
     downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
-    downloadUUID2BarcodeSheet(UUID2BARCODE_SHEET_TSV_FILENAME);
+    downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
     val sampleDao = SampleBeanDao.newSampleBeanDao(SAMPLE_SHEET_TSV_FILENAME);
-    val barcodeDao = BarcodeBeanDao.newBarcodeBeanDao(UUID2BARCODE_SHEET_TSV_FILENAME);
-    log.info("Done downloading, creating FileSampleMetadataFastDAO");
+    val barcodeDao = BarcodeBeanDao.newBarcodeBeanDao(BARCODE_SHEET_TSV_FILENAME);
+    log.info("Done downloading, creating FileSampleMetadataDAO_old");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
   }
 
   @SneakyThrows
-  public static FileSampleMetadataFastDAO newFileSampleMetadataFastDAOAndDownload(){
+  public static FileSampleMetadataBeanDAO newFastFileSampleMetadataBeanDAOAndDownload(){
     downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
-    downloadUUID2BarcodeSheet(UUID2BARCODE_SHEET_TSV_FILENAME);
-    log.info("Done downloading, creating FileSampleMetadataFastDAO");
-    return newFileSampleMetadataFastDAO(SAMPLE_SHEET_TSV_FILENAME,
-        SAMPLE_SHEET_HAS_HEADER, UUID2BARCODE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_HAS_HEADER);
+    downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
+    val sampleDao = SampleFastDao.newSampleFastDao(SAMPLE_SHEET_TSV_FILENAME, SAMPLE_SHEET_HAS_HEADER);
+    val barcodeDao = BarcodeFastDao.newBarcodeFastDao(BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
+    log.info("Done downloading, creating FastFileSampleMetadataDAO");
+    return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
+  }
+
+  @SneakyThrows
+  public static FileSampleMetadataDAO_old newFileSampleMetadataDAOOldAndDownload(){
+    downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
+    downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
+    log.info("Done downloading, creating FileSampleMetadataDAO_old");
+    return newFileSampleMetadataDAO_old(SAMPLE_SHEET_TSV_FILENAME,
+        SAMPLE_SHEET_HAS_HEADER, BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
   }
 
 
   public static SampleMetadataDAO newSampleMetadataDAO(){
-    return newFileSampleMetadataBeanDAOAndDownload(); //Uses beans, but slow loading
-//    return newFileSampleMetadataFastDAOAndDownload(); // USes custom parser
+//    return newFastFileSampleMetadataBeanDAOAndDownload(); // Fastest loader, and uses beans, but hardcoded column headers
+//    return newFileSampleMetadataBeanDAOAndDownload(); //Uses beans, but slow loading
+    return newFileSampleMetadataDAOOldAndDownload(); // USes custom parser
   }
 
 }

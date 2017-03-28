@@ -14,9 +14,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 @Value
 @Builder
 public class SampleSheetModel {
-  private static final int ALIQUOT_ID_POS = 5;
+  private static final int ICGC_DONOR_ID = 5;
   private static final int DONOR_UNIQUE_ID_POS = 0;
-  private static final int SUBMITTER_SAMPLE_ID_POS = 8;
+  private static final int SUBMITTER_SPECIMEN_ID_POS = 8;
   private static final int DCC_SPECIMEN_TYPE = 10;
   private static final int LIBRARY_STRATEGY = 11;
   private static final int DCC_PROJECT_CODE= 4;
@@ -26,7 +26,7 @@ public class SampleSheetModel {
   private final String donorUniqueId;
 
   @NonNull
-  private final String aliquotId;
+  private final String aliquot_id;
 
   @NonNull
   private final String submitterSampleId;
@@ -45,12 +45,12 @@ public class SampleSheetModel {
     val array = tsvLine.trim().split("\t");
     checkArgument(array.length == MAX_NUM_COLUMNS, "Max allowed columns is %s, but input columns is %s", MAX_NUM_COLUMNS, array.length);
     return SampleSheetModel.builder()
-        .aliquotId(array[ALIQUOT_ID_POS])
+        .aliquot_id(array[ICGC_DONOR_ID])
         .dccSpecimenType(array[DCC_SPECIMEN_TYPE])
         .donorUniqueId(array[DONOR_UNIQUE_ID_POS])
         .dccProjectCode(array[DCC_PROJECT_CODE])
         .libraryStrategy(array[LIBRARY_STRATEGY])
-        .submitterSampleId(array[SUBMITTER_SAMPLE_ID_POS])
+        .submitterSampleId(array[SUBMITTER_SPECIMEN_ID_POS])
         .build();
   }
 

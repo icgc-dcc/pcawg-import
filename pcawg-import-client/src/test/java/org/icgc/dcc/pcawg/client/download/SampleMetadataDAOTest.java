@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataBeanDAOAndDownload;
-import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataFastDAOAndDownload;
+import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataDAOOldAndDownload;
 import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
 
 @Slf4j
@@ -39,7 +39,7 @@ public class SampleMetadataDAOTest {
   @Test
   @SneakyThrows
   public void testFastFetchSampleMetadata(){
-    runQuery(newFileSampleMetadataFastDAOAndDownload());
+    runQuery(newFileSampleMetadataDAOOldAndDownload());
   }
 
   @Test

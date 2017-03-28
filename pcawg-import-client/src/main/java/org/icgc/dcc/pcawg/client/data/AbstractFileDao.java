@@ -25,7 +25,7 @@ public abstract class AbstractFileDao<B, R > {
   private Reader reader;
 
   @Getter(AccessLevel.PROTECTED)
-  private List<B> data;
+  private List<B> beans;
 
   @SneakyThrows
   protected List<B> convert(){
@@ -44,15 +44,19 @@ public abstract class AbstractFileDao<B, R > {
     checkState(file.exists(),"The inputFilename [%s] does not exist", file.getAbsolutePath());
     checkState(file.isFile(),"The inputFilename [%s] is not a file" , file.getAbsolutePath());
     this.reader = new FileReader(file);
-    this.data = convert();
+    this.beans = convert();
     this.reader.close();
     log.info("Done Converting inputFilename {} to DAO ", inputFilename);
 
   }
 
+  protected AbstractFileDao(List<B> beans){
+    this.beans = beans;
+  }
+
   protected AbstractFileDao(Reader reader) {
     this.reader = reader;
-    this.data = convert();
+    this.beans = convert();
     log.info("Done Converting Reader to DAO");
   }
 

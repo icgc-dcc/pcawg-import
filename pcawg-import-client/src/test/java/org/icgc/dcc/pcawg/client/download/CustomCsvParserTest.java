@@ -4,13 +4,13 @@ import com.google.common.io.Resources;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.FileSampleMetadataFastDAO;
+import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old;
 import org.junit.Test;
 
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataFastDAO.newFileSampleMetadataFastDAO;
+import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel.newSampleSheetModel;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModel;
 
@@ -25,7 +25,7 @@ public class CustomCsvParserTest {
     val tsvLine = "  \ta spaceA 1\tb spaceB 2\tc spaceC 3\td spaceD 4\te spaceE 5\tf spaceF 6\tg spaceG 7\th spaceH 8\ti spaceI 9\tj spaceJ 10\tk spaceK 11\tl spaceL 12\t         ";
 
     val sampleSheet = newSampleSheetModel(tsvLine);
-    assertThat(sampleSheet.getAliquotId()).isEqualTo("f spaceF 6");
+    assertThat(sampleSheet.getAliquot_id()).isEqualTo("f spaceF 6");
     assertThat(sampleSheet.getDccProjectCode()).isEqualTo("e spaceE 5");
     assertThat(sampleSheet.getDccSpecimenType()).isEqualTo("k spaceK 11");
     assertThat(sampleSheet.getDonorUniqueId()).isEqualTo("a spaceA 1");
@@ -59,22 +59,22 @@ public class CustomCsvParserTest {
     val numLinesSampleSheet = 5;
     val numLinesBarcodeSheet = 3;
 
-    FileSampleMetadataFastDAO
-        fileSampleMetadataFastDAO = newFileSampleMetadataFastDAO(absSampleSheetFilename,true, absUuid2BarcodeSheetFilename, true );
-    assertThat(fileSampleMetadataFastDAO.getSampleSheetSize()).isEqualTo(numLinesSampleSheet-1);
-    assertThat(fileSampleMetadataFastDAO.getUUID2BarcodeSheetSize()).isEqualTo(numLinesBarcodeSheet-1);
+    FileSampleMetadataDAO_old
+        fileSampleMetadataDAOOld = newFileSampleMetadataDAO_old(absSampleSheetFilename,true, absUuid2BarcodeSheetFilename, true );
+    assertThat(fileSampleMetadataDAOOld.getSampleSheetSize()).isEqualTo(numLinesSampleSheet-1);
+    assertThat(fileSampleMetadataDAOOld.getUUID2BarcodeSheetSize()).isEqualTo(numLinesBarcodeSheet-1);
 
-    fileSampleMetadataFastDAO = newFileSampleMetadataFastDAO(absSampleSheetFilename,true, absUuid2BarcodeSheetFilename, false );
-    assertThat(fileSampleMetadataFastDAO.getSampleSheetSize()).isEqualTo(numLinesSampleSheet-1);
-    assertThat(fileSampleMetadataFastDAO.getUUID2BarcodeSheetSize()).isEqualTo(numLinesBarcodeSheet);
+    fileSampleMetadataDAOOld = newFileSampleMetadataDAO_old(absSampleSheetFilename,true, absUuid2BarcodeSheetFilename, false );
+    assertThat(fileSampleMetadataDAOOld.getSampleSheetSize()).isEqualTo(numLinesSampleSheet-1);
+    assertThat(fileSampleMetadataDAOOld.getUUID2BarcodeSheetSize()).isEqualTo(numLinesBarcodeSheet);
 
-    fileSampleMetadataFastDAO = newFileSampleMetadataFastDAO(absSampleSheetFilename,false, absUuid2BarcodeSheetFilename, true );
-    assertThat(fileSampleMetadataFastDAO.getSampleSheetSize()).isEqualTo(numLinesSampleSheet);
-    assertThat(fileSampleMetadataFastDAO.getUUID2BarcodeSheetSize()).isEqualTo(numLinesBarcodeSheet-1);
+    fileSampleMetadataDAOOld = newFileSampleMetadataDAO_old(absSampleSheetFilename,false, absUuid2BarcodeSheetFilename, true );
+    assertThat(fileSampleMetadataDAOOld.getSampleSheetSize()).isEqualTo(numLinesSampleSheet);
+    assertThat(fileSampleMetadataDAOOld.getUUID2BarcodeSheetSize()).isEqualTo(numLinesBarcodeSheet-1);
 
-    fileSampleMetadataFastDAO = newFileSampleMetadataFastDAO(absSampleSheetFilename,false, absUuid2BarcodeSheetFilename, false );
-    assertThat(fileSampleMetadataFastDAO.getSampleSheetSize()).isEqualTo(numLinesSampleSheet);
-    assertThat(fileSampleMetadataFastDAO.getUUID2BarcodeSheetSize()).isEqualTo(numLinesBarcodeSheet);
+    fileSampleMetadataDAOOld = newFileSampleMetadataDAO_old(absSampleSheetFilename,false, absUuid2BarcodeSheetFilename, false );
+    assertThat(fileSampleMetadataDAOOld.getSampleSheetSize()).isEqualTo(numLinesSampleSheet);
+    assertThat(fileSampleMetadataDAOOld.getUUID2BarcodeSheetSize()).isEqualTo(numLinesBarcodeSheet);
   }
 
 }

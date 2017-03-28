@@ -46,6 +46,10 @@ public class SampleBeanDao extends AbstractFileDao<SampleBean, SampleSearchReque
     super(reader);
   }
 
+  private SampleBeanDao(List<SampleBean> beans){
+    super(beans);
+  }
+
   private static boolean isWildcardSearch(String value){
     val isWild = EMPTY.equals(value) || STAR.equals(value);
     return value == null || isWild;
@@ -81,6 +85,10 @@ public class SampleBeanDao extends AbstractFileDao<SampleBean, SampleSearchReque
     return new SampleBeanDao(reader);
   }
 
+  public static SampleBeanDao newSampleBeanDao(List<SampleBean> beans){
+    return new SampleBeanDao(beans);
+  }
+
   @SneakyThrows
   public static SampleBeanDao restoreSampleBeanDao(String storedSampleDaoFilename){
     return (SampleBeanDao) ObjectPersistance.restore(storedSampleDaoFilename);
@@ -88,7 +96,7 @@ public class SampleBeanDao extends AbstractFileDao<SampleBean, SampleSearchReque
 
   @SneakyThrows
   private Stream<SampleBean>  streamAll(SampleSearchRequest request){
-    return getData().stream()
+    return getBeans().stream()
         .filter(createEqualsPredicate(request, SampleSearchRequest::getAliquot_id, SampleBean::getAliquot_id))
         .filter(createContainsLowercasePredicate(request, SampleSearchRequest::getDcc_specimen_type, SampleBean::getDcc_specimen_type))
         .filter(createEqualsPredicate(request, SampleSearchRequest::getDonor_unique_id, SampleBean::getDonor_unique_id))

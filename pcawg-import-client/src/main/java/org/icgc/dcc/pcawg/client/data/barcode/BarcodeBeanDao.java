@@ -23,12 +23,20 @@ public class BarcodeBeanDao extends AbstractFileDao<BarcodeBean, String> impleme
     super(reader);
   }
 
+  private BarcodeBeanDao(List<BarcodeBean> beans) {
+    super(beans);
+  }
+
   public static BarcodeBeanDao newBarcodeBeanDao(String inputFilename){
     return new BarcodeBeanDao(inputFilename);
   }
 
   public static BarcodeBeanDao newBarcodeBeanDao(Reader reader){
     return new BarcodeBeanDao(reader);
+  }
+
+  public static BarcodeBeanDao newBarcodeBeanDao(List<BarcodeBean> beans){
+    return new BarcodeBeanDao(beans);
   }
 
   @SneakyThrows
@@ -38,7 +46,7 @@ public class BarcodeBeanDao extends AbstractFileDao<BarcodeBean, String> impleme
 
   @Override
   public List<BarcodeBean> find(String uuid){
-    return getData().stream()
+    return getBeans().stream()
         .filter(b -> b.getUuid().equals(uuid))
         .collect(toImmutableList());
   }

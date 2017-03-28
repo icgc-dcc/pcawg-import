@@ -35,9 +35,9 @@ public class ClientProperties {
   public static final String STORAGE_OUTPUT_VCF_STORAGE_DIR = "storedVCFs";
   public static final boolean STORAGE_BYPASS_MD5_CHECK = parseBoolean(getProperty("bypass_md5_check", FALSE));
 
-  public static final String UUID2BARCODE_SHEET_TSV_FILENAME = "pc_annotation-tcga_uuid2barcode.tsv";
-  public static final boolean UUID2BARCODE_SHEET_HAS_HEADER= true;
-  public static final String UUID2BARCODE_SHEET_TSV_URL = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/"+UUID2BARCODE_SHEET_TSV_FILENAME;
+  public static final String BARCODE_SHEET_TSV_FILENAME = "pc_annotation-tcga_uuid2barcode.tsv";
+  public static final boolean BARCODE_SHEET_HAS_HEADER = true;
+  public static final String BARCODE_SHEET_TSV_URL = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/"+ BARCODE_SHEET_TSV_FILENAME;
 
   public static final String SAMPLE_SHEET_TSV_FILENAME = "pcawg_sample_sheet.2016-10-18.tsv";
   public static final boolean SAMPLE_SHEET_HAS_HEADER = true;
