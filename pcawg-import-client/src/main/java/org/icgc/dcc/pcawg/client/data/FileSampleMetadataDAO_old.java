@@ -88,7 +88,7 @@ public class FileSampleMetadataFastDAO implements SampleMetadataDAO {
 
   private SampleSheetModel getFirstSampleSheet(String aliquotId) throws SampleMetadataNotFoundException{
     val aliquotIdStream= sampleSheetList.stream()
-        .filter(s -> s.getAliquotId().equals(aliquotId));
+        .filter(s -> s.getAliquot_id().equals(aliquotId));
 
     val aliquotIdResult = aliquotIdStream.findFirst();
     if (! aliquotIdResult.isPresent()){
