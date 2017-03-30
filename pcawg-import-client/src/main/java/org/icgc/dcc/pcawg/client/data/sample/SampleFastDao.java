@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.data.sample;
 
+import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -91,5 +92,9 @@ public class SampleFastDao implements SampleDao<SampleBean, SampleSearchRequest>
   @Override
   public List<SampleBean> findDonorUniqueId(String donorUniqueId) {
     return internalDao.findDonorUniqueId(donorUniqueId);
+  }
+
+  @Override public List<SampleBean> findAll() {
+    return ImmutableList.copyOf(getBeans());
   }
 }

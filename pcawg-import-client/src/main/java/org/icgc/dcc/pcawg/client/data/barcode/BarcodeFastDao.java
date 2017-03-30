@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.data.barcode;
 
+import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -68,5 +69,9 @@ public class BarcodeFastDao implements BarcodeDao<BarcodeBean, String> {
   @Override
   public List<BarcodeBean> find(String uuid) {
     return internalDao.find(uuid);
+  }
+
+  @Override public List<BarcodeBean> findAll() {
+    return ImmutableList.copyOf(getBeans());
   }
 }

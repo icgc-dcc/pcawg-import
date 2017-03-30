@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.data.sample;
 
+import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -12,6 +13,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -40,19 +42,41 @@ public class SampleBeanDao extends AbstractFileDao<SampleBean, SampleSearchReque
 
   private SampleBeanDao(String inputFilename) {
     super(inputFilename);
+    denormalizeBeans(getBeans());
   }
 
   private SampleBeanDao(Reader reader) {
     super(reader);
+    denormalizeBeans(getBeans());
   }
 
   private SampleBeanDao(List<SampleBean> beans){
     super(beans);
+    denormalizeBeans(getBeans());
   }
 
   private static boolean isWildcardSearch(String value){
     val isWild = EMPTY.equals(value) || STAR.equals(value);
     return value == null || isWild;
+  }
+
+  private static void denormalizeBeans(List<SampleBean> beans){
+    log.info("Denormalizing SampleBeans with lowercase uuids");
+    beans.stream()
+        .filter(SampleBean::isUsProject)
+        .map(s ->     transform(s, SampleBean::getSubmitter_donor_id,    String::toLowerCase ,  s::setSubmitter_donor_id    ))
+        .map(s ->     transform(s, SampleBean::getSubmitter_sample_id,   String::toLowerCase ,  s::setSubmitter_sample_id   ))
+        .map(s ->     transform(s, SampleBean::getSubmitter_specimen_id, String::toLowerCase ,  s::setSubmitter_specimen_id ))
+        .forEach(s -> transform(s, SampleBean::getAliquot_id,            String::toLowerCase ,  s::setAliquot_id            ));
+  }
+
+  private static SampleBean transform(SampleBean bean, Function<SampleBean, String> getter,
+      Function<String, String> stringFunctor,
+      Consumer<String> setter){
+    val oldValue = getter.apply(bean);
+    val newValue = stringFunctor.apply(oldValue);
+    setter.accept(newValue);
+    return bean;
   }
 
   private static boolean decideAndCompare(SampleSearchRequest request,
@@ -138,4 +162,7 @@ public class SampleBeanDao extends AbstractFileDao<SampleBean, SampleSearchReque
     return streamAll(request).collect(toImmutableList());
   }
 
+  @Override public List<SampleBean> findAll() {
+    return ImmutableList.copyOf(getBeans());
+  }
 }

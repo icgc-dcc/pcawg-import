@@ -9,7 +9,6 @@ import org.icgc.dcc.pcawg.client.core.ObjectNodeConverter;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.json.JsonNodeBuilders.array;
 import static org.icgc.dcc.common.core.json.JsonNodeBuilders.object;
 import static org.icgc.dcc.pcawg.client.utils.Strings.toStringArray;
 
@@ -39,16 +38,6 @@ public class PortalQueryCreator implements ObjectNodeConverter {
                 .with("experimentalStrategy", createIs("WGS"))
             )
         .end();
-  }
-
-  private ObjectNode createIs(String ... values){
-    return object()
-        .with("is",
-            array()
-              .with(values)
-              .end())
-        .end();
-
   }
 
 }

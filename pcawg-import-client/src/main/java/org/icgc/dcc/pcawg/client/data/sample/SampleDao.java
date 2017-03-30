@@ -14,4 +14,7 @@ public interface SampleDao<B, R> {
   Optional<B> findFirstDonorUniqueId(String donorUniqueId);
 
   List<B> findDonorUniqueId(String donorUniqueId);
+
+  List<B> findAll();
+
 }

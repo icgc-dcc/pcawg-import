@@ -14,5 +14,10 @@ public class BarcodeBean {
   @CsvBindByName(required = true) @NonNull private String uuid;
   @CsvBindByName(required = true) @NonNull private String barcode;
 
+  // Uuids should be lowercase
+  public void setUuid(String uuid){
+    this.uuid = uuid.toLowerCase();
+  }
+
   public BarcodeBean() { }
 }

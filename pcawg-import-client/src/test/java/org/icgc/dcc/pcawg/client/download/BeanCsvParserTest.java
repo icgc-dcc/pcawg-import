@@ -49,7 +49,7 @@ public class BeanCsvParserTest {
 
   @Test
   @SneakyThrows
-  public void testSampleDao(){
+  public void testSampleDaoUs(){
     val dao = SampleBeanDao.newSampleBeanDao(sampleSheetReader);
     val aliquotId = "e0fccaf5-925a-41f9-b87c-cd5ee4aecb59";
     log.info("AliquotId: {}", aliquotId);
@@ -58,6 +58,19 @@ public class BeanCsvParserTest {
         .stream()
         .map(SampleBean::toString)
         .collect(joining("\n")) );
+  }
+
+  @Test
+  @SneakyThrows
+  public void testSampleDaoNonUs(){
+    val dao = SampleBeanDao.newSampleBeanDao(sampleSheetReader);
+    val aliquotId = "f82d213f-bc96-5b1d-e040-11ac0c486880";
+    log.info("AliquotId: {}", aliquotId);
+    log.info("fff: {}",
+        dao.findAliquotId(aliquotId)
+            .stream()
+            .map(SampleBean::toString)
+            .collect(joining("\n")) );
   }
 
   @Test

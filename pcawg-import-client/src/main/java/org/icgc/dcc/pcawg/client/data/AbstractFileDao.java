@@ -27,8 +27,15 @@ public abstract class AbstractFileDao<B, R > {
   @Getter(AccessLevel.PROTECTED)
   private List<B> beans;
 
+//
+//  - change this to a map of requests mapping to beans....need to speed this up
+//  - minimize request size of PortalQuery to 100, seems like a good number
+//  - add better logging
+//  - look at andys issue
+
   @SneakyThrows
   protected List<B> convert(){
+    log.info("Converting input Reader to collection of beans of class: {}", getBeanClass());
     val csvReader = new CSVReader(reader, SEPERATOR);
     val strategy = new HeaderColumnNameMappingStrategy<B>();
     strategy.setType(getBeanClass());

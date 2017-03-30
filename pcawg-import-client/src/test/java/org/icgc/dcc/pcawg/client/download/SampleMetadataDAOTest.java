@@ -3,11 +3,14 @@ package org.icgc.dcc.pcawg.client.download;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.core.Factory;
+import org.icgc.dcc.pcawg.client.data.IcgcFileIdDao;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.pcawg.client.core.Factory.newFastFileSampleMetadataBeanDAOAndDownload;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataBeanDAOAndDownload;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataDAOOldAndDownload;
 import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
@@ -38,8 +41,14 @@ public class SampleMetadataDAOTest {
 
   @Test
   @SneakyThrows
-  public void testFastFetchSampleMetadata(){
+  public void testOldFetchSampleMetadata(){
     runQuery(newFileSampleMetadataDAOOldAndDownload());
+  }
+
+  @Test
+  @SneakyThrows
+  public void testFastFetchSampleMetadata(){
+    runQuery(Factory.newFastFileSampleMetadataBeanDAOAndDownload());
   }
 
   @Test
@@ -49,5 +58,18 @@ public class SampleMetadataDAOTest {
     runQuery(newFileSampleMetadataBeanDAOAndDownload());
   }
 
+  @Test
+  @SneakyThrows
+  public void testIcgcFileIdDao(){
+    val sampleMetadataBeanDao = newFastFileSampleMetadataBeanDAOAndDownload();
+    val sampleDao = sampleMetadataBeanDao.getSampleDao();
+    val barcodeDao = sampleMetadataBeanDao.getBarcodeDao();
+
+    val icgcDao = IcgcFileIdDao.newIcgcFileIdDao(sampleDao, barcodeDao);
+    icgcDao.init();
+    log.info("Output[{}]: {}" );
+
+
+  }
 
 }

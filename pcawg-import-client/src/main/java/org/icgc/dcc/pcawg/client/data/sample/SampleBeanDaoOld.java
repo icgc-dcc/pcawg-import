@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.data.sample;
 
+import com.google.common.collect.ImmutableList;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
@@ -83,7 +84,7 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
 
   private final Reader reader;
 
-  private List<SampleBean> data;
+  private List<SampleBean> beans;
 
   @SneakyThrows
   private SampleBeanDaoOld(String inputFilename) {
@@ -91,20 +92,20 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
     checkState(file.exists(),"The inputFilename [%s] does not exist", file.getAbsolutePath());
     checkState(file.isFile(),"The inputFilename [%s] is not a file" , file.getAbsolutePath());
     this.reader = new FileReader(file);
-    this.data = convert(reader);
+    this.beans = convert(reader);
     this.reader.close();
     log.info("Done Coverting inputFilename: {} to SampleBeanDaoOld", inputFilename);
   }
 
   private SampleBeanDaoOld(Reader reader) {
     this.reader = reader;
-    this.data = convert(reader);
+    this.beans = convert(reader);
     log.info("Done Coverting Reader to SampleBeanDaoOld");
   }
 
   @SneakyThrows
   private Stream<SampleBean>  streamAll(SampleSearchRequest request){
-    return data.stream()
+    return beans.stream()
         .filter(createPredicate(request, SampleSearchRequest::getAliquot_id, SampleBean::getAliquot_id))
         .filter(createPredicate(request, SampleSearchRequest::getDcc_specimen_type, SampleBean::getDcc_specimen_type))
         .filter(createPredicate(request, SampleSearchRequest::getDonor_unique_id, SampleBean::getDonor_unique_id))
@@ -149,4 +150,7 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
     return streamAll(request).collect(toImmutableList());
   }
 
+  @Override public List<SampleBean> findAll() {
+    return ImmutableList.copyOf(beans);
+  }
 }

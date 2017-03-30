@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.data.barcode;
 
+import com.google.common.collect.ImmutableList;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
@@ -45,11 +46,11 @@ public class BarcodeBeanDaoOld implements Serializable, BarcodeDao<BarcodeBean, 
 
   private final Reader reader;
 
-  private List<BarcodeBean> data;
+  private List<BarcodeBean> beans;
 
   @Override
   public List<BarcodeBean> find(String uuid){
-    return data.stream()
+    return beans.stream()
         .filter(b -> b.getUuid().equals(uuid))
         .collect(toImmutableList());
   }
@@ -60,18 +61,20 @@ public class BarcodeBeanDaoOld implements Serializable, BarcodeDao<BarcodeBean, 
     checkState(file.exists(),"The inputFilename [%s] does not exist", file.getAbsolutePath());
     checkState(file.isFile(),"The inputFilename [%s] is not a file" , file.getAbsolutePath());
     this.reader = new FileReader(file);
-    this.data = convert(reader);
+    this.beans = convert(reader);
     this.reader.close();
   }
 
   private BarcodeBeanDaoOld(Reader reader) {
     this.reader = reader;
-    this.data = convert(reader);
+    this.beans = convert(reader);
   }
 
   public void store(String filename) throws IOException{
     ObjectPersistance.store(this, filename);
   }
 
-
+  @Override public List<BarcodeBean> findAll() {
+    return ImmutableList.copyOf(beans);
+  }
 }

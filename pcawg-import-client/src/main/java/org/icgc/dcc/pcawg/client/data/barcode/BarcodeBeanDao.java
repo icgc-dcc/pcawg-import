@@ -1,6 +1,9 @@
 package org.icgc.dcc.pcawg.client.data.barcode;
 
+import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.icgc.dcc.pcawg.client.data.AbstractFileDao;
 import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
@@ -11,20 +14,31 @@ import java.util.List;
 
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
+@Slf4j
 public class BarcodeBeanDao extends AbstractFileDao<BarcodeBean, String> implements Serializable, BarcodeDao<BarcodeBean, String> {
 
   public static final long serialVersionUID = 1490628681L;
 
   private BarcodeBeanDao(String inputFilename) {
     super(inputFilename);
+    denormalizeBeans(getBeans());
   }
 
   private BarcodeBeanDao(Reader reader) {
     super(reader);
+    denormalizeBeans(getBeans());
   }
 
   private BarcodeBeanDao(List<BarcodeBean> beans) {
     super(beans);
+    denormalizeBeans(getBeans());
+  }
+
+  private static void denormalizeBeans(List<BarcodeBean> beans){
+    log.info("Denormalizing BarcodeBeans to lowercase uuids");
+    for (val b : beans){
+      b.setUuid(b.getUuid().toLowerCase());
+    }
   }
 
   public static BarcodeBeanDao newBarcodeBeanDao(String inputFilename){
@@ -44,6 +58,7 @@ public class BarcodeBeanDao extends AbstractFileDao<BarcodeBean, String> impleme
     return (BarcodeBeanDao) ObjectPersistance.restore(storedBarcodeDaoFilename);
   }
 
+
   @Override
   public List<BarcodeBean> find(String uuid){
     return getBeans().stream()
@@ -60,5 +75,7 @@ public class BarcodeBeanDao extends AbstractFileDao<BarcodeBean, String> impleme
     return BarcodeBean.class;
   }
 
-
+  @Override public List<BarcodeBean> findAll() {
+    return ImmutableList.copyOf(getBeans());
+  }
 }

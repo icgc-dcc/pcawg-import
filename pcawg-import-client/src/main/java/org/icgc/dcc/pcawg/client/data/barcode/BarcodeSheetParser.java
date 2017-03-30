@@ -10,9 +10,9 @@ import static lombok.AccessLevel.PRIVATE;
 public class BarcodeSheetParser {
 
   private static final int PROJECT_POS = 0;
-  private static final int ENTITY_TYPE_POS = 0;
-  private static final int UUID_POS = 0;
-  private static final int BARCODE_POS = 0;
+  private static final int ENTITY_TYPE_POS = 1;
+  private static final int UUID_POS = 2;
+  private static final int BARCODE_POS = 3;
   private static final int MAX_NUM_COLUMNS = 4;
   private static final String TAB = "\t";
 

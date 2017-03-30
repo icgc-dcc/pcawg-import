@@ -11,9 +11,7 @@ public interface SampleMetadataDAO  {
     }
   }
 
-  static boolean isUSProject(String projectCode){
-    return projectCode.matches("^.*-US$");
-  }
 
   SampleMetadata fetchSampleMetadata(PortalFilename portalFilename) throws SampleMetadataNotFoundException;
+
 }

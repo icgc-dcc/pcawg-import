@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
-import static org.icgc.dcc.pcawg.client.data.SampleMetadataDAO.isUSProject;
+import static org.icgc.dcc.pcawg.client.data.sample.SampleBean.isUsProject;
 
 @Slf4j
 public class FileSampleMetadataDAO_old implements SampleMetadataDAO {
@@ -128,7 +128,7 @@ public class FileSampleMetadataDAO_old implements SampleMetadataDAO {
     val dccProjectCode = sampleSheetByAliquotId.getDccProjectCode();
     val submitterSampleId = sampleSheetByAliquotId.getSubmitterSampleId();
     val donorUniqueId = sampleSheetByAliquotId.getDonorUniqueId();
-    val isUsProject =  isUSProject(dccProjectCode);
+    val isUsProject = isUsProject(dccProjectCode);
 
     val analyzedSampleId = getAnalyzedSampleId(isUsProject,submitterSampleId);
     val matchedSampleId = getMatchedSampleId(isUsProject,donorUniqueId);
