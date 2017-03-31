@@ -13,6 +13,7 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.core.ObjectNodeConverter;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.sample.SampleBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
@@ -38,7 +39,7 @@ public class IcgcFileIdDao {
   private static final int DEFAULT_BATCH_SIZE = 100;
 
   public static IcgcFileIdDao newIcgcFileIdDao(SampleDao<SampleBean, SampleSearchRequest> sampleDao,
-      BarcodeDao<BarcodeBean, String> barcodeDao){
+      BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao){
     val submitterSampleIds = getAllSubmitterSampleIds(sampleDao, barcodeDao);
     val tcgaAliquotBarcodes = getAllTcgaAliquotBarcodes(sampleDao, barcodeDao);
     return new IcgcFileIdDao(tcgaAliquotBarcodes, submitterSampleIds);

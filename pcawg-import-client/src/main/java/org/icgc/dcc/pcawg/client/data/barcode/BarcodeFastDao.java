@@ -1,6 +1,5 @@
 package org.icgc.dcc.pcawg.client.data.barcode;
 
-import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -18,7 +17,7 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeBeanDao.newBarcodeBeanDao;
 
 @Slf4j
-public class BarcodeFastDao implements BarcodeDao<BarcodeBean, String> {
+public class BarcodeFastDao implements BarcodeDao<BarcodeBean, BarcodeSearchRequest> {
 
   public static BarcodeFastDao newBarcodeFastDao(String inputFilename, final boolean hasHeader){
     return new BarcodeFastDao(inputFilename, hasHeader);
@@ -35,6 +34,7 @@ public class BarcodeFastDao implements BarcodeDao<BarcodeBean, String> {
   private List<BarcodeBean> beans;
 
   private final BarcodeBeanDao internalDao;
+
 
   @SneakyThrows
   protected List<BarcodeBean> convert(){
@@ -66,12 +66,12 @@ public class BarcodeFastDao implements BarcodeDao<BarcodeBean, String> {
     this.internalDao = newBarcodeBeanDao(beans);
   }
 
-  @Override
-  public List<BarcodeBean> find(String uuid) {
-    return internalDao.find(uuid);
+  @Override public List<BarcodeBean> find(BarcodeSearchRequest request) {
+    return internalDao.find(request);
   }
 
   @Override public List<BarcodeBean> findAll() {
-    return ImmutableList.copyOf(getBeans());
+    return internalDao.findAll();
   }
+
 }

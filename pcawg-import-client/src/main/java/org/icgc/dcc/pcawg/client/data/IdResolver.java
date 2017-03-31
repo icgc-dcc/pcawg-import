@@ -1,6 +1,5 @@
 package org.icgc.dcc.pcawg.client.data;
 
-import com.google.common.collect.Sets;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +7,7 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.sample.SampleBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
@@ -16,8 +16,10 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Sets.newHashSet;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
+import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;
 import static org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao.createWildcardRequestBuilder;
 
 @Slf4j
@@ -32,22 +34,22 @@ public class IdResolver {
     return list.get(0);
   }
 
-  private static BarcodeBean getFirstBarcodeBean(BarcodeDao<BarcodeBean, String> barcodeDao, String uuid) throws
+  private static BarcodeBean getFirstBarcodeBean(BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao, BarcodeSearchRequest request) throws
       SampleMetadataNotFoundException {
-    val beans = barcodeDao.find(uuid);
+    val beans = barcodeDao.find(request);
     if(beans.isEmpty()){
       throw new SampleMetadataNotFoundException(
-          String.format("Could not find first BarcodeBean for uuid [%s]", uuid));
+          String.format("Could not find first BarcodeBean for BarcodeSearchRequest [%s]", request));
     }
     return getFirst(beans);
   }
 
   @SneakyThrows
-  public static String getAnalyzedSampleId(BarcodeDao<BarcodeBean, String> barcodeDao, boolean isUsProject, String submitterSampleId ) {
+  public static String getAnalyzedSampleId(BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao, boolean isUsProject, BarcodeSearchRequest request ) {
     if (isUsProject){
-      return getFirstBarcodeBean(barcodeDao, submitterSampleId).getBarcode();
+      return getFirstBarcodeBean(barcodeDao, request).getBarcode();
     } else {
-      return submitterSampleId;
+      return request.getUuid();
     }
   }
 
@@ -62,7 +64,7 @@ public class IdResolver {
 
   @SneakyThrows
   public static String getMatchedSampleId(SampleDao<SampleBean, SampleSearchRequest> sampleDao,
-      BarcodeDao<BarcodeBean, String> barcodeDao,
+      BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao,
       String donorUniqueId ){
     val request = createWildcardRequestBuilder()
         .donor_unique_id(donorUniqueId)
@@ -72,11 +74,12 @@ public class IdResolver {
     val result = getFirstSampleBean(sampleDao,request);
     val isUsProject = result.isUsProject();
     val submitterSampleId = result.getSubmitter_sample_id();
-    return getAnalyzedSampleId(barcodeDao, isUsProject, submitterSampleId);
+    val barcodeSearchRequest = newBarcodeRequest(submitterSampleId);
+    return getAnalyzedSampleId(barcodeDao, isUsProject, barcodeSearchRequest);
   }
 
   public static Set<String> getAllTcgaAliquotBarcodes(SampleDao<SampleBean, SampleSearchRequest> sampleDao,
-      BarcodeDao<BarcodeBean, String> barcodeDao){
+      BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao){
     log.info("Fetching all tcga_aliquot_barcodes from SampleDao: {} and BarcodeDao: {} instances", sampleDao.getClass().getName(), barcodeDao.getClass().getName());
     return sampleDao.findAll().stream()
         .filter(SampleBean::isUsProject)
@@ -86,7 +89,7 @@ public class IdResolver {
   }
 
   public static Set<String> getAllSubmitterSampleIds(SampleDao<SampleBean, SampleSearchRequest> sampleDao,
-      BarcodeDao<BarcodeBean, String> barcodeDao){
+      BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao){
     log.info("Fetching all submitter_sample_ids from SampleDao: {} and BarcodeDao: {} instances", sampleDao.getClass().getName(), barcodeDao.getClass().getName());
     return sampleDao.findAll().stream()
         .filter(s -> !s.isUsProject())
@@ -97,13 +100,14 @@ public class IdResolver {
 
 
   private static Set<String> createSampleIds(SampleDao<SampleBean, SampleSearchRequest> sampleDao,
-      BarcodeDao<BarcodeBean, String> barcodeDao, SampleBean sampleBean){
+      BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao, SampleBean sampleBean){
     val submitterSampleId = sampleBean.getSubmitter_sample_id();
-    val donorUniqueId = sampleBean.getDonor_unique_id();
+    val barcodeSearchRequest = newBarcodeRequest(submitterSampleId);
+      val donorUniqueId = sampleBean.getDonor_unique_id();
     val isUsProject = sampleBean.isUsProject();
-    val analyzedSampleId = IdResolver.getAnalyzedSampleId(barcodeDao,isUsProject,submitterSampleId);
+    val analyzedSampleId = IdResolver.getAnalyzedSampleId(barcodeDao,isUsProject,barcodeSearchRequest);
     val matchedSampleId = IdResolver.getMatchedSampleId(sampleDao, barcodeDao,donorUniqueId);
-    return Sets.newHashSet(analyzedSampleId, matchedSampleId);
+    return newHashSet(analyzedSampleId, matchedSampleId);
   }
 
 }

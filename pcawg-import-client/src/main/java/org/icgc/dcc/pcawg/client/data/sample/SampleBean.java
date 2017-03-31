@@ -1,8 +1,10 @@
 package org.icgc.dcc.pcawg.client.data.sample;
 
 import com.opencsv.bean.CsvBindByName;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.util.regex.Pattern;
 
@@ -11,6 +13,8 @@ import java.util.regex.Pattern;
  * Refer to http://opencsv.sourceforge.net/
  */
 @Data
+@Builder
+@RequiredArgsConstructor
 public class SampleBean {
 
   private static final Pattern pattern = Pattern.compile("^.*-US$");
