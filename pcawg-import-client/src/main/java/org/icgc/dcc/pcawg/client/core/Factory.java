@@ -7,6 +7,8 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataBeanDAO;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeFastDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleFastDao;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
@@ -123,15 +125,17 @@ public class Factory {
   public static FileSampleMetadataBeanDAO newFileSampleMetadataBeanDAOAndDownload(){
     val sampleDao = buildSampleBeanDao(SAMPLE_SHEET_TSV_URL,SAMPLE_SHEET_TSV_FILENAME,SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME );
     val barcodeDao = buildBarcodeBeanDao(BARCODE_SHEET_TSV_URL,BARCODE_SHEET_TSV_FILENAME,BARCODE_BEAN_DAO_PERSISTANCE_FILENAME );
-    log.info("Done downloading, creating FileSampleMetadataDAO_old");
+    log.info("Done initializing SampleBeanDao and BarcodeBeanDao, creating FileSampleMetadataBeanDAO");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
   }
 
   @SneakyThrows
   public static FileSampleMetadataBeanDAO newFastFileSampleMetadataBeanDAOAndDownload(){
-    val sampleDao = buildSampleBeanDao(SAMPLE_SHEET_TSV_URL,SAMPLE_SHEET_TSV_FILENAME,SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME );
-    val barcodeDao = buildBarcodeBeanDao(BARCODE_SHEET_TSV_URL,BARCODE_SHEET_TSV_FILENAME,BARCODE_BEAN_DAO_PERSISTANCE_FILENAME );
-    log.info("Done downloading, creating FastFileSampleMetadataDAO");
+    downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
+    downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
+    val sampleDao = SampleFastDao.newSampleFastDao(SAMPLE_SHEET_TSV_FILENAME, SAMPLE_SHEET_HAS_HEADER);
+    val barcodeDao = BarcodeFastDao.newBarcodeFastDao(BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
+    log.info("Done initializing SampleFastDao and BarcodeFastDao, creating FileSampleMetadataBeanDAO");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
   }
 
@@ -146,8 +150,8 @@ public class Factory {
 
 
   public static SampleMetadataDAO newSampleMetadataDAO(){
-    return newFastFileSampleMetadataBeanDAOAndDownload(); // Fastest loader, and uses beans, but hardcoded column headers
-//    return newFileSampleMetadataBeanDAOAndDownload(); //Uses beans, but slow loading
+//    return newFastFileSampleMetadataBeanDAOAndDownload(); // Fastest loader, and uses beans, but hardcoded column headers
+    return newFileSampleMetadataBeanDAOAndDownload(); //Uses beans, but slow loading
 //    return newFileSampleMetadataDAOOldAndDownload(); // USes custom parser
   }
 

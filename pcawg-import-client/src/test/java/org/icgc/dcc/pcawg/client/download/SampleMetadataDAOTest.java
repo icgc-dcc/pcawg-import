@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
-import static org.icgc.dcc.pcawg.client.core.Factory.newFastFileSampleMetadataBeanDAOAndDownload;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataBeanDAOAndDownload;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataDAOOldAndDownload;
 import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
@@ -72,7 +71,8 @@ public class SampleMetadataDAOTest {
   @SneakyThrows
   @Ignore("Not ready yet")
   public void testIcgcFileIdDao(){
-    val sampleMetadataBeanDao = newFastFileSampleMetadataBeanDAOAndDownload();
+//    val sampleMetadataBeanDao = newFastFileSampleMetadataBeanDAOAndDownload();
+    val sampleMetadataBeanDao = Factory.newFileSampleMetadataBeanDAOAndDownload();
     val sampleDao = sampleMetadataBeanDao.getSampleDao();
     val barcodeDao = sampleMetadataBeanDao.getBarcodeDao();
 
