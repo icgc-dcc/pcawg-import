@@ -45,6 +45,9 @@ public final class PortalFiles {
   private static final String GENOME_BUILD = "genomeBuild";
   private static final String FILE_SIZE = "fileSize";
   private static final String FILE_MD5SUM = "fileMd5sum";
+  private static final String SUBMITTED_SAMPLE_ID= "submittedSampleId";
+  private static final String OTHER_IDENTIFIERS = "otherIdentifiers";
+  private static final String TCGA_SAMPLE_BARCODE = "tcgaSampleBarcode";
 
   public static String getObjectId(@NonNull ObjectNode file) {
     return file.path(OBJECT_ID).textValue();
@@ -80,6 +83,16 @@ public final class PortalFiles {
 
   public static String getSampleId(@NonNull ObjectNode file) {
     return getFirstDonor(file).path(SAMPLE_ID).get(0).textValue();
+  }
+
+  public static String getSubmittedSampleId(@NonNull ObjectNode file) {
+    return getFirstDonor(file).path(SUBMITTED_SAMPLE_ID).get(0).textValue();
+  }
+
+  public static String getTcgaSampleBarcode(@NonNull ObjectNode file) {
+    return getFirstDonor(file)
+        .path(OTHER_IDENTIFIERS)
+        .path(TCGA_SAMPLE_BARCODE).get(0).textValue();
   }
 
   public static String getStudy(@NonNull ObjectNode file) {

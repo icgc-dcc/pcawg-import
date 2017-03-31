@@ -32,7 +32,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.pcawg.client.data.IdResolver.getAllSubmitterSampleIds;
 import static org.icgc.dcc.pcawg.client.data.IdResolver.getAllTcgaAliquotBarcodes;
-import static org.icgc.dcc.pcawg.client.download.PortalSubmitterSampleIdQueryCreator.newSubmitterSampleIdQueryCreator;
+import static org.icgc.dcc.pcawg.client.download.PortalSubmittedSampleIdQueryCreator.newSubmitterSampleIdQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.PortalTcgaAliquotBarcodeQueryCreator.newTcgaAliquotBarcodeQueryCreator;
 
 @Slf4j
@@ -116,7 +116,7 @@ public class IcgcFileIdDao implements Serializable {
 
   private static Pair extractPair(ObjectNode o){
     val fileId = PortalFiles.getFileId(o);
-    val submitterSampleId = PortalFiles.getSampleId(o);
+    val submitterSampleId = PortalFiles.getSubmittedSampleId(o);
     return Pair.newPair(submitterSampleId, fileId);
   }
 
