@@ -5,12 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import java.io.Serializable;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 @Data
 @Builder
-public class SampleSearchRequest implements SearchRequest<SampleSearchRequest> {
+public class SampleSearchRequest implements SearchRequest<SampleSearchRequest>, Serializable {
+  public static final long serialVersionUID = 1490934538L;
 
   @CsvBindByName(required=true) @NonNull private String  donor_unique_id;
   @CsvBindByName(required=true) @NonNull private String  library_strategy;

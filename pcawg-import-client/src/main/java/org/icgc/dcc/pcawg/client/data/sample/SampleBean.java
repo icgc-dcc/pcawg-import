@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.io.Serializable;
 import java.util.regex.Pattern;
 
 /**
@@ -15,7 +16,9 @@ import java.util.regex.Pattern;
 @Data
 @Builder
 @RequiredArgsConstructor
-public class SampleBean {
+public class SampleBean implements Serializable {
+
+  public static final long serialVersionUID = 1490934572L;
 
   private static final Pattern pattern = Pattern.compile("^.*-US$");
 

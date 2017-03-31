@@ -4,8 +4,12 @@ import lombok.NonNull;
 import lombok.Value;
 import org.icgc.dcc.pcawg.client.data.sample.SearchRequest;
 
+import java.io.Serializable;
+
 @Value
-public class BarcodeSearchRequest implements SearchRequest<BarcodeSearchRequest> {
+public class BarcodeSearchRequest implements SearchRequest<BarcodeSearchRequest> , Serializable {
+
+  public static final long serialVersionUID = 1490934539L;
 
   public static BarcodeSearchRequest newBarcodeRequest(String uuid){
     return new BarcodeSearchRequest(uuid);

@@ -5,8 +5,12 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.val;
 
+import java.io.Serializable;
+
 @Data
-public class BarcodeBean {
+public class BarcodeBean implements Serializable {
+
+  public static final long serialVersionUID = 1490934537L;
 
   public static BarcodeBean newBarcodeBean(String project, String entity_type, String uuid, String barcode){
     val b = new BarcodeBean();

@@ -15,6 +15,7 @@ import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +26,12 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
 //TODO: too many concerns here. Need to separate this into AbstractBeanDao, which will have the find method
 @Slf4j
-public abstract class AbstractFileDao<B, R extends SearchRequest<R>> {
+public abstract class AbstractFileDao<B, R extends SearchRequest<R>> implements Serializable {
+
+  public static final long serialVersionUID = 1490930264L;
   private static final char SEPERATOR = '\t';
 
-  private Reader reader;
+  private transient Reader reader;
 
   @Getter(AccessLevel.PROTECTED)
   private final List<B> beans;
