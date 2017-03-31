@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.pcawg.client.data.IdResolver.getAllSubmitterSampleIds;
@@ -109,7 +110,14 @@ public class IcgcFileIdDao implements Serializable {
     val nonUsPairs = procSubmitterSampleIdQuery(DEFAULT_BATCH_SIZE);
     val set = Sets.newHashSet(nonUsPairs);
     set.addAll(usPairs);
-    set.forEach( p -> map.put(p.getSubmitterSampleId(), p.getFileId()));
+    for (val pair : set){
+      val submittedSampleId = pair.getSubmitterSampleId();
+      val previouslyDefined = map.containsKey(submittedSampleId);
+      checkState(!previouslyDefined,
+          "The SubmittedSampleId [%s] is already defined with FileId [%s]. The assumption is that there is a 1-1 mapping",
+          submittedSampleId, pair.getFileId());
+      map.put(submittedSampleId, pair.getFileId());
+    }
     map = ImmutableMap.copyOf(map);
     log.info("\t-Done");
   }
