@@ -33,9 +33,9 @@ public class PortalQueryCreator implements ObjectNodeConverter {
                 .with("repoName", createIs("Collaboratory - Toronto"))
                 .with("dataType", createIs("SSM"))
                 .with("study", createIs("PCAWG"))
+                .with("experimentalStrategy", createIs("WGS"))
                 .with("fileFormat", createIs("VCF"))
                 .with("software", createIs(toStringArray(workflowType.getPortalSoftwareNames())))
-                .with("experimentalStrategy", createIs("WGS"))
             )
         .end();
   }

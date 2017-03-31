@@ -21,16 +21,17 @@ import static org.icgc.dcc.pcawg.client.utils.Strings.toStringArray;
 @RequiredArgsConstructor(access = PRIVATE)
 @Value
 @Slf4j
-public class PortalSubmitterSampleIdQueryCreator implements ObjectNodeConverter, Iterable<PortalSubmitterSampleIdQueryCreator> {
+public class PortalSubmittedSampleIdQueryCreator
+    implements ObjectNodeConverter, Iterable<PortalSubmittedSampleIdQueryCreator> {
 
   private static final int DEFAULT_FETCH_SIZE = 100;
 
-  public static final PortalSubmitterSampleIdQueryCreator newSubmitterSampleIdQueryCreator(Set<String> submittedSampleIds){
-    return new PortalSubmitterSampleIdQueryCreator(submittedSampleIds, DEFAULT_FETCH_SIZE);
+  public static final PortalSubmittedSampleIdQueryCreator newSubmitterSampleIdQueryCreator(Set<String> submittedSampleIds){
+    return new PortalSubmittedSampleIdQueryCreator(submittedSampleIds, DEFAULT_FETCH_SIZE);
   }
-  public static final PortalSubmitterSampleIdQueryCreator newSubmitterSampleIdQueryCreator(Set<String> submittedSampleIds,
+  public static final PortalSubmittedSampleIdQueryCreator newSubmitterSampleIdQueryCreator(Set<String> submittedSampleIds,
       final int fetchSize){
-    return new PortalSubmitterSampleIdQueryCreator(submittedSampleIds, fetchSize);
+    return new PortalSubmittedSampleIdQueryCreator(submittedSampleIds, fetchSize);
   }
 
   @NonNull
@@ -39,9 +40,9 @@ public class PortalSubmitterSampleIdQueryCreator implements ObjectNodeConverter,
   private final int fetchSize;
 
   @Override
-  public Iterator<PortalSubmitterSampleIdQueryCreator> iterator() {
+  public Iterator<PortalSubmittedSampleIdQueryCreator> iterator() {
     val internalIterator = new PartitioningIterator<String>(newArrayList(submitterSampleIds), fetchSize);
-    return new QueryIterator<PortalSubmitterSampleIdQueryCreator, String>(
+    return new QueryIterator<PortalSubmittedSampleIdQueryCreator, String>(
         internalIterator, list -> newSubmitterSampleIdQueryCreator(newHashSet(list)) );
   }
 
@@ -51,6 +52,9 @@ public class PortalSubmitterSampleIdQueryCreator implements ObjectNodeConverter,
         .with("file",
             object()
                 .with("submittedSampleId", createIs(toStringArray(submitterSampleIds)))
+                .with("fileFormat", createIs("BAM"))
+                .with("study", createIs("PCAWG"))
+                .with("experimentalStrategy", createIs("WGS"))
             )
         .end();
   }

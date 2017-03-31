@@ -44,6 +44,9 @@ public class PortalTcgaAliquotBarcodeQueryCreator implements ObjectNodeConverter
         .with("file",
             object()
                 .with("tcgaAliquotBarcode", createIs(toStringArray(tcgaAliquotBarcodes)))
+                .with("study", createIs("PCAWG"))
+                .with("experimentalStrategy", createIs("WGS"))
+                .with("fileFormat", createIs("BAM"))
             )
         .end();
   }
