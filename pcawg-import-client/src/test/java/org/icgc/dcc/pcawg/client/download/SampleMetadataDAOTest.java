@@ -76,8 +76,7 @@ public class SampleMetadataDAOTest {
     val sampleDao = sampleMetadataBeanDao.getSampleDao();
     val barcodeDao = sampleMetadataBeanDao.getBarcodeDao();
 
-    val icgcDao = IcgcFileIdDao.newIcgcFileIdDao(sampleDao, barcodeDao);
-    icgcDao.init();
+    val icgcDao = IcgcFileIdDao.newIcgcFileIdDao("icgcFileIdDao.dat", sampleDao, barcodeDao);
     log.info("Output[{}]: {}" );
 
 

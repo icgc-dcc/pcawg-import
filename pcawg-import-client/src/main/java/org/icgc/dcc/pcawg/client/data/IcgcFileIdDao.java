@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -14,12 +15,14 @@ import org.icgc.dcc.pcawg.client.core.ObjectNodeConverter;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
+import org.icgc.dcc.pcawg.client.data.factory.FileRestorer;
 import org.icgc.dcc.pcawg.client.data.sample.SampleBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFiles;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +37,9 @@ import static org.icgc.dcc.pcawg.client.download.PortalTcgaAliquotBarcodeQueryCr
 
 @Slf4j
 @RequiredArgsConstructor
-public class IcgcFileIdDao {
+public class IcgcFileIdDao implements Serializable {
+
+  public static final long serialVersionUID = 1490966500L;
 
   private static final int DEFAULT_BATCH_SIZE = 100;
 
@@ -42,14 +47,32 @@ public class IcgcFileIdDao {
       BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao){
     val submitterSampleIds = getAllSubmitterSampleIds(sampleDao, barcodeDao);
     val tcgaAliquotBarcodes = getAllTcgaAliquotBarcodes(sampleDao, barcodeDao);
-    return new IcgcFileIdDao(tcgaAliquotBarcodes, submitterSampleIds);
+    val dao = new IcgcFileIdDao(tcgaAliquotBarcodes, submitterSampleIds);
+    dao.init();
+    return dao;
+  }
+
+  @SneakyThrows
+  public static IcgcFileIdDao newIcgcFileIdDao(String persistedFilename,
+      SampleDao<SampleBean, SampleSearchRequest> sampleDao,
+      BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao){
+    val fileRestorer = FileRestorer.<IcgcFileIdDao>newFileRestorer(persistedFilename);
+    if (fileRestorer.isPersisted()){
+      log.info("Persisted filename for IcgcFileIdDao found [{}], restoring it...", fileRestorer.getPersistedFilename());
+      return fileRestorer.restore();
+    } else {
+      log.info("Persisted filename for IcgcFileIdDao NOT found [{}], creating a new one and storing it...", fileRestorer.getPersistedFilename());
+      val dao = newIcgcFileIdDao(sampleDao, barcodeDao);
+      fileRestorer.store(dao);
+      return dao;
+    }
   }
 
   @NonNull
-  private final Set<String> tcgaAliquotBarcode;
+  private transient final Set<String> tcgaAliquotBarcodes;
 
   @NonNull
-  private final Set<String> submitterSampleIds;
+  private transient final Set<String> submitterSampleIds;
 
   private Map<String, String> map = Maps.newHashMap();
 
@@ -60,7 +83,7 @@ public class IcgcFileIdDao {
 
   private Set<Pair> procTcgaAliquotBarcodeQuery(int batchSize) {
     log.info("Querying portal for TcgaAliguotBarcodes...");
-    return procQuery(newTcgaAliquotBarcodeQueryCreator(tcgaAliquotBarcode, batchSize), tcgaAliquotBarcode.size(), batchSize);
+    return procQuery(newTcgaAliquotBarcodeQueryCreator(tcgaAliquotBarcodes, batchSize), tcgaAliquotBarcodes.size(), batchSize);
 
   }
 
@@ -80,7 +103,7 @@ public class IcgcFileIdDao {
   }
 
 
-  public void init(){
+  private void init(){
     log.info("Initializing {}...", this.getClass().getName());
     val usPairs = procTcgaAliquotBarcodeQuery(DEFAULT_BATCH_SIZE);
     val nonUsPairs = procSubmitterSampleIdQuery(DEFAULT_BATCH_SIZE);

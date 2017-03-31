@@ -15,13 +15,13 @@ public class BarcodeBeanDaoFactory extends AbstractDaoFactory<BarcodeBean, Barco
     return new BarcodeBeanDaoFactory(downloadUrl, inputFilename, persistedFilename).getObject();
   }
 
-    public BarcodeBeanDaoFactory(String downloadUrl, String inputFilename, String persistedFilename) {
-      super(downloadUrl, inputFilename, newFileRestorer(persistedFilename));
-    }
+  public BarcodeBeanDaoFactory(String downloadUrl, String inputFilename, String persistedFilename) {
+    super(downloadUrl, inputFilename, newFileRestorer(persistedFilename));
+  }
 
-    @Override
-    protected BarcodeBeanDao newObject(String filename) {
-      return BarcodeBeanDao.newBarcodeBeanDao(filename);
-    }
+  @Override
+  protected BarcodeBeanDao newObject(String filename) {
+    return BarcodeBeanDao.newBarcodeBeanDao(filename);
+  }
 
 }
