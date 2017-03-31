@@ -42,7 +42,7 @@ public class IcgcFileIdDao implements Serializable {
 
   public static final long serialVersionUID = 1490966500L;
 
-  private static final int DEFAULT_BATCH_SIZE = 100;
+  private static final int DEFAULT_BATCH_SIZE = 200;
 
   public static IcgcFileIdDao newIcgcFileIdDao(SampleDao<SampleBean, SampleSearchRequest> sampleDao,
       BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao){
