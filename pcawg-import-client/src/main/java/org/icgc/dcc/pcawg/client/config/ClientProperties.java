@@ -38,8 +38,10 @@ public class ClientProperties {
   public static final String BARCODE_SHEET_TSV_FILENAME = "pc_annotation-tcga_uuid2barcode.tsv";
   public static final boolean BARCODE_SHEET_HAS_HEADER = true;
   public static final String BARCODE_SHEET_TSV_URL = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/"+ BARCODE_SHEET_TSV_FILENAME;
+  public static final String BARCODE_BEAN_DAO_PERSISTANCE_FILENAME = "barcodeBeanDao.dat";
 
   public static final String SAMPLE_SHEET_TSV_FILENAME = "pcawg_sample_sheet.2016-10-18.tsv";
+  public static final String SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME = "sampleBeanDao.dat";
   public static final boolean SAMPLE_SHEET_HAS_HEADER = true;
   public static final String SAMPLE_SHEET_TSV_URL = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/sample_sheet/"+SAMPLE_SHEET_TSV_FILENAME;
 

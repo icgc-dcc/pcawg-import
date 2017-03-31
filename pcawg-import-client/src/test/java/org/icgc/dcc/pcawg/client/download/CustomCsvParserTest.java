@@ -56,7 +56,7 @@ public class CustomCsvParserTest {
     val absSampleSheetFilename = sampleSheetFile.getAbsolutePath();
     val absUuid2BarcodeSheetFilename = uuid2BarcodeSheetFile.getAbsolutePath();
 
-    val numLinesSampleSheet = 5;
+    val numLinesSampleSheet = 9;
     val numLinesBarcodeSheet = 3;
 
     FileSampleMetadataDAO_old

@@ -7,11 +7,6 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataBeanDAO;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBeanDao;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeFastDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleBeanDaoOld;
-import org.icgc.dcc.pcawg.client.data.sample.SampleFastDao;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
@@ -28,8 +23,12 @@ import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import java.nio.file.Paths;
 
-import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_BEAN_DAO_PERSISTANCE_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_HAS_HEADER;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
@@ -37,10 +36,9 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_M
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_HAS_HEADER;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_FILENAME;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
+import static org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory.buildBarcodeBeanDao;
+import static org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory.buildSampleBeanDao;
 import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
@@ -121,40 +119,18 @@ public class Factory {
     downloadSheet(BARCODE_SHEET_TSV_URL, outputFilename);
   }
 
-  private static SampleBeanDaoOld initSampleDao(){
-    val outputFilename = SAMPLE_SHEET_TSV_FILENAME;
-    val url = SAMPLE_SHEET_TSV_URL;
-    val outputDir = Paths.get("").toAbsolutePath().toString();
-
-    checkState(outputFilename.endsWith(".tsv"),
-        "The output filename %s does not end with \".tsv\"", outputFilename);
-    if (Paths.get(outputFilename).toFile().exists()){
-      log.info("Already downloaded [{}] to directory [{}] from url: {}", outputFilename, outputDir,url);
-      outputFilename.replace(".tsv",".dat");
-    } else {
-      log.info("Downloading [{}] to directory [{}] from url: {}", outputFilename, outputDir,url);
-      downloadFileByURL(url, outputFilename);
-    }
-    return null;
-  }
-
-
   @SneakyThrows
   public static FileSampleMetadataBeanDAO newFileSampleMetadataBeanDAOAndDownload(){
-    downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
-    downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
-    val sampleDao = SampleBeanDao.newSampleBeanDao(SAMPLE_SHEET_TSV_FILENAME);
-    val barcodeDao = BarcodeBeanDao.newBarcodeBeanDao(BARCODE_SHEET_TSV_FILENAME);
+    val sampleDao = buildSampleBeanDao(SAMPLE_SHEET_TSV_URL,SAMPLE_SHEET_TSV_FILENAME,SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME );
+    val barcodeDao = buildBarcodeBeanDao(BARCODE_SHEET_TSV_URL,BARCODE_SHEET_TSV_FILENAME,BARCODE_BEAN_DAO_PERSISTANCE_FILENAME );
     log.info("Done downloading, creating FileSampleMetadataDAO_old");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
   }
 
   @SneakyThrows
   public static FileSampleMetadataBeanDAO newFastFileSampleMetadataBeanDAOAndDownload(){
-    downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
-    downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
-    val sampleDao = SampleFastDao.newSampleFastDao(SAMPLE_SHEET_TSV_FILENAME, SAMPLE_SHEET_HAS_HEADER);
-    val barcodeDao = BarcodeFastDao.newBarcodeFastDao(BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
+    val sampleDao = buildSampleBeanDao(SAMPLE_SHEET_TSV_URL,SAMPLE_SHEET_TSV_FILENAME,SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME );
+    val barcodeDao = buildBarcodeBeanDao(BARCODE_SHEET_TSV_URL,BARCODE_SHEET_TSV_FILENAME,BARCODE_BEAN_DAO_PERSISTANCE_FILENAME );
     log.info("Done downloading, creating FastFileSampleMetadataDAO");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
   }
@@ -170,9 +146,9 @@ public class Factory {
 
 
   public static SampleMetadataDAO newSampleMetadataDAO(){
-//    return newFastFileSampleMetadataBeanDAOAndDownload(); // Fastest loader, and uses beans, but hardcoded column headers
+    return newFastFileSampleMetadataBeanDAOAndDownload(); // Fastest loader, and uses beans, but hardcoded column headers
 //    return newFileSampleMetadataBeanDAOAndDownload(); //Uses beans, but slow loading
-    return newFileSampleMetadataDAOOldAndDownload(); // USes custom parser
+//    return newFileSampleMetadataDAOOldAndDownload(); // USes custom parser
   }
 
 }

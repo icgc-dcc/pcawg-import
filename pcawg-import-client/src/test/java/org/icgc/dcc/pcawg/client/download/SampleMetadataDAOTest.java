@@ -70,6 +70,7 @@ public class SampleMetadataDAOTest {
 
   @Test
   @SneakyThrows
+  @Ignore("Not ready yet")
   public void testIcgcFileIdDao(){
     val sampleMetadataBeanDao = newFastFileSampleMetadataBeanDAOAndDownload();
     val sampleDao = sampleMetadataBeanDao.getSampleDao();
@@ -85,6 +86,7 @@ public class SampleMetadataDAOTest {
 
   @Test
   @SneakyThrows
+  @Ignore("Test takes too long, and only long the first time its run")
   public void testSampleBeanDaoFactory(){
     val inputFilename = "test.sample.tsv";
     val persistFilename= "test.sample.dat";
@@ -109,6 +111,7 @@ public class SampleMetadataDAOTest {
 
   @Test
   @SneakyThrows
+  @Ignore("Test takes too long, and only long the first time its run")
   public void testBarcodeBeanDaoFactory(){
     val inputFilename = "test.barcode.tsv";
     val persistFilename= "test.barcode.dat";
