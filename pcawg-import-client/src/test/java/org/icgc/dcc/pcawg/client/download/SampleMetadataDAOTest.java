@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.assertj.core.util.Sets;
 import org.icgc.dcc.pcawg.client.core.Factory;
-import org.icgc.dcc.pcawg.client.data.IcgcFileIdDao;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory;
 import org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory;
@@ -22,6 +21,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TS
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataBeanDAOAndDownload;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataDAOOldAndDownload;
+import static org.icgc.dcc.pcawg.client.data.IcgcFileIdDao.newIcgcFileIdDao;
 import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
 
 @Slf4j
@@ -62,24 +62,29 @@ public class SampleMetadataDAOTest {
 
   @Test
   @SneakyThrows
-  @Ignore("Very slow")
   public void testBeanFetchSampleMetadata(){
     runQuery(newFileSampleMetadataBeanDAOAndDownload());
   }
 
   @Test
   @SneakyThrows
-  @Ignore("Not ready yet")
   public void testIcgcFileIdDao(){
-//    val sampleMetadataBeanDao = newFastFileSampleMetadataBeanDAOAndDownload();
-    val sampleMetadataBeanDao = Factory.newFileSampleMetadataBeanDAOAndDownload();
+    val sampleMetadataBeanDao = newFileSampleMetadataBeanDAOAndDownload();
     val sampleDao = sampleMetadataBeanDao.getSampleDao();
     val barcodeDao = sampleMetadataBeanDao.getBarcodeDao();
+    val icgcDao = newIcgcFileIdDao("icgcFileIdDao.dat", sampleDao, barcodeDao);
 
-    val icgcDao = IcgcFileIdDao.newIcgcFileIdDao("icgcFileIdDao.dat", sampleDao, barcodeDao);
-    log.info("Output[{}]: {}" );
+    val submittedSampleId1 = "PD4982a";
+    val expectedFileId1 = "FI9995";
+    val result1 = icgcDao.find(submittedSampleId1);
+    assertThat(result1.isPresent()).isTrue();
+    assertThat(result1.get()).isEqualTo(expectedFileId1);
 
-
+    val submittedSampleId2 = "PD4982b";
+    val expectedFileId2 = "FI9994";
+    val result2 = icgcDao.find(submittedSampleId2);
+    assertThat(result2.isPresent()).isTrue();
+    assertThat(result2.get()).isEqualTo(expectedFileId2);
   }
 
 
