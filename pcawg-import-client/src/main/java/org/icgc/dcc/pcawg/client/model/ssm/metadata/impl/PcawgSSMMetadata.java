@@ -7,6 +7,7 @@ import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.util.Joiners.COLON;
 
 @RequiredArgsConstructor(access = PRIVATE)
 public class PcawgSSMMetadata implements SSMMetadata {
@@ -22,8 +23,10 @@ public class PcawgSSMMetadata implements SSMMetadata {
       String analysisId,
       String analyzedSampleId,
       boolean isUsProject,
-      String aliquotId ){
-    return new PcawgSSMMetadata(variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId, isUsProject, aliquotId);
+      String aliquotId,
+      String analyzedFileId,
+      String matchedFileId ){
+    return new PcawgSSMMetadata(variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId, isUsProject, aliquotId, analyzedFileId, matchedFileId);
   }
 
   @NonNull
@@ -45,6 +48,14 @@ public class PcawgSSMMetadata implements SSMMetadata {
 
   @NonNull
   private final String aliquotId;
+
+  @NonNull
+  @Getter
+  private final String analyzedFileId;
+
+  @NonNull
+  @Getter
+  private final String matchedFileId;
 
   @Override
   public String getAssemblyVersion() {
@@ -101,7 +112,7 @@ public class PcawgSSMMetadata implements SSMMetadata {
    */
   @Override
   public String getRawDataAccession() {
-    return isUsProject ? getAnalyzedSampleId() : "EGAS00001001692";
+    return isUsProject ? getAnalyzedSampleId() : COLON.join(getAnalyzedFileId(),getMatchedFileId());
   }
 
   //For andy, just a placeholder

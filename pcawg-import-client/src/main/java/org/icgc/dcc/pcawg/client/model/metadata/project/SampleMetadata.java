@@ -20,7 +20,9 @@ public class SampleMetadata {
         .isUsProject           (s.isUsProject())
         .analyzedSampleId      (s.getAnalyzedSampleId())
         .dccProjectCode        (s.getDccProjectCode())
-        .matchedSampleId       (s.getMatchedSampleId());
+        .matchedSampleId       (s.getMatchedSampleId())
+        .analyzedFileId        (s.getAnalyzedFileId())
+        .matchedFileId         (s.getMatchedFileId());
   }
 
   @NonNull private final String aliquotId;
@@ -30,6 +32,8 @@ public class SampleMetadata {
   @NonNull private final String analyzedSampleId;
   @NonNull private final String dccProjectCode;
   @NonNull private final String matchedSampleId;
+  @NonNull private final String analyzedFileId;
+  @NonNull private final String matchedFileId;
 
   public String getAnalysisId(){
     return UNDERSCORE.join(dccProjectCode, workflowType,dataType);

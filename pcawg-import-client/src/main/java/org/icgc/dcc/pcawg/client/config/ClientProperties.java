@@ -53,4 +53,5 @@ public class ClientProperties {
   public static final String SSM_M_TSV_FILENAME_PREFIX = "ssm_m";
   public static final String SSM_M_TSV_FILENAME_EXTENSION = "txt";
 
+  public static final String ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME = "icgcFileIdDao.dat";
 }

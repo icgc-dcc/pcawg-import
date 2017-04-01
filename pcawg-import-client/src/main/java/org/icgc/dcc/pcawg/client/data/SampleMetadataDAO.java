@@ -11,7 +11,6 @@ public interface SampleMetadataDAO  {
     }
   }
 
-
   SampleMetadata fetchSampleMetadata(PortalFilename portalFilename) throws SampleMetadataNotFoundException;
 
 }

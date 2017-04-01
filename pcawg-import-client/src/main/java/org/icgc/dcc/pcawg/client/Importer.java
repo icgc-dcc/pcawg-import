@@ -116,6 +116,7 @@ public class Importer implements Runnable {
   public void run() {
     val consensusVCFConverter = buildConsensusVCFConverter();
     // Create container with all MetadataContexts
+    log.info("Creating MetadataContainer");
     val metadataContainer = newMetadataContainer();
 
 
