@@ -13,6 +13,7 @@ import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
 import org.icgc.dcc.pcawg.client.download.Storage;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
@@ -26,10 +27,12 @@ import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import java.nio.file.Paths;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_BEAN_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
@@ -38,7 +41,9 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_M
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
+import static org.icgc.dcc.pcawg.client.data.CachedSampleMetadataDao.newCachedSampleMetadataDao;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
+import static org.icgc.dcc.pcawg.client.data.IcgcFileIdDao.newIcgcFileIdDao;
 import static org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory.buildBarcodeBeanDao;
 import static org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory.buildSampleBeanDao;
 import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
@@ -76,10 +81,26 @@ public class Factory {
   }
 
   public static MetadataContainer newMetadataContainer(){
+    log.info("Creating Portal instance for [{}]", CONSENSUS);
     val portal = newPortal(CONSENSUS);
-    val sampleMetadataDAO = newSampleMetadataDAO();
-    log.info("Creating MetadataContainer");
-    return new MetadataContainer(portal, sampleMetadataDAO);
+
+    log.info("Retreiving portal filemeta data...");
+    val portalMetadataSet = portal.getFileMetas()
+        .stream()
+        .map(PortalMetadata::buildPortalMetadata)
+        .collect(toImmutableSet());
+    val portalFilenameSet = portalMetadataSet.stream()
+        .map(PortalMetadata::getPortalFilename)
+        .collect(toImmutableSet());
+
+    log.info("Creating base sampleMetadata DAO...");
+    val sampleMetadataDao = newSampleMetadataDAO();
+
+    log.info("Creating cachedSampleMetadataDao decorator...");
+    val cachedSampleMetadataDao = newCachedSampleMetadataDao(sampleMetadataDao, portalFilenameSet);
+
+    log.info("Instantiating MetadataContainer");
+    return new MetadataContainer(cachedSampleMetadataDao, portalMetadataSet);
   }
 
   private static PortalFileDownloader newPortalFileDownloader(WorkflowTypes callerType){
@@ -100,7 +121,9 @@ public class Factory {
         sampleMetadata.getAnalysisId(),
         sampleMetadata.getAnalyzedSampleId(),
         sampleMetadata.isUsProject(),
-        sampleMetadata.getAliquotId() );
+        sampleMetadata.getAliquotId(),
+        sampleMetadata.getAnalyzedFileId(),
+        sampleMetadata.getMatchedFileId());
   }
 
   private static void  downloadSheet(String url, String outputFilename){
@@ -125,8 +148,9 @@ public class Factory {
   public static FileSampleMetadataBeanDAO newFileSampleMetadataBeanDAOAndDownload(){
     val sampleDao = buildSampleBeanDao(SAMPLE_SHEET_TSV_URL,SAMPLE_SHEET_TSV_FILENAME,SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME );
     val barcodeDao = buildBarcodeBeanDao(BARCODE_SHEET_TSV_URL,BARCODE_SHEET_TSV_FILENAME,BARCODE_BEAN_DAO_PERSISTANCE_FILENAME );
-    log.info("Done initializing SampleBeanDao and BarcodeBeanDao, creating FileSampleMetadataBeanDAO");
-    return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
+    val icgcfileIdDao =  newIcgcFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleDao, barcodeDao);
+    log.info("Done initialized SampleFastDao, BarcodeFastDao, and IcgcFileIdDao, ... creating FileSampleMetadataBeanDAO");
+    return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao, icgcfileIdDao);
   }
 
   @SneakyThrows
@@ -135,8 +159,9 @@ public class Factory {
     downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
     val sampleDao = SampleFastDao.newSampleFastDao(SAMPLE_SHEET_TSV_FILENAME, SAMPLE_SHEET_HAS_HEADER);
     val barcodeDao = BarcodeFastDao.newBarcodeFastDao(BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
-    log.info("Done initializing SampleFastDao and BarcodeFastDao, creating FileSampleMetadataBeanDAO");
-    return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao);
+    val icgcfileIdDao =  newIcgcFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleDao, barcodeDao);
+    log.info("Done initializing SampleFastDao, BarcodeFastDao, and IcgcFileIdDao, ... creating FileSampleMetadataBeanDAO");
+    return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao, icgcfileIdDao);
   }
 
   @SneakyThrows

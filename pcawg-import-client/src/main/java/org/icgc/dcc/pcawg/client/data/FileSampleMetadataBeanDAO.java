@@ -16,6 +16,7 @@ import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.pcawg.client.data.IdResolver.getAnalyzedSampleId;
 import static org.icgc.dcc.pcawg.client.data.IdResolver.getMatchedSampleId;
 import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;
@@ -34,6 +35,9 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
 
   @NonNull
   private final BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao;
+
+  @NonNull
+  private final IcgcFileIdDao icgcFileIdDao;
 
   private SampleBean getFirstSampleBean(String aliquotId) throws SampleMetadataNotFoundException{
     val aliquotIdResult = sampleDao.findFirstAliquotId(aliquotId);
@@ -60,6 +64,17 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
 
     val analyzedSampleId = getAnalyzedSampleId(barcodeDao,isUsProject, barcodeSearchRequest);
     val matchedSampleId = getMatchedSampleId(sampleDao, barcodeDao, donorUniqueId);
+    val analyzedFileIdResult = icgcFileIdDao.find(analyzedSampleId);
+    val matchedFileIdResult = icgcFileIdDao.find(matchedSampleId);
+    checkState(analyzedFileIdResult.isPresent(),
+        "The IcgcFileIdDao does not contain the analyzedSampleId (%s) for the vcf file %s ",
+        analyzedSampleId,portalFilename.getFilename());
+    checkState(matchedFileIdResult.isPresent(),
+        "The IcgcFileIdDao does not contain the matchedSampleId (%s) for the vcf file %s ",
+        matchedSampleId,portalFilename.getFilename());
+    val analyzedFileId = analyzedFileIdResult.get();
+    val matchedFileId = matchedFileIdResult.get();
+
     return SampleMetadata.builder()
         .analyzedSampleId(analyzedSampleId)
         .dccProjectCode(dccProjectCode)
@@ -68,6 +83,8 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
         .isUsProject(isUsProject)
         .dataType(dataType)
         .workflowType(workflowType)
+        .analyzedFileId(analyzedFileId)
+        .matchedFileId(matchedFileId)
         .build();
   }
 

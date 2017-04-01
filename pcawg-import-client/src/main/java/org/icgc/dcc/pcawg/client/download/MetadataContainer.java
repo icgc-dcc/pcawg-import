@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.model.metadata.MetadataContext;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.groupingBy;
-import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata.buildPortalMetadata;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 
 @Getter
 @Slf4j
@@ -24,28 +25,37 @@ public class MetadataContainer {
 
   private Map<String, List<MetadataContext>> dccProjectCodeMap;
 
+  public MetadataContainer(@NonNull SampleMetadataDAO sampleMetadataDAO, @NonNull Set<PortalMetadata> portalMetadatas){
+    init(sampleMetadataDAO, portalMetadatas);
+  }
+
   public MetadataContainer(@NonNull Portal portal, @NonNull SampleMetadataDAO sampleMetadataDAO){
     init(portal, sampleMetadataDAO);
   }
 
-  private void init(Portal portal, SampleMetadataDAO sampleMetadataDAO){
+  private void init(SampleMetadataDAO sampleMetadataDAO, Set<PortalMetadata> portalMetadatas){
     val builder = ImmutableList.<MetadataContext>builder();
-    for (val fileMeta : portal.getFileMetas()){
-      val portalMetadata = buildPortalMetadata(fileMeta);
-      val filenameParser = portalMetadata.getPortalFilename();
+    for (val portalMetadata : portalMetadatas){
+      val portalFilename = portalMetadata.getPortalFilename();
       try{
-        val sampleMetadata = sampleMetadataDAO.fetchSampleMetadata(filenameParser);
-
+        val sampleMetadata = sampleMetadataDAO.fetchSampleMetadata(portalFilename);
         builder.add(MetadataContext.builder()
             .sampleMetadata(sampleMetadata)
             .portalMetadata(portalMetadata)
             .build());
       } catch (SampleMetadataDAO.SampleMetadataNotFoundException e){
-        log.error("The sampleMetadata cannot be fetched for the file [{}]. Skipping.. ", filenameParser.getFilename());
+        log.error("The sampleMetadata cannot be fetched for the file [{}]. Skipping.. ", portalFilename.getFilename());
       }
     }
     metadataContextList = builder.build();
     dccProjectCodeMap = groupByDccProjectCode(metadataContextList);
+  }
+
+  private void init(Portal portal, SampleMetadataDAO sampleMetadataDAO){
+    val set = portal.getFileMetas().stream()
+        .map(PortalMetadata::buildPortalMetadata)
+        .collect(toImmutableSet());
+    init(sampleMetadataDAO, set);
   }
 
   public int getTotalMetadataContexts(){
