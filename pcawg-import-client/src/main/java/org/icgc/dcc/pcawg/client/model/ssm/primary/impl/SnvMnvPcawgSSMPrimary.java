@@ -3,8 +3,9 @@ package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
+import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors;
+import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleLength;
@@ -33,14 +34,16 @@ public class SnvMnvPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
     } else if(refLength > 1){
       return MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
     } else {
-      return MutationTypes.UNKNOWN;
+      val message = String.format("The MutationType cannot be found since ReferenceAlleleLength[%s] < 1", refLength);
+      throw new PcawgVariantException(message, getVariant(), PcawgVariantErrors.SNV_MNV_REF_LENGTH_LT_1);
     }
   }
 
   @Override
   public String getMutationType()  {
     if (mutationType == MutationTypes.UNKNOWN){
-      return NACodes.CORRUPTED_DATA.toString();
+      val message = String.format("The MutationType [%s] is not supported for getMutationType", mutationType.name());
+      throw new PcawgVariantException(message, getVariant(), PcawgVariantErrors.MUTATION_TYPE_NOT_SUPPORTED);
     } else {
       return mutationType.toString();
     }
