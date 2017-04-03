@@ -136,9 +136,9 @@ public class ConsensusVCFConverter {
       if (candidateException.hasErrors()){
         val sb = new StringBuilder();
         for (val error : candidateException.getVariantErrors()){
-          sb.append(String.format("\t%s:%s\n",error.name(),candidateException.getErrorVariantNumbers(error)));
+          sb.append(String.format("\t%s:%s ---- ",error.name(),candidateException.getErrorVariantNumbers(error)));
         }
-        log.error("The vcf file [{}] has the following errors: \n{}", vcfFile.getAbsolutePath(), sb.toString());
+        log.error("The vcf file [{}] has the following errors: {}", vcfFile.getAbsolutePath(), sb.toString());
         throw candidateException;
       }
       if (nullCount >0 ){
