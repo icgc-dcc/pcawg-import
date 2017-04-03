@@ -6,11 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 
 import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.Writer;
 
 @Slf4j
-public class Transformer<T> implements Closeable{
+public class Transformer<T> implements Closeable , Flushable{
 
   private static final String NEWLINE = "\n";
 
@@ -39,6 +40,11 @@ public class Transformer<T> implements Closeable{
       writeHeader = false;
     }
     writer.write(tsvConverter.toTSVData(t)+ NEWLINE);
+  }
+
+  @Override
+  public void flush() throws IOException {
+    writer.flush();
   }
 
   @Override
