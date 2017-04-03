@@ -41,7 +41,6 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_M
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
-import static org.icgc.dcc.pcawg.client.data.CachedSampleMetadataDao.newCachedSampleMetadataDao;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
 import static org.icgc.dcc.pcawg.client.data.IcgcFileIdDao.newIcgcFileIdDao;
 import static org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory.buildBarcodeBeanDao;
@@ -89,18 +88,12 @@ public class Factory {
         .stream()
         .map(PortalMetadata::buildPortalMetadata)
         .collect(toImmutableSet());
-    val portalFilenameSet = portalMetadataSet.stream()
-        .map(PortalMetadata::getPortalFilename)
-        .collect(toImmutableSet());
 
     log.info("Creating base sampleMetadata DAO...");
     val sampleMetadataDao = newSampleMetadataDAO();
 
-    log.info("Creating cachedSampleMetadataDao decorator...");
-    val cachedSampleMetadataDao = newCachedSampleMetadataDao(sampleMetadataDao, portalFilenameSet);
-
     log.info("Instantiating MetadataContainer");
-    return new MetadataContainer(cachedSampleMetadataDao, portalMetadataSet);
+    return new MetadataContainer(sampleMetadataDao, portalMetadataSet);
   }
 
   private static PortalFileDownloader newPortalFileDownloader(WorkflowTypes callerType){
