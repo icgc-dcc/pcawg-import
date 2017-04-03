@@ -17,20 +17,26 @@
  */
 package org.icgc.dcc.pcawg.client;
 
+import com.google.common.collect.Lists;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.io.FileUtils;
 import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
+import static java.util.stream.Collectors.joining;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_PREFIX;
@@ -114,6 +120,9 @@ public class Importer implements Runnable {
   @Override
   @SneakyThrows
   public void run() {
+    // Remove existing directories
+    FileUtils.deleteDirectory(new File(this.outputTsvDir));
+
     val consensusVCFConverter = buildConsensusVCFConverter();
     // Create container with all MetadataContexts
     log.info("Creating MetadataContainer");
@@ -125,6 +134,7 @@ public class Importer implements Runnable {
 
     val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
     int countDccProjectCodes  = 0;
+    val erroredFileList =  Lists.<String>newArrayList();
 
     // Loop through each dccProjectCode
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()) {
@@ -149,14 +159,28 @@ public class Importer implements Runnable {
         val sampleMetadata = metadataContext.getSampleMetadata();
 
         // Converter Consensus VCF files
-        consensusVCFConverter.process(vcfFile, sampleMetadata);
-
-
+        try{
+          consensusVCFConverter.process(vcfFile, sampleMetadata);
+        } catch (PcawgVCFException e){
+          erroredFileList.add(vcfFile.getAbsolutePath());
+        }
       }
       if (ENABLE_TSV_VALIDATION){
         validateOutputFiles(dccProjectCode);
       }
     }
+    checkFileErrors(erroredFileList);
+  }
+
+  private static void checkFileErrors(List<String> list){
+    if (!list.isEmpty()){
+      log.error("The importer FAILED to import all vcf files. The following files were problematic:\n{}",
+          list.stream()
+              .collect(joining("\n")));
+    } else {
+      log.info("The importer SUCCESSFULLY imported all vcf files.");
+    }
+
   }
 
   private void validateOutputFiles(String dccProjectCode){
