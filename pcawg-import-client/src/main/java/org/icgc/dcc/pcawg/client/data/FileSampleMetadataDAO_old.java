@@ -140,6 +140,8 @@ public class FileSampleMetadataDAO_old implements SampleMetadataDAO {
         .isUsProject(isUsProject)
         .dataType(dataType)
         .workflowType(workflowType)
+        .matchedFileId("someMatchedFileId")
+        .analyzedFileId("someAnalyzedFileId")
         .build();
   }
 

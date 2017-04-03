@@ -280,7 +280,9 @@ public class SSMTest {
         sampleMetadata.getAnalysisId(),
         sampleMetadata.getAnalyzedSampleId(),
         sampleMetadata.isUsProject(),
-        sampleMetadata.getAliquotId());
+        sampleMetadata.getAliquotId(),
+        sampleMetadata.getAnalyzedFileId(),
+        sampleMetadata.getMatchedFileId());
   }
 
 

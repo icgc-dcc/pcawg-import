@@ -66,25 +66,39 @@ public class SampleMetadataDAOTest {
     runQuery(newFileSampleMetadataBeanDAOAndDownload());
   }
 
-  @Test
-  @SneakyThrows
-  public void testIcgcFileIdDao(){
+  public void runFileIdDaoTest(String input1, String expectedOutput1, String input2, String expectedOutput2){
     val sampleMetadataBeanDao = newFileSampleMetadataBeanDAOAndDownload();
     val sampleDao = sampleMetadataBeanDao.getSampleDao();
     val barcodeDao = sampleMetadataBeanDao.getBarcodeDao();
     val icgcDao = newIcgcFileIdDao("icgcFileIdDao.dat", sampleDao, barcodeDao);
 
-    val submittedSampleId1 = "PD4982a";
-    val expectedFileId1 = "FI9995";
-    val result1 = icgcDao.find(submittedSampleId1);
+    val result1 = icgcDao.find(input1);
     assertThat(result1.isPresent()).isTrue();
-    assertThat(result1.get()).isEqualTo(expectedFileId1);
+    assertThat(result1.get()).isEqualTo(expectedOutput1);
 
-    val submittedSampleId2 = "PD4982b";
-    val expectedFileId2 = "FI9994";
-    val result2 = icgcDao.find(submittedSampleId2);
+    val result2 = icgcDao.find(input2);
     assertThat(result2.isPresent()).isTrue();
-    assertThat(result2.get()).isEqualTo(expectedFileId2);
+    assertThat(result2.get()).isEqualTo(expectedOutput2);
+  }
+
+  @Test
+  @SneakyThrows
+  public void testUsIcgcFileIdDao(){
+    val input1 = "TCGA-FF-8046-01A-11D-2210-10";
+    val expectedOutput1 = "FI9956";
+    val input2 = "TCGA-FF-8046-10A-01D-2210-10";
+    val expectedOutput2 = "FI9955";
+    runFileIdDaoTest(input1, expectedOutput1, input2, expectedOutput2);
+  }
+
+  @Test
+  @SneakyThrows
+  public void testNonUsIcgcFileIdDao(){
+    val input1 = "PD4982a";
+    val expectedOutput1= "FI9995";
+    val input2= "PD4982b";
+    val expectedOutput2= "FI9994";
+    runFileIdDaoTest(input1, expectedOutput1, input2, expectedOutput2);
   }
 
 
