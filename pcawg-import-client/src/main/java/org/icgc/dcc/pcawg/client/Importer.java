@@ -23,7 +23,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.io.FileUtils;
 import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
@@ -31,7 +30,6 @@ import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -120,9 +118,6 @@ public class Importer implements Runnable {
   @Override
   @SneakyThrows
   public void run() {
-    // Remove existing directories
-    FileUtils.deleteDirectory(new File(this.outputTsvDir));
-
     val consensusVCFConverter = buildConsensusVCFConverter();
     // Create container with all MetadataContexts
     log.info("Creating MetadataContainer");
