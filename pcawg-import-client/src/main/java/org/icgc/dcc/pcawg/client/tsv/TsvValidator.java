@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.tsv;
 
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +10,9 @@ import org.apache.commons.lang.StringUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Set;
 
+import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
 
 @Slf4j
@@ -31,6 +34,8 @@ public class TsvValidator {
   private int illegalStringsCount;
   private int numNullsCount;
   private int numBadColumnCount;
+  private int lineCount;
+  private Set<Integer> badLineNumbers;
 
 
   @SneakyThrows
@@ -43,34 +48,40 @@ public class TsvValidator {
   }
 
   private void reset(){
+    lineCount = 0;
+    badLineNumbers = Sets.newTreeSet();
     illegalStringsCount = 0;
     numBadColumnCount = 0;
     numNullsCount = 0;
   }
 
   private void checkLine(String line){
-    checkNull(line);
-    checkColumnSize(line);
-    checkIllegalStrings(line);
+    ++lineCount;
+    checkNull(line, lineCount);
+    checkColumnSize(line, lineCount);
+    checkIllegalStrings(line, lineCount);
   }
 
-  private void checkNull(String line){
+  private void checkNull(String line, int lineNum){
     if (line == null){
       numNullsCount++;
+      badLineNumbers.add(lineNum);
     }
   }
 
-  private void checkColumnSize(String line){
+  private void checkColumnSize(String line, int lineNum){
     val actualNumTabs = StringUtils.countMatches(line, TAB_STRING);
     val expectedNumTabs = this.expectedNumColumns - 1;
     if( actualNumTabs != expectedNumTabs){
       numBadColumnCount++;
+      badLineNumbers.add(lineNum);
     }
   }
 
-  private void checkIllegalStrings(String line){
+  private void checkIllegalStrings(String line, int lineNum){
     if(line.matches(ILLEGAL_STRING_REGEX)){
       illegalStringsCount++;
+      badLineNumbers.add(lineNum);
     }
   }
 
@@ -103,7 +114,10 @@ public class TsvValidator {
         + str("isOk: %s, ", isOk())
         + str("numNullCount: %s, ", numNullsCount)
         + str("numBadColumnCount: %s, ", numBadColumnCount)
-        + str("numIllegalStringCount: %s", illegalStringsCount);
+        + str("numIllegalStringCount: %s, ", illegalStringsCount)
+        + str("badLineNumbers: %s", badLineNumbers.stream()
+        .map(Object::toString)
+        .collect(joining(";")));
   }
 
   public void log(){
