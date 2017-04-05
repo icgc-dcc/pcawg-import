@@ -1,11 +1,14 @@
-package org.icgc.dcc.pcawg.client.data.sample;
+package org.icgc.dcc.pcawg.client.data.sample.impl;
 
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.AbstractFileDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest.SampleSearchRequestBuilder;
+import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
 import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
 import java.io.Reader;
@@ -18,7 +21,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Slf4j
-public class SampleBeanDao extends AbstractFileDao<SampleBean, SampleSearchRequest> implements Serializable, SampleDao<SampleBean, SampleSearchRequest> {
+public class SampleBeanDao extends AbstractFileDao<SampleBean, SampleSearchRequest> implements Serializable,
+    SampleDao<SampleBean, SampleSearchRequest> {
 
   private static final long serialVersionUID = 1490628519L;
   private static final String STAR = "*";

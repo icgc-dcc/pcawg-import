@@ -1,7 +1,8 @@
-package org.icgc.dcc.pcawg.client.data.barcode;
+package org.icgc.dcc.pcawg.client.data.barcode.impl;
 
 import lombok.NoArgsConstructor;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static lombok.AccessLevel.PRIVATE;

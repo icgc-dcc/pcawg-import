@@ -4,11 +4,11 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO.SampleMetadataNotFoundException;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
+import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
-import org.icgc.dcc.pcawg.client.data.sample.SampleBean;
+import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
 
@@ -20,7 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;
-import static org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao.createWildcardRequestBuilder;
+import static org.icgc.dcc.pcawg.client.data.sample.impl.SampleBeanDao.createWildcardRequestBuilder;
 
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)

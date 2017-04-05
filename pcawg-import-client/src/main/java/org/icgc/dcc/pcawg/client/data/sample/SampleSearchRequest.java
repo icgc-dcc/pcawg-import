@@ -4,6 +4,7 @@ import com.opencsv.bean.CsvBindByName;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.icgc.dcc.pcawg.client.data.SearchRequest;
 
 import java.io.Serializable;
 import java.util.function.BiPredicate;

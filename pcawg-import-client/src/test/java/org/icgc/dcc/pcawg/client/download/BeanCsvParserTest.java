@@ -4,10 +4,10 @@ import com.google.common.io.Resources;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBeanDao;
+import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeBeanDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
-import org.icgc.dcc.pcawg.client.data.sample.SampleBean;
-import org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao;
+import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
+import org.icgc.dcc.pcawg.client.data.sample.impl.SampleBeanDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
 import org.junit.After;
 import org.junit.Before;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean.newBarcodeBean;
+import static org.icgc.dcc.pcawg.client.model.beans.BarcodeBean.newBarcodeBean;
 import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;
 
 @Slf4j

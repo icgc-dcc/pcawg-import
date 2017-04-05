@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.assertj.core.util.Sets;
 import org.icgc.dcc.pcawg.client.core.Factory;
-import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory;
 import org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory;
 import org.junit.Ignore;
@@ -21,7 +21,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TS
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataBeanDAOAndDownload;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataDAOOldAndDownload;
-import static org.icgc.dcc.pcawg.client.data.IcgcFileIdDao.newIcgcFileIdDao;
+import static org.icgc.dcc.pcawg.client.data.icgc.FileIdDao.newFileIdDao;
 import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
 
 @Slf4j
@@ -42,7 +42,7 @@ public class SampleMetadataDAOTest {
     assertThat(nonUsProjectData.getMatchedSampleId()).isEqualTo("RK001_B01");
 
     /**
-     * TODO: Currently failing becuase ICGC does not contain US projects that have VCFs and BAMs mapped to the same AliquotId
+     * TODO: [DCC-5532] Currently failing becuase ICGC does not contain US projects that have VCFs and BAMs mapped to the same AliquotId
      */
     //US
 //    val usProjectData = sampleMetadataDAO.fetchSampleMetadata(usId);
@@ -73,7 +73,7 @@ public class SampleMetadataDAOTest {
     val sampleMetadataBeanDao = newFileSampleMetadataBeanDAOAndDownload();
     val sampleDao = sampleMetadataBeanDao.getSampleDao();
     val barcodeDao = sampleMetadataBeanDao.getBarcodeDao();
-    val icgcDao = newIcgcFileIdDao("icgcFileIdDao.dat", sampleDao, barcodeDao);
+    val icgcDao = newFileIdDao("icgcFileIdDao.dat", sampleDao, barcodeDao);
 
     val result1 = icgcDao.find(input1);
     assertThat(result1.isPresent()).isTrue();
@@ -86,7 +86,7 @@ public class SampleMetadataDAOTest {
 
   @Test
   @SneakyThrows
-  @Ignore("Failing becuase IcgcFileIdDao cannot resolve US projects yet")
+  @Ignore("[DCC-5532] Failing becuase IcgcFileIdDao cannot resolve US projects yet")
   public void testUsIcgcFileIdDao(){
     val input1 = "TCGA-FF-8046-01A-11D-2210-10";
     val expectedOutput1 = "FI9956";

@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.data.sample;
+package org.icgc.dcc.pcawg.client.data.sample.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.opencsv.CSVReader;
@@ -7,7 +7,10 @@ import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest.SampleSearchRequestBuilder;
+import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
 import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
 import java.io.FileReader;

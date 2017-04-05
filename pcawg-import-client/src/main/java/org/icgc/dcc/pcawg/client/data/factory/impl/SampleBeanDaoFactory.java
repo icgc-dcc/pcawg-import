@@ -2,12 +2,12 @@ package org.icgc.dcc.pcawg.client.data.factory.impl;
 
 import lombok.SneakyThrows;
 import org.icgc.dcc.pcawg.client.data.factory.AbstractDaoFactory;
-import org.icgc.dcc.pcawg.client.data.sample.SampleBean;
-import org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao;
+import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
+import org.icgc.dcc.pcawg.client.data.sample.impl.SampleBeanDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
 
-import static org.icgc.dcc.pcawg.client.data.factory.FileRestorer.newFileRestorer;
-import static org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao.newSampleBeanDao;
+import static org.icgc.dcc.pcawg.client.utils.FileRestorer.newFileRestorer;
+import static org.icgc.dcc.pcawg.client.data.sample.impl.SampleBeanDao.newSampleBeanDao;
 
 public class SampleBeanDaoFactory extends AbstractDaoFactory<SampleBean, SampleSearchRequest, SampleBeanDao> {
 

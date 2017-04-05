@@ -1,12 +1,12 @@
 package org.icgc.dcc.pcawg.client.data.factory.impl;
 
 import lombok.SneakyThrows;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBeanDao;
+import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
+import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeBeanDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.factory.AbstractDaoFactory;
 
-import static org.icgc.dcc.pcawg.client.data.factory.FileRestorer.newFileRestorer;
+import static org.icgc.dcc.pcawg.client.utils.FileRestorer.newFileRestorer;
 
 public class BarcodeBeanDaoFactory extends AbstractDaoFactory<BarcodeBean, BarcodeSearchRequest, BarcodeBeanDao> {
 

@@ -3,7 +3,8 @@ package org.icgc.dcc.pcawg.client.data.ega;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.data.sample.SearchRequest;
+import org.icgc.dcc.pcawg.client.data.SearchRequest;
+import org.icgc.dcc.pcawg.client.model.beans.EgaBean;
 
 import java.util.function.BiPredicate;
 import java.util.function.Function;

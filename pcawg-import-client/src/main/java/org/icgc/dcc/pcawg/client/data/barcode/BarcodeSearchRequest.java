@@ -2,7 +2,7 @@ package org.icgc.dcc.pcawg.client.data.barcode;
 
 import lombok.NonNull;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.data.sample.SearchRequest;
+import org.icgc.dcc.pcawg.client.data.SearchRequest;
 
 import java.io.Serializable;
 

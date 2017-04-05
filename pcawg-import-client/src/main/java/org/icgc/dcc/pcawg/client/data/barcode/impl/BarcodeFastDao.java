@@ -1,10 +1,13 @@
-package org.icgc.dcc.pcawg.client.data.barcode;
+package org.icgc.dcc.pcawg.client.data.barcode.impl;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
+import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,7 +17,7 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
-import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeBeanDao.newBarcodeBeanDao;
+import static org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeBeanDao.newBarcodeBeanDao;
 
 @Slf4j
 public class BarcodeFastDao implements BarcodeDao<BarcodeBean, BarcodeSearchRequest> {

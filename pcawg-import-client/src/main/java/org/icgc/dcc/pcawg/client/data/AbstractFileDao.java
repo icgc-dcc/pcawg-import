@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.sample.SearchRequest;
 import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
 import java.io.FileReader;

@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.data.barcode;
+package org.icgc.dcc.pcawg.client.data.barcode.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.opencsv.CSVReader;
@@ -6,6 +6,8 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import lombok.SneakyThrows;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
+import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
 import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
 import java.io.FileReader;

@@ -6,11 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
-import org.icgc.dcc.pcawg.client.data.FileSampleMetadataBeanDAO;
-import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old;
-import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeFastDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleFastDao;
+import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeFastDao;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataBeanDAO;
+import org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataDAO_old;
+import org.icgc.dcc.pcawg.client.data.sample.impl.SampleFastDao;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
@@ -53,10 +53,10 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsController.newHadoopFsController;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControllerAdapter.newHadoopFsControllerAdapter;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.LocalFsController.newLocalFsController;
-import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
-import static org.icgc.dcc.pcawg.client.data.IcgcFileIdDao.newIcgcFileIdDao;
 import static org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory.buildBarcodeBeanDao;
 import static org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory.buildSampleBeanDao;
+import static org.icgc.dcc.pcawg.client.data.icgc.FileIdDao.newFileIdDao;
+import static org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
 import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
@@ -169,7 +169,7 @@ public class Factory {
   public static FileSampleMetadataBeanDAO newFileSampleMetadataBeanDAOAndDownload(){
     val sampleDao = buildSampleBeanDao(SAMPLE_SHEET_TSV_URL,SAMPLE_SHEET_TSV_FILENAME,SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME );
     val barcodeDao = buildBarcodeBeanDao(BARCODE_SHEET_TSV_URL,BARCODE_SHEET_TSV_FILENAME,BARCODE_BEAN_DAO_PERSISTANCE_FILENAME );
-    val icgcfileIdDao =  newIcgcFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleDao, barcodeDao);
+    val icgcfileIdDao =  newFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleDao, barcodeDao);
     log.info("Done initialized SampleFastDao, BarcodeFastDao, and IcgcFileIdDao, ... creating FileSampleMetadataBeanDAO");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao, icgcfileIdDao);
   }
@@ -180,7 +180,7 @@ public class Factory {
     downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
     val sampleDao = SampleFastDao.newSampleFastDao(SAMPLE_SHEET_TSV_FILENAME, SAMPLE_SHEET_HAS_HEADER);
     val barcodeDao = BarcodeFastDao.newBarcodeFastDao(BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
-    val icgcfileIdDao =  newIcgcFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleDao, barcodeDao);
+    val icgcfileIdDao =  newFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleDao, barcodeDao);
     log.info("Done initializing SampleFastDao, BarcodeFastDao, and IcgcFileIdDao, ... creating FileSampleMetadataBeanDAO");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao, icgcfileIdDao);
   }

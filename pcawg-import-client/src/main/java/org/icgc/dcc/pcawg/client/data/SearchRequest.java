@@ -1,10 +1,11 @@
-package org.icgc.dcc.pcawg.client.data.sample;
+package org.icgc.dcc.pcawg.client.data;
 
 import lombok.val;
 
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
+//TODO: fix this to be SearchRequest<R extends SearchRequest<R>>
 public interface SearchRequest<R extends SearchRequest> {
    String STAR = "*";
    String EMPTY = "";

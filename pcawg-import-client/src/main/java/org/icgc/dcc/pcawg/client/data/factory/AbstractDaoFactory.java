@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.AbstractFileDao;
-import org.icgc.dcc.pcawg.client.data.sample.SearchRequest;
+import org.icgc.dcc.pcawg.client.data.SearchRequest;
+import org.icgc.dcc.pcawg.client.utils.FileRestorer;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.model.metadata.MetadataContext;
 import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
 
@@ -43,7 +44,7 @@ public class MetadataContainer {
             .sampleMetadata(sampleMetadata)
             .portalMetadata(portalMetadata)
             .build());
-      } catch (SampleMetadataDAO.SampleMetadataNotFoundException e){
+      } catch (SampleMetadataNotFoundException e){
         log.error("The sampleMetadata cannot be fetched for the file [{}]. Skipping.. ", portalFilename.getFilename());
       }
     }

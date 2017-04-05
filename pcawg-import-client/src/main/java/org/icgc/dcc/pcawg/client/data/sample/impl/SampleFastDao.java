@@ -1,10 +1,13 @@
-package org.icgc.dcc.pcawg.client.data.sample;
+package org.icgc.dcc.pcawg.client.data.sample.impl;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
+import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,7 +18,7 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
-import static org.icgc.dcc.pcawg.client.data.sample.SampleBeanDao.newSampleBeanDao;
+import static org.icgc.dcc.pcawg.client.data.sample.impl.SampleBeanDao.newSampleBeanDao;
 
 @Slf4j
 public class SampleFastDao implements SampleDao<SampleBean, SampleSearchRequest> {

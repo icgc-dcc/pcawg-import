@@ -4,13 +4,13 @@ import com.google.common.io.Resources;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old;
+import org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataDAO_old;
 import org.junit.Test;
 
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
+import static org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel.newSampleSheetModel;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModel;
 

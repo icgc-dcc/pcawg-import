@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.data;
+package org.icgc.dcc.pcawg.client.data.metadata.impl;
 
 import com.google.common.base.Function;
 import lombok.Getter;
@@ -6,6 +6,8 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel;
@@ -21,7 +23,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
-import static org.icgc.dcc.pcawg.client.data.sample.SampleBean.isUsProject;
+import static org.icgc.dcc.pcawg.client.model.beans.SampleBean.isUsProject;
 
 @Slf4j
 public class FileSampleMetadataDAO_old implements SampleMetadataDAO {
@@ -86,7 +88,7 @@ public class FileSampleMetadataDAO_old implements SampleMetadataDAO {
     return uuid2BarcodeSheetList.size();
   }
 
-  private SampleSheetModel getFirstSampleSheet(String aliquotId) throws SampleMetadataNotFoundException{
+  private SampleSheetModel getFirstSampleSheet(String aliquotId) throws SampleMetadataNotFoundException {
     val aliquotIdStream= sampleSheetList.stream()
         .filter(s -> s.getAliquot_id().equals(aliquotId));
 

@@ -1,10 +1,9 @@
-package org.icgc.dcc.pcawg.client.data.factory;
+package org.icgc.dcc.pcawg.client.utils;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
 import java.io.IOException;
 import java.io.Serializable;

@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.data.sample;
+package org.icgc.dcc.pcawg.client.model.beans;
 
 import com.opencsv.bean.CsvBindByName;
 import lombok.Builder;

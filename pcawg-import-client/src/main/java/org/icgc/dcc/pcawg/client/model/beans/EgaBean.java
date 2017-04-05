@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.data.ega;
+package org.icgc.dcc.pcawg.client.model.beans;
 
 import com.opencsv.bean.CsvBindByName;
 import lombok.Data;

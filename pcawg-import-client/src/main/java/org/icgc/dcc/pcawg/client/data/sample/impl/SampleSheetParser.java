@@ -1,7 +1,8 @@
-package org.icgc.dcc.pcawg.client.data.sample;
+package org.icgc.dcc.pcawg.client.data.sample.impl;
 
 import lombok.NoArgsConstructor;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static lombok.AccessLevel.PRIVATE;

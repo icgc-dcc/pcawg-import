@@ -1,16 +1,19 @@
-package org.icgc.dcc.pcawg.client.data;
+package org.icgc.dcc.pcawg.client.data.metadata.impl;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeBean;
+import org.icgc.dcc.pcawg.client.data.icgc.FileIdDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
-import org.icgc.dcc.pcawg.client.data.sample.SampleBean;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
+import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
+import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
 import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
@@ -37,9 +40,9 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
   private final BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao;
 
   @NonNull
-  private final IcgcFileIdDao icgcFileIdDao;
+  private final FileIdDao fileIdDao;
 
-  private SampleBean getFirstSampleBean(String aliquotId) throws SampleMetadataNotFoundException{
+  private SampleBean getFirstSampleBean(String aliquotId) throws SampleMetadataNotFoundException {
     val aliquotIdResult = sampleDao.findFirstAliquotId(aliquotId);
     if (! aliquotIdResult.isPresent()){
       throw new SampleMetadataNotFoundException(
@@ -64,8 +67,8 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
 
     val analyzedSampleId = getAnalyzedSampleId(barcodeDao,isUsProject, barcodeSearchRequest);
     val matchedSampleId = getMatchedSampleId(sampleDao, barcodeDao, donorUniqueId);
-    val analyzedFileIdResult = icgcFileIdDao.find(analyzedSampleId);
-    val matchedFileIdResult = icgcFileIdDao.find(matchedSampleId);
+    val analyzedFileIdResult = fileIdDao.find(analyzedSampleId);
+    val matchedFileIdResult = fileIdDao.find(matchedSampleId);
     checkState(analyzedFileIdResult.isPresent(),
         "The IcgcFileIdDao does not contain the analyzedSampleId (%s) for the vcf file %s ",
         analyzedSampleId,portalFilename.getFilename());
