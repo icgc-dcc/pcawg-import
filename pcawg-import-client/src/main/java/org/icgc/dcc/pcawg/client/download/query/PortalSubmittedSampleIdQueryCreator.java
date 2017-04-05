@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.download;
+package org.icgc.dcc.pcawg.client.download.query;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NonNull;

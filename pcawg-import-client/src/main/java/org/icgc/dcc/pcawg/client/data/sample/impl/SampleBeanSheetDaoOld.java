@@ -7,10 +7,10 @@ import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
-import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest.SampleSearchRequestBuilder;
-import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest.SampleSheetSearchRequestBuilder;
 import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
 import java.io.FileReader;
@@ -28,7 +28,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
 @Slf4j
-public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, SampleSearchRequest> {
+public class SampleBeanSheetDaoOld implements Serializable, SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> {
 
   private static final long serialVersionUID = 1490628519L;
   private static final char SEPERATOR = '\t';
@@ -36,8 +36,8 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
   private static final String EMPTY = "";
 
 
-  public static final SampleSearchRequestBuilder createWildcardRequestBuilder(){
-    return SampleSearchRequest.builder()
+  public static final SampleSheetSearchRequestBuilder createWildcardRequestBuilder(){
+    return SampleSheetSearchRequest.builder()
         .aliquot_id(STAR)
         .dcc_specimen_type(STAR)
         .donor_unique_id(STAR)
@@ -45,11 +45,11 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
   }
 
 
-  private static List<SampleBean> convert(Reader reader){
+  private static List<SampleSheetBean> convert(Reader reader){
     val csvReader = new CSVReader(reader, SEPERATOR);
-    val strategy = new HeaderColumnNameMappingStrategy<SampleBean>();
-    strategy.setType(SampleBean.class);
-    val csvToBean = new CsvToBean<SampleBean>();
+    val strategy = new HeaderColumnNameMappingStrategy<SampleSheetBean>();
+    strategy.setType(SampleSheetBean.class);
+    val csvToBean = new CsvToBean<SampleSheetBean>();
     return csvToBean.parse(strategy, csvReader);
   }
 
@@ -58,9 +58,9 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
     return value == null || isWild;
   }
 
-  private static boolean decide(SampleSearchRequest request, SampleBean sampleBean, Function<SampleSearchRequest, String> requestFunctor, Function<SampleBean, String> actualFunctor) {
+  private static boolean decide(SampleSheetSearchRequest request, SampleSheetBean sampleSheetBean, Function<SampleSheetSearchRequest, String> requestFunctor, Function<SampleSheetBean, String> actualFunctor) {
     val searchValue = requestFunctor.apply(request);
-    val actualValue = actualFunctor.apply(sampleBean);
+    val actualValue = actualFunctor.apply(sampleSheetBean);
     if (isWildcardSearch(searchValue)){
       return true;
     } else {
@@ -68,29 +68,29 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
     }
   }
 
-  private static Predicate<SampleBean> createPredicate(SampleSearchRequest request, Function<SampleSearchRequest, String> requestFunctor, Function<SampleBean, String> actualFunctor ){
+  private static Predicate<SampleSheetBean> createPredicate(SampleSheetSearchRequest request, Function<SampleSheetSearchRequest, String> requestFunctor, Function<SampleSheetBean, String> actualFunctor ){
     return s -> decide(request, s, requestFunctor, actualFunctor);
   }
 
-  public static SampleBeanDaoOld newSampleBeanDaoOld(String inputFilename){
-    return new SampleBeanDaoOld(inputFilename);
+  public static SampleBeanSheetDaoOld newSampleBeanDaoOld(String inputFilename){
+    return new SampleBeanSheetDaoOld(inputFilename);
   }
 
-  public static SampleBeanDaoOld newSampleBeanDaoOld(Reader reader){
-    return new SampleBeanDaoOld(reader);
+  public static SampleBeanSheetDaoOld newSampleBeanDaoOld(Reader reader){
+    return new SampleBeanSheetDaoOld(reader);
   }
 
   @SneakyThrows
-  public static SampleBeanDaoOld restoreSampleBeanDao(String storedSampleDaoFilename){
-    return (SampleBeanDaoOld) ObjectPersistance.restore(storedSampleDaoFilename);
+  public static SampleBeanSheetDaoOld restoreSampleBeanDao(String storedSampleDaoFilename){
+    return (SampleBeanSheetDaoOld) ObjectPersistance.restore(storedSampleDaoFilename);
   }
 
   private final Reader reader;
 
-  private List<SampleBean> beans;
+  private List<SampleSheetBean> beans;
 
   @SneakyThrows
-  private SampleBeanDaoOld(String inputFilename) {
+  private SampleBeanSheetDaoOld(String inputFilename) {
     val file = Paths.get(inputFilename).toFile();
     checkState(file.exists(),"The inputFilename [%s] does not exist", file.getAbsolutePath());
     checkState(file.isFile(),"The inputFilename [%s] is not a file" , file.getAbsolutePath());
@@ -100,19 +100,19 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
     log.info("Done Coverting inputFilename: {} to SampleBeanDaoOld", inputFilename);
   }
 
-  private SampleBeanDaoOld(Reader reader) {
+  private SampleBeanSheetDaoOld(Reader reader) {
     this.reader = reader;
     this.beans = convert(reader);
     log.info("Done Coverting Reader to SampleBeanDaoOld");
   }
 
   @SneakyThrows
-  private Stream<SampleBean>  streamAll(SampleSearchRequest request){
+  private Stream<SampleSheetBean>  streamAll(SampleSheetSearchRequest request){
     return beans.stream()
-        .filter(createPredicate(request, SampleSearchRequest::getAliquot_id, SampleBean::getAliquot_id))
-        .filter(createPredicate(request, SampleSearchRequest::getDcc_specimen_type, SampleBean::getDcc_specimen_type))
-        .filter(createPredicate(request, SampleSearchRequest::getDonor_unique_id, SampleBean::getDonor_unique_id))
-        .filter(createPredicate(request, SampleSearchRequest::getLibrary_strategy, SampleBean::getLibrary_strategy));
+        .filter(createPredicate(request, SampleSheetSearchRequest::getAliquot_id, SampleSheetBean::getAliquot_id))
+        .filter(createPredicate(request, SampleSheetSearchRequest::getDcc_specimen_type, SampleSheetBean::getDcc_specimen_type))
+        .filter(createPredicate(request, SampleSheetSearchRequest::getDonor_unique_id, SampleSheetBean::getDonor_unique_id))
+        .filter(createPredicate(request, SampleSheetSearchRequest::getLibrary_strategy, SampleSheetBean::getLibrary_strategy));
   }
 
   public void store(String filename) throws IOException{
@@ -120,40 +120,40 @@ public class SampleBeanDaoOld implements Serializable, SampleDao<SampleBean, Sam
   }
 
 
-  public List<SampleBean> find(SampleSearchRequest request){
+  public List<SampleSheetBean> find(SampleSheetSearchRequest request){
     return streamAll(request)
         .collect(toImmutableList());
   }
 
-  public Optional<SampleBean> findFirstAliquotId(String aliquotId){
+  public Optional<SampleSheetBean> findFirstAliquotId(String aliquotId){
     val request  = createWildcardRequestBuilder()
                     .aliquot_id(aliquotId)
                     .build();
     return streamAll(request).findFirst();
   }
 
-  public List<SampleBean> findAliquotId(String aliquotId){
+  public List<SampleSheetBean> findAliquotId(String aliquotId){
     val request  = createWildcardRequestBuilder()
         .aliquot_id(aliquotId)
         .build();
     return streamAll(request).collect(toImmutableList());
   }
 
-  public Optional<SampleBean> findFirstDonorUniqueId(String donorUniqueId){
+  public Optional<SampleSheetBean> findFirstDonorUniqueId(String donorUniqueId){
     val request  = createWildcardRequestBuilder()
         .donor_unique_id(donorUniqueId)
         .build();
     return streamAll(request).findFirst();
   }
 
-  public List<SampleBean> findDonorUniqueId(String donorUniqueId){
+  public List<SampleSheetBean> findDonorUniqueId(String donorUniqueId){
     val request  = createWildcardRequestBuilder()
         .donor_unique_id(donorUniqueId)
         .build();
     return streamAll(request).collect(toImmutableList());
   }
 
-  @Override public List<SampleBean> findAll() {
+  @Override public List<SampleSheetBean> findAll() {
     return ImmutableList.copyOf(beans);
   }
 }

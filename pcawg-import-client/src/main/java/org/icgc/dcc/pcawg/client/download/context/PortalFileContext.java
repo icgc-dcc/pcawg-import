@@ -1,9 +1,9 @@
-package org.icgc.dcc.pcawg.client.model.metadata;
+package org.icgc.dcc.pcawg.client.download.context;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
+import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 
 import java.io.File;
 

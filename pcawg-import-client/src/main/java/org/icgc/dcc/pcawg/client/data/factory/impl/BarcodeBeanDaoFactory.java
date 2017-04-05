@@ -1,17 +1,17 @@
 package org.icgc.dcc.pcawg.client.data.factory.impl;
 
 import lombok.SneakyThrows;
-import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
-import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeBeanDao;
+import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeSheetBeanDao;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.factory.AbstractDaoFactory;
 
 import static org.icgc.dcc.pcawg.client.utils.FileRestorer.newFileRestorer;
 
-public class BarcodeBeanDaoFactory extends AbstractDaoFactory<BarcodeBean, BarcodeSearchRequest, BarcodeBeanDao> {
+public class BarcodeBeanDaoFactory extends AbstractDaoFactory<BarcodeSheetBean, BarcodeSearchRequest, BarcodeSheetBeanDao> {
 
   @SneakyThrows
-  public static BarcodeBeanDao buildBarcodeBeanDao (String downloadUrl, String inputFilename, String persistedFilename) {
+  public static BarcodeSheetBeanDao buildBarcodeSheetBeanDao(String downloadUrl, String inputFilename, String persistedFilename) {
     return new BarcodeBeanDaoFactory(downloadUrl, inputFilename, persistedFilename).getObject();
   }
 
@@ -20,8 +20,8 @@ public class BarcodeBeanDaoFactory extends AbstractDaoFactory<BarcodeBean, Barco
   }
 
   @Override
-  protected BarcodeBeanDao newObject(String filename) {
-    return BarcodeBeanDao.newBarcodeBeanDao(filename);
+  protected BarcodeSheetBeanDao newObject(String filename) {
+    return BarcodeSheetBeanDao.newBarcodeSheetBeanDao(filename);
   }
 
 }

@@ -2,7 +2,7 @@ package org.icgc.dcc.pcawg.client.data.barcode.impl;
 
 import lombok.NoArgsConstructor;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static lombok.AccessLevel.PRIVATE;
@@ -18,10 +18,10 @@ public class BarcodeSheetParser {
   private static final String TAB = "\t";
 
 
-  public static BarcodeBean parseLine(String tsvLine){
+  public static BarcodeSheetBean parseLine(String tsvLine){
     val a = tsvLine.trim().split(TAB);
     checkArgument(a.length == MAX_NUM_COLUMNS, "Max allowed columns is %s, but input columns is %s", MAX_NUM_COLUMNS, a.length);
-    val b = new BarcodeBean();
+    val b = new BarcodeSheetBean();
     b.setProject(a[PROJECT_POS]);
     b.setEntity_type(a[ENTITY_TYPE_POS]);
     b.setUuid(a[UUID_POS]);

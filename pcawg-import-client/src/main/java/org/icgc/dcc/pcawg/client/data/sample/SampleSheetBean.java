@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.model.beans;
+package org.icgc.dcc.pcawg.client.data.sample;
 
 import com.opencsv.bean.CsvBindByName;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 @Data
 @Builder
 @RequiredArgsConstructor
-public class SampleBean implements Serializable {
+public class SampleSheetBean implements Serializable {
 
   public static final long serialVersionUID = 1490934572L;
 
@@ -43,6 +43,6 @@ public class SampleBean implements Serializable {
     return pattern.matcher(dccProjectCode).find();
   }
 
-  public SampleBean(){}
+  public SampleSheetBean(){}
 
 }

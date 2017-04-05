@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.model.beans;
+package org.icgc.dcc.pcawg.client.data.barcode;
 
 import com.opencsv.bean.CsvBindByName;
 import lombok.Data;
@@ -8,12 +8,12 @@ import lombok.val;
 import java.io.Serializable;
 
 @Data
-public class BarcodeBean implements Serializable {
+public class BarcodeSheetBean implements Serializable {
 
   public static final long serialVersionUID = 1490934537L;
 
-  public static BarcodeBean newBarcodeBean(String project, String entity_type, String uuid, String barcode){
-    val b = new BarcodeBean();
+  public static BarcodeSheetBean newBarcodeSheetBean(String project, String entity_type, String uuid, String barcode){
+    val b = new BarcodeSheetBean();
     b.setUuid(uuid);
     b.setBarcode(barcode);
     b.setEntity_type(entity_type);
@@ -33,6 +33,6 @@ public class BarcodeBean implements Serializable {
     this.uuid = uuid.toLowerCase();
   }
 
-  public BarcodeBean() { }
+  public BarcodeSheetBean() { }
 
 }

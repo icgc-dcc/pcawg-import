@@ -20,9 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataBeanDAOAndDownload;
-import static org.icgc.dcc.pcawg.client.core.Factory.newFileSampleMetadataDAOOldAndDownload;
 import static org.icgc.dcc.pcawg.client.data.icgc.FileIdDao.newFileIdDao;
-import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
+import static org.icgc.dcc.pcawg.client.model.portal.PortalFilename.newPortalFilename;
 
 @Slf4j
 public class SampleMetadataDAOTest {
@@ -53,12 +52,6 @@ public class SampleMetadataDAOTest {
 
   @Test
   @SneakyThrows
-  public void testOldFetchSampleMetadata(){
-    runQuery(newFileSampleMetadataDAOOldAndDownload());
-  }
-
-  @Test
-  @SneakyThrows
   public void testFastFetchSampleMetadata(){
     runQuery(Factory.newFastFileSampleMetadataBeanDAOAndDownload());
   }
@@ -71,8 +64,8 @@ public class SampleMetadataDAOTest {
 
   public void runFileIdDaoTest(String input1, String expectedOutput1, String input2, String expectedOutput2){
     val sampleMetadataBeanDao = newFileSampleMetadataBeanDAOAndDownload();
-    val sampleDao = sampleMetadataBeanDao.getSampleDao();
-    val barcodeDao = sampleMetadataBeanDao.getBarcodeDao();
+    val sampleDao = sampleMetadataBeanDao.getSampleSheetDao();
+    val barcodeDao = sampleMetadataBeanDao.getBarcodeSheetDao();
     val icgcDao = newFileIdDao("icgcFileIdDao.dat", sampleDao, barcodeDao);
 
     val result1 = icgcDao.find(input1);

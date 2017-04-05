@@ -1,7 +1,6 @@
 package org.icgc.dcc.pcawg.client.data.metadata;
 
-import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
-import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
+import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
 
 public interface SampleMetadataDAO  {
 

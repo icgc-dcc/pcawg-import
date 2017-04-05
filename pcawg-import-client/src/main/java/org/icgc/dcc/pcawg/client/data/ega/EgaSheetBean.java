@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.model.beans;
+package org.icgc.dcc.pcawg.client.data.ega;
 
 import com.opencsv.bean.CsvBindByName;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 @Data
-public class EgaBean {
+public class EgaSheetBean {
 
   private static int INSTANCE_COUNT = 0;
 
@@ -23,7 +23,7 @@ public class EgaBean {
   @Getter
   private final int id;
 
-  public EgaBean(){
+  public EgaSheetBean(){
     this.id = ++INSTANCE_COUNT;
   }
 

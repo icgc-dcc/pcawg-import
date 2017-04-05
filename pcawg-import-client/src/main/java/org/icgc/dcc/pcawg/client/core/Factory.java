@@ -6,17 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
-import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeFastDao;
+import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeSheetFastDao;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataBeanDAO;
-import org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataDAO_old;
-import org.icgc.dcc.pcawg.client.data.sample.impl.SampleFastDao;
+import org.icgc.dcc.pcawg.client.data.sample.impl.SampleSheetFastDao;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Portal;
-import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
 import org.icgc.dcc.pcawg.client.download.Storage;
-import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
-import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
+import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
@@ -53,11 +51,10 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsController.newHadoopFsController;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControllerAdapter.newHadoopFsControllerAdapter;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.LocalFsController.newLocalFsController;
-import static org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory.buildBarcodeBeanDao;
-import static org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory.buildSampleBeanDao;
+import static org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory.buildBarcodeSheetBeanDao;
+import static org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory.buildSampleSheetBeanDao;
 import static org.icgc.dcc.pcawg.client.data.icgc.FileIdDao.newFileIdDao;
-import static org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
-import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
+import static org.icgc.dcc.pcawg.client.download.query.PortalVcfFileQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
@@ -124,14 +121,6 @@ public class Factory {
     return new MetadataContainer(sampleMetadataDao, portalMetadataSet);
   }
 
-  private static PortalFileDownloader newPortalFileDownloader(WorkflowTypes callerType){
-    return PortalFileDownloader.newPortalFileDownloader(newPortal(callerType), newDefaultStorage());
-  }
-
-  public static PortalFileDownloader newConsensusPortalFileDownloader(){
-    return newPortalFileDownloader(CONSENSUS);
-  }
-
   public static SSMMetadata newSSMMetadata(SampleMetadata sampleMetadata){
     val workflowType = sampleMetadata.getWorkflowType();
     val dataType = sampleMetadata.getDataType();
@@ -167,8 +156,8 @@ public class Factory {
 
   @SneakyThrows
   public static FileSampleMetadataBeanDAO newFileSampleMetadataBeanDAOAndDownload(){
-    val sampleDao = buildSampleBeanDao(SAMPLE_SHEET_TSV_URL,SAMPLE_SHEET_TSV_FILENAME,SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME );
-    val barcodeDao = buildBarcodeBeanDao(BARCODE_SHEET_TSV_URL,BARCODE_SHEET_TSV_FILENAME,BARCODE_BEAN_DAO_PERSISTANCE_FILENAME );
+    val sampleDao = buildSampleSheetBeanDao(SAMPLE_SHEET_TSV_URL,SAMPLE_SHEET_TSV_FILENAME,SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME );
+    val barcodeDao = buildBarcodeSheetBeanDao(BARCODE_SHEET_TSV_URL,BARCODE_SHEET_TSV_FILENAME,BARCODE_BEAN_DAO_PERSISTANCE_FILENAME );
     val icgcfileIdDao =  newFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleDao, barcodeDao);
     log.info("Done initialized SampleFastDao, BarcodeFastDao, and IcgcFileIdDao, ... creating FileSampleMetadataBeanDAO");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao, icgcfileIdDao);
@@ -178,27 +167,16 @@ public class Factory {
   public static FileSampleMetadataBeanDAO newFastFileSampleMetadataBeanDAOAndDownload(){
     downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
     downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
-    val sampleDao = SampleFastDao.newSampleFastDao(SAMPLE_SHEET_TSV_FILENAME, SAMPLE_SHEET_HAS_HEADER);
-    val barcodeDao = BarcodeFastDao.newBarcodeFastDao(BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
+    val sampleDao = SampleSheetFastDao.newSampleSheetFastDao(SAMPLE_SHEET_TSV_FILENAME, SAMPLE_SHEET_HAS_HEADER);
+    val barcodeDao = BarcodeSheetFastDao.newBarcodeSheetFastDao(BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
     val icgcfileIdDao =  newFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleDao, barcodeDao);
     log.info("Done initializing SampleFastDao, BarcodeFastDao, and IcgcFileIdDao, ... creating FileSampleMetadataBeanDAO");
     return new FileSampleMetadataBeanDAO(sampleDao, barcodeDao, icgcfileIdDao);
   }
 
-  @SneakyThrows
-  public static FileSampleMetadataDAO_old newFileSampleMetadataDAOOldAndDownload(){
-    downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
-    downloadUUID2BarcodeSheet(BARCODE_SHEET_TSV_FILENAME);
-    log.info("Done downloading, creating FileSampleMetadataDAO_old");
-    return newFileSampleMetadataDAO_old(SAMPLE_SHEET_TSV_FILENAME,
-        SAMPLE_SHEET_HAS_HEADER, BARCODE_SHEET_TSV_FILENAME, BARCODE_SHEET_HAS_HEADER);
-  }
-
-
   public static SampleMetadataDAO newSampleMetadataDAO(){
 //    return newFastFileSampleMetadataBeanDAOAndDownload(); // Fastest loader, and uses beans, but hardcoded column headers
     return newFileSampleMetadataBeanDAOAndDownload(); //Uses beans, but slow loading
-//    return newFileSampleMetadataDAOOldAndDownload(); // USes custom parser
   }
 
 }

@@ -4,11 +4,11 @@ import com.google.common.io.Resources;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeBeanDao;
+import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeSheetBeanDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
-import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
-import org.icgc.dcc.pcawg.client.data.sample.impl.SampleBeanDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
+import org.icgc.dcc.pcawg.client.data.sample.impl.SampleSheetBeanDao;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.model.beans.BarcodeBean.newBarcodeBean;
+import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean.newBarcodeSheetBean;
 import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;
 
 @Slf4j
@@ -61,9 +61,9 @@ public class BeanCsvParserTest {
 
   @Test
   public void testBarcodeBeanEquality(){
-    val ref = newBarcodeBean("a", "b", "c", "d");
-    val same = newBarcodeBean("a", "b", "c", "d");
-    val diff = newBarcodeBean("a", "b", "c", "z");
+    val ref = newBarcodeSheetBean("a", "b", "c", "d");
+    val same = newBarcodeSheetBean("a", "b", "c", "d");
+    val diff = newBarcodeSheetBean("a", "b", "c", "z");
     assertThat(ref.equals(same)).isTrue();
     assertThat(ref.equals(diff)).isFalse();
     assertThat(ref.hashCode() == same.hashCode()).isTrue();
@@ -81,21 +81,21 @@ public class BeanCsvParserTest {
 
   @Test
   public void testSampleSearchRequestEquality(){
-    val ref = SampleSearchRequest.builder()
+    val ref = SampleSheetSearchRequest.builder()
         .donor_unique_id("a")
         .aliquot_id("b")
         .dcc_specimen_type("c")
         .library_strategy("d")
         .build();
 
-    val same = SampleSearchRequest.builder()
+    val same = SampleSheetSearchRequest.builder()
         .donor_unique_id("a")
         .aliquot_id("b")
         .dcc_specimen_type("c")
         .library_strategy("d")
         .build();
 
-    val diff = SampleSearchRequest.builder()
+    val diff = SampleSheetSearchRequest.builder()
         .donor_unique_id("a")
         .aliquot_id("b")
         .dcc_specimen_type("c")
@@ -109,7 +109,7 @@ public class BeanCsvParserTest {
 
   @Test
   public void testSampleBeansEquality(){
-    val ref = SampleBean.builder()
+    val ref = SampleSheetBean.builder()
         .donor_unique_id("BLCA-US::096b4f32-10c1-4737-a0dd-cae04c54ee33")
         .donor_wgs_exclusion_white_gray("Whitelist")
         .submitter_donor_id("096b4f32-10c1-4737-a0dd-cae04c54ee33")
@@ -124,7 +124,7 @@ public class BeanCsvParserTest {
         .library_strategy("WGS")
         .build();
 
-    val same = SampleBean.builder()
+    val same = SampleSheetBean.builder()
         .donor_unique_id("BLCA-US::096b4f32-10c1-4737-a0dd-cae04c54ee33")
         .donor_wgs_exclusion_white_gray("Whitelist")
         .submitter_donor_id("096b4f32-10c1-4737-a0dd-cae04c54ee33")
@@ -139,7 +139,7 @@ public class BeanCsvParserTest {
         .library_strategy("WGS")
         .build();
 
-    val diff = SampleBean.builder()
+    val diff = SampleSheetBean.builder()
         .donor_unique_id("BLCA-US::096b4f32-10c1-4737-a0dd-cae04c54ee33")
         .donor_wgs_exclusion_white_gray("Whitelist")
         .submitter_donor_id("096b4f32-10c1-4737-a0dd-cae04c54ee33")
@@ -162,11 +162,11 @@ public class BeanCsvParserTest {
   @Test
   @SneakyThrows
   public void testSampleDaoUs(){
-    val dao = SampleBeanDao.newSampleBeanDao(getSampleSheetReader());
+    val dao = SampleSheetBeanDao.newSampleSheetBeanDao(getSampleSheetReader());
     val aliquotId = "e0fccaf5-925a-41f9-b87c-cd5ee4aecb59";
     val results = dao.findAliquotId(aliquotId);
     assertThat(results).hasSize(1);
-    val bean1 = SampleBean.builder()
+    val bean1 = SampleSheetBean.builder()
         .donor_unique_id("BLCA-US::096b4f32-10c1-4737-a0dd-cae04c54ee33")
         .donor_wgs_exclusion_white_gray("Whitelist")
         .submitter_donor_id("096b4f32-10c1-4737-a0dd-cae04c54ee33")
@@ -186,30 +186,30 @@ public class BeanCsvParserTest {
   @Test
   @SneakyThrows
   public void testSampleDaoNonUs(){
-    val dao = SampleBeanDao.newSampleBeanDao(getSampleSheetReader());
+    val dao = SampleSheetBeanDao.newSampleSheetBeanDao(getSampleSheetReader());
     val aliquotId = "f82d213f-bc96-5b1d-e040-11ac0c486880";
     log.info("AliquotId: {}", aliquotId);
     log.info("fff: {}",
         dao.findAliquotId(aliquotId)
             .stream()
-            .map(SampleBean::toString)
+            .map(SampleSheetBean::toString)
             .collect(joining("\n")) );
   }
 
   @Test
   @SneakyThrows
   public void testRequestWildCardAliquotId() {
-    val request = SampleSearchRequest.builder()
+    val request = SampleSheetSearchRequest.builder()
         .aliquot_id("*")
         .donor_unique_id("BLCA-US::096b4f32-10c1-4737-a0dd-cae04c54ee33")
         .dcc_specimen_type("normal")
         .library_strategy("WGS")
         .build();
-    val dao = SampleBeanDao.newSampleBeanDao(getSampleSheetReader());
+    val dao = SampleSheetBeanDao.newSampleSheetBeanDao(getSampleSheetReader());
     val results = dao.find(request);
-    log.info("Results: {}", results.stream().map(SampleBean::toString).collect(Collectors.joining("\n")));
+    log.info("Results: {}", results.stream().map(SampleSheetBean::toString).collect(Collectors.joining("\n")));
     assertThat(results).hasSize(2);
-    val bean1 = SampleBean.builder()
+    val bean1 = SampleSheetBean.builder()
         .donor_unique_id("BLCA-US::096b4f32-10c1-4737-a0dd-cae04c54ee33")
         .donor_wgs_exclusion_white_gray("Whitelist")
         .submitter_donor_id("096b4f32-10c1-4737-a0dd-cae04c54ee33")
@@ -225,7 +225,7 @@ public class BeanCsvParserTest {
         .build();
     assertThat(results.get(0)).isEqualTo(bean1);
 
-    val bean2 = SampleBean.builder()
+    val bean2 = SampleSheetBean.builder()
         .donor_unique_id("BLCA-US::096b4f32-10c1-4737-a0dd-cae04c54ee33")
         .donor_wgs_exclusion_white_gray("Whitelist")
         .submitter_donor_id("096b4f32-10c1-4737-a0dd-cae04c54ee33")
@@ -245,9 +245,9 @@ public class BeanCsvParserTest {
   @Test
   @SneakyThrows
   public void testBarcodeDao(){
-    val dao = BarcodeBeanDao.newBarcodeBeanDao(getBarcodeSheetReader());
+    val dao = BarcodeSheetBeanDao.newBarcodeSheetBeanDao(getBarcodeSheetReader());
     val uuid = "0304b12d-7640-4150-a581-2eea2b1f2ad5";
-    val expected = newBarcodeBean(
+    val expected = newBarcodeSheetBean(
     "TCGA-ACC", "donor",
         "0304b12d-7640-4150-a581-2eea2b1f2ad5", "TCGA-OR-A5LL");
 
@@ -259,9 +259,9 @@ public class BeanCsvParserTest {
   @Test
   @SneakyThrows
   public void testCapsBarcodeDao(){
-    val dao = BarcodeBeanDao.newBarcodeBeanDao(getBarcodeSheetReader());
+    val dao = BarcodeSheetBeanDao.newBarcodeSheetBeanDao(getBarcodeSheetReader());
     val uuid = "075dbfd0-9cf4-4877-884f-ae858902c79e";
-    val expected = newBarcodeBean(
+    val expected = newBarcodeSheetBean(
     "TCGA-ACC","donor",
         "075dbfd0-9cf4-4877-884f-ae858902c79e", "TCGA-OR-A5J7");
     val results = dao.find(newBarcodeRequest(uuid));

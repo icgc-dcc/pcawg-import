@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.model.metadata.project;
+package org.icgc.dcc.pcawg.client.data.metadata;
 
 import lombok.Builder;
 import lombok.NonNull;

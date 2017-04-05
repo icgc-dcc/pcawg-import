@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
-import org.icgc.dcc.pcawg.client.model.metadata.MetadataContext;
-import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
+import org.icgc.dcc.pcawg.client.download.context.MetadataContext;
+import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 
 import java.util.List;
 import java.util.Map;
@@ -28,10 +28,6 @@ public class MetadataContainer {
 
   public MetadataContainer(@NonNull SampleMetadataDAO sampleMetadataDAO, @NonNull Set<PortalMetadata> portalMetadatas){
     init(sampleMetadataDAO, portalMetadatas);
-  }
-
-  public MetadataContainer(@NonNull Portal portal, @NonNull SampleMetadataDAO sampleMetadataDAO){
-    init(portal, sampleMetadataDAO);
   }
 
   private void init(SampleMetadataDAO sampleMetadataDAO, Set<PortalMetadata> portalMetadatas){

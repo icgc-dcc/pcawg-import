@@ -6,22 +6,22 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.icgc.FileIdDao;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
-import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
-import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
-import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
-import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
-import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
+import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.pcawg.client.data.IdResolver.getAnalyzedSampleId;
-import static org.icgc.dcc.pcawg.client.data.IdResolver.getMatchedSampleId;
+import static org.icgc.dcc.pcawg.client.data.icgc.IdResolver.getAnalyzedSampleId;
+import static org.icgc.dcc.pcawg.client.data.icgc.IdResolver.getMatchedSampleId;
 import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;
 
 @Slf4j
@@ -34,19 +34,19 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
 
 
   @NonNull
-  private final SampleDao<SampleBean, SampleSearchRequest> sampleDao;
+  private final SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao;
 
   @NonNull
-  private final BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao;
+  private final BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao;
 
   @NonNull
   private final FileIdDao fileIdDao;
 
-  private SampleBean getFirstSampleBean(String aliquotId) throws SampleMetadataNotFoundException {
-    val aliquotIdResult = sampleDao.findFirstAliquotId(aliquotId);
+  private SampleSheetBean getFirstSampleBean(String aliquotId) throws SampleMetadataNotFoundException {
+    val aliquotIdResult = sampleSheetDao.findFirstAliquotId(aliquotId);
     if (! aliquotIdResult.isPresent()){
       throw new SampleMetadataNotFoundException(
-      String.format("Could not find first SampleBean for aliquot_id [%s]", aliquotId));
+      String.format("Could not find first SampleSheetBean for aliquot_id [%s]", aliquotId));
 
     }
     return aliquotIdResult.get();
@@ -65,8 +65,8 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
     val isUsProject =  sampleBean.isUsProject();
 
 
-    val analyzedSampleId = getAnalyzedSampleId(barcodeDao,isUsProject, barcodeSearchRequest);
-    val matchedSampleId = getMatchedSampleId(sampleDao, barcodeDao, donorUniqueId);
+    val analyzedSampleId = getAnalyzedSampleId(barcodeSheetDao,isUsProject, barcodeSearchRequest);
+    val matchedSampleId = getMatchedSampleId(sampleSheetDao, barcodeSheetDao, donorUniqueId);
     val analyzedFileIdResult = fileIdDao.find(analyzedSampleId);
     val matchedFileIdResult = fileIdDao.find(matchedSampleId);
     checkState(analyzedFileIdResult.isPresent(),

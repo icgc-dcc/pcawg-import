@@ -6,8 +6,8 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
-import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
 import java.io.FileReader;
@@ -20,45 +20,45 @@ import java.util.List;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
-public class BarcodeBeanDaoOld implements Serializable, BarcodeDao<BarcodeBean, String> {
+public class BarcodeBeanSheetDaoOld implements Serializable, BarcodeSheetDao<BarcodeSheetBean, String> {
 
   public static final long serialVersionUID = 1490628681L;
   private static final char SEPERATOR = '\t';
 
-  private static List<BarcodeBean> convert(Reader reader){
+  private static List<BarcodeSheetBean> convert(Reader reader){
     val csvReader = new CSVReader(reader, SEPERATOR);
-    val strategy = new HeaderColumnNameMappingStrategy<BarcodeBean>();
-    strategy.setType(BarcodeBean.class);
-    val csvToBean = new CsvToBean<BarcodeBean>();
+    val strategy = new HeaderColumnNameMappingStrategy<BarcodeSheetBean>();
+    strategy.setType(BarcodeSheetBean.class);
+    val csvToBean = new CsvToBean<BarcodeSheetBean>();
     return csvToBean.parse(strategy, csvReader);
   }
 
-  public static BarcodeBeanDaoOld newBarcodeBeanDaoOld(String inputFilename){
-    return new BarcodeBeanDaoOld(inputFilename);
+  public static BarcodeBeanSheetDaoOld newBarcodeBeanDaoOld(String inputFilename){
+    return new BarcodeBeanSheetDaoOld(inputFilename);
   }
 
-  public static BarcodeBeanDaoOld newBarcodeBeanDaoOld(Reader reader){
-    return new BarcodeBeanDaoOld(reader);
+  public static BarcodeBeanSheetDaoOld newBarcodeBeanDaoOld(Reader reader){
+    return new BarcodeBeanSheetDaoOld(reader);
   }
 
   @SneakyThrows
-  public static BarcodeBeanDaoOld restoreBarcodeBeanDaoOld(String storedBarcodeDaoFilename){
-    return (BarcodeBeanDaoOld) ObjectPersistance.restore(storedBarcodeDaoFilename);
+  public static BarcodeBeanSheetDaoOld restoreBarcodeBeanDaoOld(String storedBarcodeDaoFilename){
+    return (BarcodeBeanSheetDaoOld) ObjectPersistance.restore(storedBarcodeDaoFilename);
   }
 
   private final Reader reader;
 
-  private List<BarcodeBean> beans;
+  private List<BarcodeSheetBean> beans;
 
   @Override
-  public List<BarcodeBean> find(String uuid){
+  public List<BarcodeSheetBean> find(String uuid){
     return beans.stream()
         .filter(b -> b.getUuid().equals(uuid))
         .collect(toImmutableList());
   }
 
   @SneakyThrows
-  private BarcodeBeanDaoOld(String inputFilename) {
+  private BarcodeBeanSheetDaoOld(String inputFilename) {
     val file = Paths.get(inputFilename).toFile();
     checkState(file.exists(),"The inputFilename [%s] does not exist", file.getAbsolutePath());
     checkState(file.isFile(),"The inputFilename [%s] is not a file" , file.getAbsolutePath());
@@ -67,7 +67,7 @@ public class BarcodeBeanDaoOld implements Serializable, BarcodeDao<BarcodeBean, 
     this.reader.close();
   }
 
-  private BarcodeBeanDaoOld(Reader reader) {
+  private BarcodeBeanSheetDaoOld(Reader reader) {
     this.reader = reader;
     this.beans = convert(reader);
   }
@@ -76,7 +76,7 @@ public class BarcodeBeanDaoOld implements Serializable, BarcodeDao<BarcodeBean, 
     ObjectPersistance.store(this, filename);
   }
 
-  @Override public List<BarcodeBean> findAll() {
+  @Override public List<BarcodeSheetBean> findAll() {
     return ImmutableList.copyOf(beans);
   }
 }

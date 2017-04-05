@@ -11,13 +11,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.ObjectNodeConverter;
-import org.icgc.dcc.pcawg.client.model.beans.BarcodeBean;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeDao;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 import org.icgc.dcc.pcawg.client.utils.FileRestorer;
-import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
-import org.icgc.dcc.pcawg.client.data.sample.SampleDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFiles;
 
@@ -29,10 +29,10 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
-import static org.icgc.dcc.pcawg.client.data.IdResolver.getAllSubmitterSampleIds;
-import static org.icgc.dcc.pcawg.client.data.IdResolver.getAllTcgaAliquotBarcodes;
-import static org.icgc.dcc.pcawg.client.download.PortalSubmittedSampleIdQueryCreator.newSubmitterSampleIdQueryCreator;
-import static org.icgc.dcc.pcawg.client.download.PortalTcgaAliquotBarcodeQueryCreator.newTcgaAliquotBarcodeQueryCreator;
+import static org.icgc.dcc.pcawg.client.data.icgc.IdResolver.getAllSubmitterSampleIds;
+import static org.icgc.dcc.pcawg.client.data.icgc.IdResolver.getAllTcgaAliquotBarcodes;
+import static org.icgc.dcc.pcawg.client.download.query.PortalSubmittedSampleIdQueryCreator.newSubmitterSampleIdQueryCreator;
+import static org.icgc.dcc.pcawg.client.download.query.PortalTcgaAliquotBarcodeQueryCreator.newTcgaAliquotBarcodeQueryCreator;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,10 +42,10 @@ public class FileIdDao implements Serializable {
 
   private static final int DEFAULT_BATCH_SIZE = 200;
 
-  public static FileIdDao newFileIdDao(SampleDao<SampleBean, SampleSearchRequest> sampleDao,
-      BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao){
-    val submitterSampleIds = getAllSubmitterSampleIds(sampleDao, barcodeDao);
-    val tcgaAliquotBarcodes = getAllTcgaAliquotBarcodes(sampleDao, barcodeDao);
+  public static FileIdDao newFileIdDao(SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
+      BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
+    val submitterSampleIds = getAllSubmitterSampleIds(sampleSheetDao, barcodeSheetDao);
+    val tcgaAliquotBarcodes = getAllTcgaAliquotBarcodes(sampleSheetDao, barcodeSheetDao);
     val dao = new FileIdDao(tcgaAliquotBarcodes, submitterSampleIds);
     dao.init();
     return dao;
@@ -53,15 +53,15 @@ public class FileIdDao implements Serializable {
 
   @SneakyThrows
   public static FileIdDao newFileIdDao(String persistedFilename,
-      SampleDao<SampleBean, SampleSearchRequest> sampleDao,
-      BarcodeDao<BarcodeBean, BarcodeSearchRequest> barcodeDao){
+      SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
+      BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
     val fileRestorer = FileRestorer.<FileIdDao>newFileRestorer(persistedFilename);
     if (fileRestorer.isPersisted()){
       log.info("Persisted filename for IcgcFileIdDao found [{}], restoring it...", fileRestorer.getPersistedFilename());
       return fileRestorer.restore();
     } else {
       log.info("Persisted filename for IcgcFileIdDao NOT found [{}], creating a new one and storing it...", fileRestorer.getPersistedFilename());
-      val dao = newFileIdDao(sampleDao, barcodeDao);
+      val dao = newFileIdDao(sampleSheetDao, barcodeSheetDao);
       fileRestorer.store(dao);
       return dao;
     }

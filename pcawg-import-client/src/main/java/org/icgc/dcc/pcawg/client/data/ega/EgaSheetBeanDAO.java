@@ -10,7 +10,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.beans.EgaBean;
 
 import java.io.File;
 import java.io.FileReader;
@@ -32,7 +31,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
 @Slf4j
-public class EgaAccessionDAO {
+public class EgaSheetBeanDAO {
 
   private static final char SEPERATOR = '\t';
   @Getter private final String inputDirname;
@@ -45,10 +44,10 @@ public class EgaAccessionDAO {
   private boolean initialized = false;
 
   private File inputDirHandle;
-  private Map<EgaSearchRequest, List<EgaBean>> lookupMap;
+  private Map<EgaSheetSearchRequest, List<EgaSheetBean>> lookupMap;
 
 
-  public EgaAccessionDAO(@NonNull String inputDirname, @NonNull String globPattern){
+  public EgaSheetBeanDAO(@NonNull String inputDirname, @NonNull String globPattern){
     this.inputDirname = inputDirname;
     this.globPattern = globPattern;
     this.inputDirHandle = Paths.get(inputDirname).toFile();
@@ -59,34 +58,34 @@ public class EgaAccessionDAO {
   public void init(){
     log.info("Initializing {} instance using inputDirname {}", this.getClass().getName(), inputDirname);
     this.lookupMap = getPaths().stream()
-        .map(EgaAccessionDAO::process)
+        .map(EgaSheetBeanDAO::process)
         .flatMap(Collection::stream)
-        .collect(groupingBy(EgaSearchRequest::fromEgaBean));
+        .collect(groupingBy(EgaSheetSearchRequest::fromEgaBean));
     initialized = true;
   }
 
-  public Optional<EgaBean> findFirst(EgaSearchRequest request){
+  public Optional<EgaSheetBean> findFirst(EgaSheetSearchRequest request){
     return findAll(request)
         .stream()
         .findFirst();
   }
 
-  public List<EgaBean> findAll(EgaSearchRequest request){
+  public List<EgaSheetBean> findAll(EgaSheetSearchRequest request){
     checkState(lookupMap.containsKey(request), "The lookup table does not contain the findFirst request [%s]", request);
     return lookupMap.get(request);
   }
 
   @SneakyThrows
-  private static List<EgaBean> process(Path path){
+  private static List<EgaSheetBean> process(Path path){
     val file = path.toFile();
     val reader = new CSVReader(new FileReader(file), SEPERATOR);
-    val strategy = new HeaderColumnNameMappingStrategy<EgaBean>();
-    strategy.setType(EgaBean.class);
-    val csvToBean = new CsvToBean<EgaBean>();
+    val strategy = new HeaderColumnNameMappingStrategy<EgaSheetBean>();
+    strategy.setType(EgaSheetBean.class);
+    val csvToBean = new CsvToBean<EgaSheetBean>();
     return csvToBean.parse(strategy, reader);
   }
 
-  public List<EgaBean> getAll(){
+  public List<EgaSheetBean> getAll(){
     return lookupMap.values().stream()
         .flatMap(List::stream)
         .collect(toImmutableList());

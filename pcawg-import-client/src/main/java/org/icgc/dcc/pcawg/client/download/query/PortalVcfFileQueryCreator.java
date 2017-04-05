@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.download;
+package org.icgc.dcc.pcawg.client.download.query;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NonNull;
@@ -15,11 +15,11 @@ import static org.icgc.dcc.pcawg.client.utils.Strings.toStringArray;
 @RequiredArgsConstructor(access = PRIVATE)
 @Value
 @Slf4j
-public class PortalQueryCreator implements ObjectNodeConverter {
+public class PortalVcfFileQueryCreator implements ObjectNodeConverter {
 
-  public static final PortalQueryCreator newPcawgQueryCreator(WorkflowTypes callerType){
-    log.info("Creating PortalQueryCreator instance for callertype [{}]", callerType.name());
-    return new PortalQueryCreator(callerType);
+  public static final PortalVcfFileQueryCreator newPcawgQueryCreator(WorkflowTypes callerType){
+    log.info("Creating PortalVcfFileQueryCreator instance for callertype [{}]", callerType.name());
+    return new PortalVcfFileQueryCreator(callerType);
   }
 
   @NonNull

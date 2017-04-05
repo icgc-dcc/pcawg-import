@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.data.sample;
 import java.util.List;
 import java.util.Optional;
 
-public interface SampleDao<B, R> {
+public interface SampleSheetDao<B, R> {
 
   List<B> find(R request);
 

@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 @Data
 @Builder
-public class SampleSearchRequest implements SearchRequest<SampleSearchRequest>, Serializable {
+public class SampleSheetSearchRequest implements SearchRequest<SampleSheetSearchRequest>, Serializable {
   public static final long serialVersionUID = 1490934538L;
 
   @CsvBindByName(required=true) @NonNull private String  donor_unique_id;
@@ -21,15 +21,15 @@ public class SampleSearchRequest implements SearchRequest<SampleSearchRequest>, 
   @CsvBindByName(required=true) @NonNull private String  aliquot_id;
 
   @Override
-  public boolean matches(SampleSearchRequest request) {
-    boolean result = matchFunctions(request, SampleSearchRequest::getAliquot_id, String::equals);
-    result &= matchFunctions(request, SampleSearchRequest::getLibrary_strategy, String::equals);
-    result &= matchFunctions(request, SampleSearchRequest::getDcc_specimen_type, SearchRequest::lowercaseAndContains);
-    result &= matchFunctions(request, SampleSearchRequest::getDonor_unique_id, String::equals);
+  public boolean matches(SampleSheetSearchRequest request) {
+    boolean result = matchFunctions(request, SampleSheetSearchRequest::getAliquot_id, String::equals);
+    result &= matchFunctions(request, SampleSheetSearchRequest::getLibrary_strategy, String::equals);
+    result &= matchFunctions(request, SampleSheetSearchRequest::getDcc_specimen_type, SearchRequest::lowercaseAndContains);
+    result &= matchFunctions(request, SampleSheetSearchRequest::getDonor_unique_id, String::equals);
     return result;
   }
 
-  private boolean matchFunctions(SampleSearchRequest rr, Function<SampleSearchRequest, String> functor, BiPredicate<String, String> comparingFunctor){
+  private boolean matchFunctions(SampleSheetSearchRequest rr, Function<SampleSheetSearchRequest, String> functor, BiPredicate<String, String> comparingFunctor){
     Object s = new Object();
     s.equals("");
     return SearchRequest.matchFunctions(this, rr,functor, comparingFunctor );

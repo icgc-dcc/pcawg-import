@@ -2,7 +2,7 @@ package org.icgc.dcc.pcawg.client.data.sample.impl;
 
 import lombok.NoArgsConstructor;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static lombok.AccessLevel.PRIVATE;
@@ -24,10 +24,10 @@ public class SampleSheetParser {
   private static final int MAX_NUM_COLUMNS = 12;
   private static final String TAB = "\t";
 
-  public static SampleBean parseLine(String tsvLine){
+  public static SampleSheetBean parseLine(String tsvLine){
     val a = tsvLine.trim().split(TAB);
     checkArgument(a.length == MAX_NUM_COLUMNS, "Max allowed columns is %s, but input columns is %s", MAX_NUM_COLUMNS, a.length);
-    val b = new SampleBean();
+    val b = new SampleSheetBean();
     b.setSubmitter_specimen_id(a[SUBMITTER_SPECIMEN_ID_POS]);
     b.setSubmitter_sample_id(a[SUBMITTER_SAMPLE_ID_POS]);
     b.setSubmitter_donor_id(a[SUBMITTER_DONOR_ID_POS]);

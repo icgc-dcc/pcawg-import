@@ -2,17 +2,16 @@ package org.icgc.dcc.pcawg.client.data.factory.impl;
 
 import lombok.SneakyThrows;
 import org.icgc.dcc.pcawg.client.data.factory.AbstractDaoFactory;
-import org.icgc.dcc.pcawg.client.model.beans.SampleBean;
-import org.icgc.dcc.pcawg.client.data.sample.impl.SampleBeanDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleSearchRequest;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
+import org.icgc.dcc.pcawg.client.data.sample.impl.SampleSheetBeanDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 
 import static org.icgc.dcc.pcawg.client.utils.FileRestorer.newFileRestorer;
-import static org.icgc.dcc.pcawg.client.data.sample.impl.SampleBeanDao.newSampleBeanDao;
 
-public class SampleBeanDaoFactory extends AbstractDaoFactory<SampleBean, SampleSearchRequest, SampleBeanDao> {
+public class SampleBeanDaoFactory extends AbstractDaoFactory<SampleSheetBean, SampleSheetSearchRequest, SampleSheetBeanDao> {
 
   @SneakyThrows
-  public static SampleBeanDao buildSampleBeanDao (String downloadUrl, String inputFilename, String persistedFilename) {
+  public static SampleSheetBeanDao buildSampleSheetBeanDao(String downloadUrl, String inputFilename, String persistedFilename) {
     return new SampleBeanDaoFactory(downloadUrl, inputFilename, persistedFilename).getObject();
   }
 
@@ -21,8 +20,8 @@ public class SampleBeanDaoFactory extends AbstractDaoFactory<SampleBean, SampleS
   }
 
   @Override
-  protected SampleBeanDao newObject(String filename) {
-    return newSampleBeanDao(filename);
+  protected SampleSheetBeanDao newObject(String filename) {
+    return SampleSheetBeanDao.newSampleSheetBeanDao(filename);
   }
 
 }
