@@ -1,10 +1,10 @@
 package org.icgc.dcc.pcawg.client.core.transformer.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.val;
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 import static org.icgc.dcc.common.core.util.Joiners.DOT;
@@ -31,11 +32,10 @@ import static org.icgc.dcc.pcawg.client.core.transformer.impl.BaseTransformer.ne
  * for a specific dccProjectCode are opened upon call, and closed when this object is closed.
  * @param <T>
  */
-@Builder
-@Getter
+@RequiredArgsConstructor(staticName = "newDccTransformer")
 @ToString
 @EqualsAndHashCode
-public final class DccTransformer<T> implements Transformer<TransformerContext<T>> {
+public final class DccTransformer<T> implements Transformer<DccTransformerContext<T>> {
 
   private static <T> Map<WorkflowTypes, Transformer<T>> createEmptyTransformerMap(){
     return Maps.newEnumMap(WorkflowTypes.class);
@@ -62,8 +62,20 @@ public final class DccTransformer<T> implements Transformer<TransformerContext<T
   private Map<WorkflowTypes, Transformer<T>> transformerMap = Maps.newEnumMap(WorkflowTypes.class);
   private Map<WorkflowTypes, Boolean> hasBeenWritenMap= Maps.newEnumMap(WorkflowTypes.class);
 
+  public List<Path> getWrittenPaths(){
+    val out = ImmutableList.<Path>builder();
+    for (val entry : hasBeenWritenMap.entrySet()){
+      val w = entry.getKey();
+      val written = entry.getValue();
+      if (written){
+        out.add(getOutputPath(w));
+      }
+    }
+    return out.build();
+  }
+
   @Override
-  public void transform(TransformerContext<T> ctx) throws IOException {
+  public void transform(DccTransformerContext<T> ctx) throws IOException {
     transform(ctx.getWorkflowTypes(), ctx.getObject());
   }
 

@@ -10,8 +10,8 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.Transformer;
-import org.icgc.dcc.pcawg.client.core.TransformerFactory;
+import org.icgc.dcc.pcawg.client.core.transformer.impl.BaseTransformer;
+import org.icgc.dcc.pcawg.client.core.transformer.TransformerFactory;
 import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
@@ -61,8 +61,8 @@ public class ConsensusVCFConverter {
   /**
    * State
    */
-  private Map<WorkflowTypes , Transformer<SSMPrimary>> primaryTransformerMap;
-  private Map<WorkflowTypes , Transformer<SSMMetadata>> metadataTransformerMap;
+  private Map<WorkflowTypes , BaseTransformer<SSMPrimary>> primaryTransformerMap;
+  private Map<WorkflowTypes , BaseTransformer<SSMMetadata>> metadataTransformerMap;
 
   @Getter
   private final List<String> failedFiles = newArrayList();
@@ -167,12 +167,12 @@ public class ConsensusVCFConverter {
             createCallerSpecificSSMPrimary(sampleMetadataConsensus, ssmPrimaryConsensus, workflowType));
   }
 
-  private Transformer<SSMPrimary> buildSSMPrimaryTransformer(WorkflowTypes workflowType, String dccProjectCode){
+  private BaseTransformer<SSMPrimary> buildSSMPrimaryTransformer(WorkflowTypes workflowType, String dccProjectCode){
     val primaryFWCtx = primaryFWCtxFactory.getFileWriterContext(workflowType, dccProjectCode);
     return primaryTransformerFactory.getTransformer(primaryFWCtx);
   }
 
-  private Transformer<SSMMetadata> buildSSMMetadataTransformer(WorkflowTypes workflowType, String dccProjectCode){
+  private BaseTransformer<SSMMetadata> buildSSMMetadataTransformer(WorkflowTypes workflowType, String dccProjectCode){
     val metadataFWCtx = metadataFWCtxFactory.getFileWriterContext(workflowType, dccProjectCode);
     return metadataTransformerFactory.getTransformer(metadataFWCtx);
   }
@@ -186,17 +186,17 @@ public class ConsensusVCFConverter {
     }
   }
 
-  //TODO: refactor this by making a decoration of Transforer<TransformerContext>, where TransformerContext will have
+  //TODO: refactor this by making a decoration of Transforer<DccTransformerContext>, where DccTransformerContext will have
   // all the neccessary member fields to create the correct Writer, and will handle closing the writer aswell
-  private Transformer<SSMPrimary> getSSMPrimaryTransformer(WorkflowTypes workflowType){
+  private BaseTransformer<SSMPrimary> getSSMPrimaryTransformer(WorkflowTypes workflowType){
     checkArgument(primaryTransformerMap.containsKey(workflowType),
-        "The primary Transformer map does not contain the workflowType [%s]", workflowType.getName());
+        "The primary BaseTransformer map does not contain the workflowType [%s]", workflowType.getName());
     return primaryTransformerMap.get(workflowType);
   }
 
-  private Transformer<SSMMetadata> getSSMMetadataTransformer(WorkflowTypes workflowType){
+  private BaseTransformer<SSMMetadata> getSSMMetadataTransformer(WorkflowTypes workflowType){
     checkArgument(metadataTransformerMap.containsKey(workflowType),
-        "The metadata Transformer map does not contain the workflowType [%s]", workflowType.getName());
+        "The metadata BaseTransformer map does not contain the workflowType [%s]", workflowType.getName());
     return metadataTransformerMap.get(workflowType);
   }
 
@@ -223,7 +223,7 @@ public class ConsensusVCFConverter {
   }
 
   @SneakyThrows
-  private static <T> void  flush(Map<WorkflowTypes, Transformer<T>> transformerMap){
+  private static <T> void  flush(Map<WorkflowTypes, BaseTransformer<T>> transformerMap){
     if (transformerMap != null){
       for (val t : transformerMap.values()){
         if (t != null){
@@ -233,7 +233,7 @@ public class ConsensusVCFConverter {
     }
   }
   @SneakyThrows
-  private static <T> void  close(Map<WorkflowTypes, Transformer<T>> transformerMap){
+  private static <T> void  close(Map<WorkflowTypes, BaseTransformer<T>> transformerMap){
     if (transformerMap != null){
       for (val t : transformerMap.values()){
         if (t != null){

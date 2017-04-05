@@ -4,7 +4,9 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.TransformerFactory;
+import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataBeanDAO;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
@@ -25,8 +27,11 @@ import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
 import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_BEAN_DAO_PERSISTANCE_FILENAME;
@@ -38,10 +43,17 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_BEAN_DAO_
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_PREFIX;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_EXTENSION;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_PREFIX;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
+import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsController.newHadoopFsController;
+import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControllerAdapter.newHadoopFsControllerAdapter;
+import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.LocalFsController.newLocalFsController;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old.newFileSampleMetadataDAO_old;
 import static org.icgc.dcc.pcawg.client.data.IcgcFileIdDao.newIcgcFileIdDao;
 import static org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory.buildBarcodeBeanDao;
@@ -57,6 +69,7 @@ public class Factory {
 
   private static final TSVConverter<SSMMetadata> SSM_METADATA_TSV_CONVERTER = new SSMMetadataTSVConverter();
   private static final TSVConverter<SSMPrimary> SSM_PRIMARY_TSV_CONVERTER = new SSMPrimaryTSVConverter();
+  private static final boolean APPEND_DCC_TRANSFORMERS = false;
 
   public static TransformerFactory<SSMMetadata> newSSMMetadataTransformerFactory(boolean useHdfs){
     return TransformerFactory.newTransformerFactory(SSM_METADATA_TSV_CONVERTER, useHdfs);
@@ -72,6 +85,29 @@ public class Factory {
     return newStorage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);
   }
 
+  public static DccTransformer<SSMMetadata> newDccMetadataTransformer(FsController<Path> fsController, String outputTsvDir, String dccProjectCode  ){
+    val outputDirPath = Paths.get(outputTsvDir);
+    return DccTransformer.<SSMMetadata>newDccTransformer(fsController, SSM_METADATA_TSV_CONVERTER,
+        outputDirPath,dccProjectCode, SSM_M_TSV_FILENAME_PREFIX,
+        SSM_M_TSV_FILENAME_EXTENSION, APPEND_DCC_TRANSFORMERS);
+  }
+
+  public static DccTransformer<SSMPrimary> newDccPrimaryTransformer(FsController<Path> fsController, String outputTsvDir, String dccProjectCode  ){
+    val outputDirPath = Paths.get(outputTsvDir);
+    return DccTransformer.<SSMPrimary>newDccTransformer(fsController, SSM_PRIMARY_TSV_CONVERTER,
+        outputDirPath,dccProjectCode, SSM_P_TSV_FILENAME_PREFIX,
+        SSM_P_TSV_FILENAME_EXTENSION, APPEND_DCC_TRANSFORMERS);
+  }
+
+  public static FsController<Path> newFsController(final boolean isHdfs, Optional<String> optionalHostname, Optional<String> optionalPort){
+    if (isHdfs){
+      checkArgument(optionalHostname.isPresent());
+      checkArgument(optionalPort.isPresent());
+      return newHadoopFsControllerAdapter(newHadoopFsController(optionalHostname.get(), optionalPort.get()));
+    } else {
+      return newLocalFsController();
+    }
+  }
 
   public static Portal newPortal(WorkflowTypes callerType){
     log.info("Creating new Portal instance for callerType [{}]", callerType.name());

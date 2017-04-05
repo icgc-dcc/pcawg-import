@@ -114,8 +114,6 @@ public class HdfsFileWriter extends Writer {
   public void flush() throws IOException {
     internalWriter.flush();
   }
-
-  // If empty file, delete it
   @Override
   public void close() throws IOException {
     internalWriter.close();

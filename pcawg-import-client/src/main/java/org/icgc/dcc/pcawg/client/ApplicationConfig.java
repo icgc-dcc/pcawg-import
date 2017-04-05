@@ -34,10 +34,8 @@ public class ApplicationConfig {
       @NonNull
       private String tsv_dir = OUTPUT_TSV_DIRECTORY;
 
-      @NonNull
-      private String hdfs_hostname = "localhost";
+      private String hdfs_hostname;
 
-      @NonNull
-      private String hdfs_port = "8020";
+      private String hdfs_port;
 
 }
