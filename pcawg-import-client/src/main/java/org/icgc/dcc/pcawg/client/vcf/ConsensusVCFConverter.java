@@ -1,39 +1,31 @@
 package org.icgc.dcc.pcawg.client.vcf;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.transformer.impl.BaseTransformer;
-import org.icgc.dcc.pcawg.client.core.transformer.TransformerFactory;
-import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
+import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PlainSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newEnumMap;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
-import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
 import static org.icgc.dcc.pcawg.client.model.NACodes.DATA_VERIFIED_TO_BE_UNKNOWN;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
@@ -43,207 +35,18 @@ import static org.icgc.dcc.pcawg.client.vcf.DataTypes.SNV_MNV;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.streamCallers;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
-@Builder
 @Slf4j
 public class ConsensusVCFConverter {
 
   private static final boolean REQUIRE_INDEX_CFG = false;
   private static final boolean F_CHECK_CORRECT_WORKTYPE = false;
-  private static final boolean DO_VALIDATION = true;
 
-  @NonNull private final TransformerFactory<SSMPrimary> primaryTransformerFactory;
-  @NonNull private final FileWriterContextFactory primaryFWCtxFactory;
-
-  @NonNull private final TransformerFactory<SSMMetadata> metadataTransformerFactory;
-  @NonNull private final FileWriterContextFactory metadataFWCtxFactory;
-
-  private static final String ILLEGAL_VALUE_REGEX = "^\\s+$";
-  /**
-   * State
-   */
-  private Map<WorkflowTypes , BaseTransformer<SSMPrimary>> primaryTransformerMap;
-  private Map<WorkflowTypes , BaseTransformer<SSMMetadata>> metadataTransformerMap;
-
-  @Getter
-  private final List<String> failedFiles = newArrayList();
-
-  private static long countIllegalValues(SSMMetadata ssmMetadata){
-    return stream(SSMMetadataFieldMapping.values())
-        .map( x -> x.extractStringValue(ssmMetadata))
-        .filter(s -> (s==null || s.matches(ILLEGAL_VALUE_REGEX)))
-        .count();
+  public static final ConsensusVCFConverter newConsensusVCFConverter(@NonNull Path vcfPath,
+      @NonNull SampleMetadata sampleMetadataConsensus){
+    return new ConsensusVCFConverter(vcfPath, sampleMetadataConsensus);
   }
 
-  private static long countIllegalValues(SSMPrimary ssmPrimary){
-    return stream(SSMPrimaryFieldMapping.values())
-        .map( x -> x.extractStringValue(ssmPrimary))
-        .filter(s -> (s==null || s.matches(ILLEGAL_VALUE_REGEX)))
-        .count();
-  }
-
-  private static void checkForIllegalMetadata(WorkflowTypes workflowType, String filename, SSMMetadata ssmMetadata){
-    val count = countIllegalValues(ssmMetadata);
-    if (count > 0){
-      log.error("The ssmMetadata({}) file {} has {} null values", workflowType.getName(), filename, count);
-    }
-  }
-
-  public void process(File vcfFile, SampleMetadata sampleMetadataConsensus){
-    checkArgument(sampleMetadataConsensus.getWorkflowType() == CONSENSUS,
-        "This method can only process vcf files of workflow type [%s]", CONSENSUS.getName());
-    val dccProjectCode = sampleMetadataConsensus.getDccProjectCode();
-
-    // Initialize transformer maps for primary and metadata
-    buildTransformerMaps(dccProjectCode);
-
-    int variantCount = 1;
-      val vcf = new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
-      val workflowTypesSet = Sets.<WorkflowTypes>newHashSet();
-      long nullCount = 0;
-      val candidateException = new PcawgVCFException(vcfFile.getAbsolutePath(),
-          String.format("VariantErrors occured in the file [%s]", vcfFile.getAbsolutePath()));
-      for (val variant : vcf){
-
-        try{
-            // Write SSM Primary to file
-          val ssmPrimaryConsensus = buildSSMPrimary(sampleMetadataConsensus, variant);
-          nullCount += countIllegalValues(ssmPrimaryConsensus);
-
-          val ssmWorkflowPrimaryMap = Maps.<WorkflowTypes, SSMPrimary>newHashMap();
-          for (val workflowType : extractWorkflowTypes(variant) ){
-            workflowTypesSet.add(workflowType);
-            val ssmPrimary = createCallerSpecificSSMPrimary(sampleMetadataConsensus, ssmPrimaryConsensus, workflowType);
-            nullCount += countIllegalValues(ssmPrimary);
-            ssmWorkflowPrimaryMap.put(workflowType, ssmPrimary);
-          }
-
-          // Write after object creations
-          getSSMPrimaryTransformer(CONSENSUS).transform(ssmPrimaryConsensus);
-          for (val entry : ssmWorkflowPrimaryMap.entrySet()){
-            val workflowType = entry.getKey();
-            val ssmPrimary = entry.getValue();
-            getSSMPrimaryTransformer(workflowType).transform(ssmPrimary);
-          }
-        } catch (PcawgVariantException e){
-          for (val error : e.getErrors()){
-            candidateException.addError(error, variantCount);
-          }
-        } finally{
-          variantCount++;
-          flushAllPrimaryTransformers();
-        }
-      }
-      if (candidateException.hasErrors()){
-        val sb = new StringBuilder();
-        for (val error : candidateException.getVariantErrors()){
-          sb.append(String.format("\t%s:%s ---- ",error.name(),candidateException.getErrorVariantNumbers(error)));
-        }
-        log.error("The vcf file [{}] has the following errors: {}", vcfFile.getAbsolutePath(), sb.toString());
-        throw candidateException;
-      }
-      if (nullCount >0 ){
-        log.error("The ssmPrimary file {} has {} null values", vcfFile.getName(), nullCount);
-      }
-
-    //Write SSM Metadata to file
-      val ssmMetadataConsensus = newSSMMetadata(sampleMetadataConsensus);
-      checkForIllegalMetadata(CONSENSUS,vcfFile.getName(), ssmMetadataConsensus);
-      getSSMMetadataTransformer(CONSENSUS).transform(ssmMetadataConsensus);
-
-      for (val workflowType : workflowTypesSet){
-        val ssmMetadata = createCallerSpecificSSMMetadata(sampleMetadataConsensus,ssmMetadataConsensus,workflowType);
-        checkForIllegalMetadata(workflowType,vcfFile.getName(), ssmMetadata);
-        getSSMMetadataTransformer(workflowType).transform(ssmMetadata);
-      }
-      closeAllMetadataTransformers();
-      closeAllPrimaryTransformers();
-
-
-  }
-
-  private void convertAndTransform(WorkflowTypes workflowType, SSMPrimary ssmPrimaryConsensus,  SampleMetadata sampleMetadataConsensus){
-    getSSMPrimaryTransformer(workflowType)
-        .transform(
-            createCallerSpecificSSMPrimary(sampleMetadataConsensus, ssmPrimaryConsensus, workflowType));
-  }
-
-  private BaseTransformer<SSMPrimary> buildSSMPrimaryTransformer(WorkflowTypes workflowType, String dccProjectCode){
-    val primaryFWCtx = primaryFWCtxFactory.getFileWriterContext(workflowType, dccProjectCode);
-    return primaryTransformerFactory.getTransformer(primaryFWCtx);
-  }
-
-  private BaseTransformer<SSMMetadata> buildSSMMetadataTransformer(WorkflowTypes workflowType, String dccProjectCode){
-    val metadataFWCtx = metadataFWCtxFactory.getFileWriterContext(workflowType, dccProjectCode);
-    return metadataTransformerFactory.getTransformer(metadataFWCtx);
-  }
-
-  private void buildTransformerMaps(String dccProjectCode){
-    primaryTransformerMap = newEnumMap(WorkflowTypes.class);
-    metadataTransformerMap = newEnumMap(WorkflowTypes.class);
-    for (val workflowType : WorkflowTypes.values()){
-      primaryTransformerMap.put( workflowType, buildSSMPrimaryTransformer(workflowType, dccProjectCode) );
-      metadataTransformerMap.put(workflowType, buildSSMMetadataTransformer(workflowType, dccProjectCode) );
-    }
-  }
-
-  //TODO: refactor this by making a decoration of Transforer<DccTransformerContext>, where DccTransformerContext will have
-  // all the neccessary member fields to create the correct Writer, and will handle closing the writer aswell
-  private BaseTransformer<SSMPrimary> getSSMPrimaryTransformer(WorkflowTypes workflowType){
-    checkArgument(primaryTransformerMap.containsKey(workflowType),
-        "The primary BaseTransformer map does not contain the workflowType [%s]", workflowType.getName());
-    return primaryTransformerMap.get(workflowType);
-  }
-
-  private BaseTransformer<SSMMetadata> getSSMMetadataTransformer(WorkflowTypes workflowType){
-    checkArgument(metadataTransformerMap.containsKey(workflowType),
-        "The metadata BaseTransformer map does not contain the workflowType [%s]", workflowType.getName());
-    return metadataTransformerMap.get(workflowType);
-  }
-
-  @SneakyThrows
-  private void flushAllPrimaryTransformers() {
-    flush(primaryTransformerMap);
-  }
-
-  @SneakyThrows
-  private void closeAllPrimaryTransformers() {
-    close(primaryTransformerMap);
-    primaryTransformerMap = null;
-  }
-
-  @SneakyThrows
-  private void flushAllMetadataTransformers() {
-    flush(metadataTransformerMap);
-  }
-
-  @SneakyThrows
-  private void closeAllMetadataTransformers() {
-    close(metadataTransformerMap);
-    metadataTransformerMap = null;
-  }
-
-  @SneakyThrows
-  private static <T> void  flush(Map<WorkflowTypes, BaseTransformer<T>> transformerMap){
-    if (transformerMap != null){
-      for (val t : transformerMap.values()){
-        if (t != null){
-          t.flush();
-        }
-      }
-    }
-  }
-  @SneakyThrows
-  private static <T> void  close(Map<WorkflowTypes, BaseTransformer<T>> transformerMap){
-    if (transformerMap != null){
-      for (val t : transformerMap.values()){
-        if (t != null){
-          t.close();
-        }
-      }
-    }
-  }
-
-  private static SSMPrimary buildSSMPrimary(SampleMetadata sampleMetadata, VariantContext variant){
+  private static SSMPrimary buildSSMPrimary(SampleMetadata sampleMetadata, VariantContext variant) throws PcawgVariantException{
     val dataType = sampleMetadata.getDataType();
     val analysisId = sampleMetadata.getAnalysisId();
     val analyzedSampleId = sampleMetadata.getAnalyzedSampleId();
@@ -257,7 +60,6 @@ public class ConsensusVCFConverter {
       throw new PcawgVariantException(message, variant, PcawgVariantErrors.DATA_TYPE_NOT_SUPPORTED);
     }
   }
-
 
   private static Set<WorkflowTypes> extractWorkflowTypes(VariantContext  variant){
     return streamCallers(variant)
@@ -290,6 +92,112 @@ public class ConsensusVCFConverter {
         .analysisId(callerSampleMetadata.getAnalysisId())
         .variationCallingAlgorithm(variationCallingAlgorithmText)
         .build();
+  }
+
+  /**
+   * Configuration
+   */
+  private final VCFFileReader vcf;
+  private final File vcfFile;
+  private final SampleMetadata sampleMetadataConsensus;
+
+  /**
+   * State
+   */
+  private final List<DccTransformerContext<SSMPrimary>> ssmPrimaryList = Lists.newArrayList();
+  private final Set<DccTransformerContext<SSMMetadata>> ssmMetadataSet = Sets.newHashSet();
+  private final Set<WorkflowTypes> workflowTypesSet = Sets.newHashSet();
+
+  private ConsensusVCFConverter(@NonNull Path vcfPath, @NonNull SampleMetadata sampleMetadataConsensus){
+    this.vcfFile = vcfPath.toFile();
+    checkArgument(vcfFile.exists(), "The VCF File [{}] DNE", vcfPath.toString());
+    this.vcf = new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
+    this.sampleMetadataConsensus = sampleMetadataConsensus;
+    load();
+  }
+
+  private void addSSMPrimary(WorkflowTypes workflowType, SSMPrimary ssmPrimary){
+    ssmPrimaryList.add(
+        DccTransformerContext.<SSMPrimary>builder()
+        .object(ssmPrimary)
+        .workflowTypes(workflowType)
+        .build());
+  }
+
+  private void addSSMMetadata(WorkflowTypes workflowType, SSMMetadata ssmMetadata){
+    ssmMetadataSet.add(
+        DccTransformerContext.<SSMMetadata>builder()
+            .object(ssmMetadata)
+            .workflowTypes(workflowType)
+            .build());
+  }
+
+  /**
+   * Converts input variant to Consensus ssmPrimary and other ssmPrimary (depending on Callers attribute in info field), and stores it state variable
+   * @param variant input variant to be converted/processed
+   */
+  private void convertConsensusVariant(VariantContext variant){
+    val ssmPrimaryConsensus = buildSSMPrimary(sampleMetadataConsensus, variant);
+    addSSMPrimary(CONSENSUS, ssmPrimaryConsensus);
+
+    for (val workflowType : extractWorkflowTypes(variant) ){
+      workflowTypesSet.add(workflowType);
+      val ssmPrimary = createCallerSpecificSSMPrimary(sampleMetadataConsensus, ssmPrimaryConsensus, workflowType);
+      addSSMPrimary(workflowType, ssmPrimary);
+    }
+  }
+
+  /**
+   * Creates SSMMetadata based on Consensus ssmMetadata, and using the state variables that recorded the unique set of Callers recorded, generated the other callers' ssmMetadata;
+   */
+  private void buildSSMMetadatas(){
+    val ssmMetadataConsensus = newSSMMetadata(sampleMetadataConsensus);
+    addSSMMetadata(WorkflowTypes.CONSENSUS, ssmMetadataConsensus);
+
+    for (val workflowType : workflowTypesSet){
+      val ssmMetadata = createCallerSpecificSSMMetadata(sampleMetadataConsensus,ssmMetadataConsensus,workflowType);
+      addSSMMetadata(workflowType, ssmMetadata);
+    }
+  }
+
+  /**
+   * Main loading method. Uses configuration variable to maniluplate state variables
+   */
+  private void load(){
+    int variantCount = 1;
+    val candidateException = new PcawgVCFException(vcfFile.getAbsolutePath(),
+        String.format("VariantErrors occured in the file [%s]", vcfFile.getAbsolutePath()));
+    for (val variant : vcf){
+      try{
+        convertConsensusVariant(variant);
+      } catch (PcawgVariantException e){
+        for (val error : e.getErrors()){
+          candidateException.addError(error, variantCount);
+        }
+      } finally{
+        variantCount++;
+      }
+    }
+
+    if (candidateException.hasErrors()){
+      val sb = new StringBuilder();
+      for (val error : candidateException.getVariantErrors()){
+        sb.append(String.format("\t%s:%s ---- ",error.name(),candidateException.getErrorVariantNumbers(error)));
+      }
+      log.error("The vcf file [{}] has the following errors: {}", vcfFile.getAbsolutePath(), sb.toString());
+      throw candidateException;
+    }
+
+    buildSSMMetadatas();
+  }
+
+
+  public Set<DccTransformerContext<SSMMetadata>> readSSMMetadata(){
+    return ImmutableSet.copyOf(this.ssmMetadataSet);
+  }
+
+  public List<DccTransformerContext<SSMPrimary>> readSSMPrimary(){
+    return ImmutableList.copyOf(this.ssmPrimaryList);
   }
 
 

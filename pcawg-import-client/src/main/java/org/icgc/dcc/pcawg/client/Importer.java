@@ -43,7 +43,7 @@ import static org.icgc.dcc.pcawg.client.core.Factory.newFsController;
 import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter2.newConsensusVCFConverter2;
+import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter.newConsensusVCFConverter;
 
 @Slf4j
 @Builder
@@ -119,7 +119,7 @@ public class Importer implements Runnable {
 
         // Convert Consensus VCF files
         try{
-          val converter = newConsensusVCFConverter2(vcfFile.toPath(), consensusSampleMetadata);
+          val converter = newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
           for (val mtx : converter.readSSMMetadata()){
             dccMetadataTransformer.transform(mtx);
           }
