@@ -1,9 +1,9 @@
-package org.icgc.dcc.pcawg.client.core.writer2.impl;
+package org.icgc.dcc.pcawg.client.core.writer.impl;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.core.writer2.WriterContext;
+import org.icgc.dcc.pcawg.client.core.writer.WriterContext;
 
 import java.nio.file.Path;
 

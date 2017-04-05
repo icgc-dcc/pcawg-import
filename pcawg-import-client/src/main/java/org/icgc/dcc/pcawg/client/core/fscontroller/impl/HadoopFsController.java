@@ -9,7 +9,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
-import org.icgc.dcc.pcawg.client.core.writer2.WriterContext;
+import org.icgc.dcc.pcawg.client.core.writer.WriterContext;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

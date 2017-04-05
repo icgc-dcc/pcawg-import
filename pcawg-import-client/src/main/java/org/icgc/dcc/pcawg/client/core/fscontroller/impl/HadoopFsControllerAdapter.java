@@ -4,8 +4,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
-import org.icgc.dcc.pcawg.client.core.writer2.impl.HadoopWriterContext;
-import org.icgc.dcc.pcawg.client.core.writer2.WriterContext;
+import org.icgc.dcc.pcawg.client.core.writer.impl.HadoopWriterContext;
+import org.icgc.dcc.pcawg.client.core.writer.WriterContext;
 
 import java.io.IOException;
 import java.io.Writer;

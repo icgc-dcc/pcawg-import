@@ -10,7 +10,7 @@ import lombok.ToString;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.Transformer;
-import org.icgc.dcc.pcawg.client.core.writer2.impl.LocalWriterContext;
+import org.icgc.dcc.pcawg.client.core.writer.impl.LocalWriterContext;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 

@@ -1,6 +1,6 @@
 package org.icgc.dcc.pcawg.client.core.fscontroller;
 
-import org.icgc.dcc.pcawg.client.core.writer2.WriterContext;
+import org.icgc.dcc.pcawg.client.core.writer.WriterContext;
 
 import java.io.IOException;
 import java.io.Writer;
