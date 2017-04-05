@@ -1,17 +1,20 @@
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.core.transformer.impl;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.icgc.dcc.pcawg.client.core.transformer.Transformer;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 
-import java.io.Closeable;
-import java.io.Flushable;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Base implementation for Transformer. Transforms input T data via tsv converter to string, and writes to writer
+ * @param <T> input data type
+ */
 @Slf4j
-public class Transformer<T> implements Closeable , Flushable{
+public final class BaseTransformer<T> implements Transformer<T> {
 
   private static final String NEWLINE = "\n";
 
@@ -22,18 +25,18 @@ public class Transformer<T> implements Closeable , Flushable{
   @Getter
   private boolean writeHeader;
 
-  public static <T> Transformer<T> newTransformer( final TSVConverter<T> tsvConverter, final Writer writer, final boolean isNewFile){
-    return new Transformer<T>(tsvConverter, writer, isNewFile);
+  public static <T> BaseTransformer<T> newBaseTransformer( final TSVConverter<T> tsvConverter, final Writer writer, final boolean isNewFile){
+    return new BaseTransformer<T>(tsvConverter, writer, isNewFile);
   }
 
   @SneakyThrows
-  private Transformer( final TSVConverter<T> tsvConverter, final Writer writer, final boolean writeHeader){
+  private BaseTransformer( final TSVConverter<T> tsvConverter, final Writer writer, final boolean writeHeader){
     this.tsvConverter = tsvConverter;
     this.writeHeader = writeHeader;
     this.writer = writer;
   }
 
-  @SneakyThrows
+  @Override @SneakyThrows
   public void transform(T t){
     if(writeHeader){
       writer.write(tsvConverter.toTSVHeader()+NEWLINE);

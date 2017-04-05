@@ -4,6 +4,7 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.core.transformer.TransformerFactory;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataBeanDAO;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO_old;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
