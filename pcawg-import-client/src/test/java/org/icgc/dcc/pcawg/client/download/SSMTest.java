@@ -27,7 +27,7 @@ import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPri
 @Slf4j
 public class SSMTest {
 
-  // load vcf and iterate through each variantContext element
+  // process vcf and iterate through each variantContext element
   private static final boolean REQUIRE_INDEX_CFG = false;
   private static final String INDEL_FIXTURE_FILENAME = "f9c4e06c-e8a6-613b-e040-11ac0d4828ba.consensus.20160830.somatic.indel.vcf.gz";
   private static final String INDEL_INSERTION_VCF_FILENAME = "fixtures/test_indel_insertion.vcf";

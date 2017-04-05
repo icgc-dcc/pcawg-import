@@ -113,7 +113,6 @@ public class ConsensusVCFConverter {
     checkArgument(vcfFile.exists(), "The VCF File [{}] DNE", vcfPath.toString());
     this.vcf = new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
     this.sampleMetadataConsensus = sampleMetadataConsensus;
-    load();
   }
 
   private void addSSMPrimary(WorkflowTypes workflowType, SSMPrimary ssmPrimary){
@@ -163,7 +162,7 @@ public class ConsensusVCFConverter {
   /**
    * Main loading method. Uses configuration variable to maniluplate state variables
    */
-  private void load(){
+  public void process(){
     int variantCount = 1;
     val candidateException = new PcawgVCFException(vcfFile.getAbsolutePath(),
         String.format("VariantErrors occured in the file [%s]", vcfFile.getAbsolutePath()));
@@ -179,6 +178,8 @@ public class ConsensusVCFConverter {
       }
     }
 
+    buildSSMMetadatas();
+
     if (candidateException.hasErrors()){
       val sb = new StringBuilder();
       for (val error : candidateException.getVariantErrors()){
@@ -188,7 +189,6 @@ public class ConsensusVCFConverter {
       throw candidateException;
     }
 
-    buildSSMMetadatas();
   }
 
 

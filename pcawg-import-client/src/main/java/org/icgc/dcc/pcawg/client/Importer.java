@@ -118,18 +118,19 @@ public class Importer implements Runnable {
         val consensusSampleMetadata = metadataContext.getSampleMetadata();
 
         // Convert Consensus VCF files
+        val consensusVCFConverter = newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
         try{
-          val converter = newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
-          for (val mtx : converter.readSSMMetadata()){
-            dccMetadataTransformer.transform(mtx);
-          }
-
-          for (val ptx : converter.readSSMPrimary()){
-            dccPrimaryTransformer.transform(ptx);
-          }
-
+          consensusVCFConverter.process();
         } catch (PcawgVCFException e){
           erroredFileList.add(vcfFile.getAbsolutePath());
+        }
+
+        for (val mtx : consensusVCFConverter.readSSMMetadata()){
+          dccMetadataTransformer.transform(mtx);
+        }
+
+        for (val ptx : consensusVCFConverter.readSSMPrimary()){
+          dccPrimaryTransformer.transform(ptx);
         }
       }
       dccMetadataTransformer.close();

@@ -28,8 +28,8 @@ public abstract class AbstractDaoFactory<B, R extends SearchRequest<R>, D extend
        inputFnExists, outputFnExists
   if ( 0, 0) ->  download inputFn using url, and store to .dat
   if ( 0, 1) -> download inputFn using url, delete .dat, and store .dat
-  if ( 1, 0) -> do not download, load the inputFn and parse it like normal, store .dat
-  if ( 1, 1) -> do not download and do not load inputFn. Just restore .dat
+  if ( 1, 0) -> do not download, process the inputFn and parse it like normal, store .dat
+  if ( 1, 1) -> do not download and do not process inputFn. Just restore .dat
    */
 
   @NonNull private final String downloadUrl;
