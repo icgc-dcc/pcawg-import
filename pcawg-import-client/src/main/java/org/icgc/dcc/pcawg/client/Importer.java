@@ -23,28 +23,27 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
+import org.icgc.dcc.pcawg.client.core.Factory;
+import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
+import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
+import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
-import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_PREFIX;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_EXTENSION;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_PREFIX;
+import static org.icgc.dcc.pcawg.client.core.Factory.newFsController;
 import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformerFactory;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformerFactory;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
+import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter2.newConsensusVCFConverter2;
 
 @Slf4j
 @Builder
@@ -66,59 +65,22 @@ public class Importer implements Runnable {
   private final String outputTsvDir;
 
   @NonNull
-  private final String hdfsHostname;
+  private final Optional<String> optionalHdfsHostname;
 
   @NonNull
-  private final String hdfsPort;
+  private final Optional<String> optionalHdfsPort;
 
-
-  private FileWriterContextFactory primaryFWCtxFactory;
-  private FileWriterContextFactory metadataFWCtxFactory;
-
-
-  // 1. now need to remove these members, and just make ssm_type_enum (with SSM_M and SMM_P), and then this method
-
-  private FileWriterContextFactory buildSSMPrimaryFWCtxFactory(){
-    return FileWriterContextFactory.builder()
-        .outputDirectory(outputTsvDir)
-        .fileNamePrefix(SSM_P_TSV_FILENAME_PREFIX)
-        .fileExtension(SSM_P_TSV_FILENAME_EXTENSION)
-        .append(true)
-        .hostname(hdfsHostname)
-        .port(hdfsPort)
-        .build();
+  private DccTransformer<SSMMetadata> buildDccMetadataTransformer(FsController<Path> fsController, String dccProjectCode){
+    return Factory.newDccMetadataTransformer(fsController, this.outputTsvDir, dccProjectCode);
   }
-
-  private FileWriterContextFactory buildSSMMetadataFWCtxFactory(){
-    return FileWriterContextFactory.builder()
-        .outputDirectory(outputTsvDir)
-        .fileNamePrefix(SSM_M_TSV_FILENAME_PREFIX)
-        .fileExtension(SSM_M_TSV_FILENAME_EXTENSION)
-        .append(true)
-        .hostname(hdfsHostname)
-        .port(hdfsPort)
-        .build();
-  }
-
-  private ConsensusVCFConverter buildConsensusVCFConverter(){
-    val metadataTransformerFactory = newSSMMetadataTransformerFactory(hdfsEnabled);
-    this.metadataFWCtxFactory = buildSSMMetadataFWCtxFactory();
-
-    val primaryTransformerFactory = newSSMPrimaryTransformerFactory(hdfsEnabled);
-    this.primaryFWCtxFactory = buildSSMPrimaryFWCtxFactory();
-
-    return ConsensusVCFConverter.builder()
-        .metadataFWCtxFactory(metadataFWCtxFactory)
-        .metadataTransformerFactory(metadataTransformerFactory)
-        .primaryFWCtxFactory(primaryFWCtxFactory)
-        .primaryTransformerFactory(primaryTransformerFactory)
-        .build();
+  private DccTransformer<SSMPrimary> buildDccPrimaryTransformer(FsController<Path> fsController, String dccProjectCode){
+    return Factory.newDccPrimaryTransformer(fsController, this.outputTsvDir, dccProjectCode);
   }
 
   @Override
   @SneakyThrows
   public void run() {
-    val consensusVCFConverter = buildConsensusVCFConverter();
+    val fsController = newFsController(hdfsEnabled, optionalHdfsHostname, optionalHdfsPort);
     // Create container with all MetadataContexts
     log.info("Creating MetadataContainer");
     val metadataContainer = newMetadataContainer();
@@ -139,6 +101,8 @@ public class Importer implements Runnable {
       // Create storage manager for downloading files
       val vcfDownloadDirectory = PATH.join(outputVcfDir, dccProjectCode);
       val storage = newStorage(persistVcfDownloads, vcfDownloadDirectory , bypassMD5Check, token);
+      val dccPrimaryTransformer = buildDccPrimaryTransformer(fsController,dccProjectCode);
+      val dccMetadataTransformer = buildDccMetadataTransformer(fsController,dccProjectCode);
 
       // Loop through each file for a particular dccProjectCode
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)) {
@@ -150,18 +114,28 @@ public class Importer implements Runnable {
         // Download vcfFile
         val vcfFile = storage.downloadFile(portalMetadata);
 
-        // Get sampleMetadata
-        val sampleMetadata = metadataContext.getSampleMetadata();
+        // Get consensusSampleMetadata
+        val consensusSampleMetadata = metadataContext.getSampleMetadata();
 
-        // Converter Consensus VCF files
+        // Convert Consensus VCF files
         try{
-          consensusVCFConverter.process(vcfFile, sampleMetadata);
+          val converter = newConsensusVCFConverter2(vcfFile.toPath(), consensusSampleMetadata);
+          for (val mtx : converter.readSSMMetadata()){
+            dccMetadataTransformer.transform(mtx);
+          }
+
+          for (val ptx : converter.readSSMPrimary()){
+            dccPrimaryTransformer.transform(ptx);
+          }
+
         } catch (PcawgVCFException e){
           erroredFileList.add(vcfFile.getAbsolutePath());
         }
       }
+      dccMetadataTransformer.close();
+      dccPrimaryTransformer.close();
       if (ENABLE_TSV_VALIDATION){
-        validateOutputFiles(dccProjectCode);
+        validateOutputFiles(dccMetadataTransformer, dccPrimaryTransformer);
       }
     }
     checkFileErrors(erroredFileList);
@@ -178,23 +152,21 @@ public class Importer implements Runnable {
 
   }
 
-  private void validateOutputFiles(String dccProjectCode){
-    for (val workflowType : WorkflowTypes.values()){
-      val ssm_m_filename = metadataFWCtxFactory.getFileWriterContext(workflowType,dccProjectCode).getOutputFilename();
-      if (Files.exists(Paths.get(ssm_m_filename))){
-        val ssmMValidator = newTsvValidator(ssm_m_filename, SSMMetadataFieldMapping.values().length);
+  private static void validateOutputFiles(DccTransformer<SSMMetadata> dccMetadataTransformer, DccTransformer<SSMPrimary> dccPrimaryTransformer){
+    for (val path : dccMetadataTransformer.getWrittenPaths()){
+      if (Files.exists(path)){
+        val ssmMValidator = newTsvValidator(path.toString(), SSMMetadataFieldMapping.values().length);
         ssmMValidator.analyze();
         ssmMValidator.log();
       }
-
-      val ssm_p_filename = primaryFWCtxFactory.getFileWriterContext(workflowType,dccProjectCode).getOutputFilename();
-      if (Files.exists(Paths.get(ssm_p_filename))) {
-        val ssmPValidator = newTsvValidator(ssm_p_filename, SSMPrimaryFieldMapping.values().length);
+    }
+    for (val path : dccPrimaryTransformer.getWrittenPaths()){
+      if (Files.exists(path)){
+        val ssmPValidator = newTsvValidator(path.toString(), SSMPrimaryFieldMapping.values().length);
         ssmPValidator.analyze();
         ssmPValidator.log();
       }
     }
   }
-
 
 }

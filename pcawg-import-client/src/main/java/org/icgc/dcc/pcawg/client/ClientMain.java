@@ -43,7 +43,7 @@ public class ClientMain implements CommandLineRunner {
   public void run(String... args) {
     log.info("Args: {}", applicationConfig.toString());
 
-    val importer = Importer2.builder()
+    val importer = Importer.builder()
         .token(applicationConfig.getToken())
         .hdfsEnabled(applicationConfig.isHdfs())
         .outputVcfDir(applicationConfig.getVcf_dir())
