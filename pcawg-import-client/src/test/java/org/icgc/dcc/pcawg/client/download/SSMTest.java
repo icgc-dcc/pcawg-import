@@ -63,6 +63,8 @@ public class SSMTest {
       .aliquotId("myAliquotId")
       .dataType(DataTypes.INDEL)
       .dccProjectCode("myDccProjectCode")
+      .analyzedFileId("myAnalyzedFileId")
+      .matchedFileId("myMatchedFileId")
       .workflowType(FIXED_CONSENSUS_WORKFLOW);
 
   private static final SampleMetadata DUMMY_NON_US_SAMPLE_METADATA = TEMPLATE_SAMPLE_METADATA_BUILDER
