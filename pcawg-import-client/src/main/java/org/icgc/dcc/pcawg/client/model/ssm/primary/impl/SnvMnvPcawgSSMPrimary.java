@@ -4,13 +4,19 @@ import htsjdk.variant.variantcontext.VariantContext;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
-import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
+import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
+import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
+import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.UNKNOWN;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getAlternativeAlleleLength;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleLength;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
+import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_TYPE_NOT_SUPPORTED_ERROR;
+import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.SNV_MNV_REF_ALT_LENGTH_NOT_EQUAL_ERROR;
+import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.SNV_MNV_REF_LENGTH_LT_1_ERROR;
 
 @Slf4j
 public class SnvMnvPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
@@ -24,26 +30,34 @@ public class SnvMnvPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
 
   public SnvMnvPcawgSSMPrimary(VariantContext variant, String analysisId, String analyzedSampleId) {
     super(variant, analysisId, analyzedSampleId);
-    this.mutationType = calcMutationType();
+    this.mutationType = calcMutationType(variant);
   }
 
-  private MutationTypes calcMutationType(){
-    val refLength = getReferenceAlleleLength(getVariant());
+  private static MutationTypes calcMutationType(VariantContext variant){
+    val refLength = getReferenceAlleleLength(variant);
+    val altLength = getAlternativeAlleleLength(variant);
+
+    if (refLength != altLength){
+      val message = String.format("The MutationType cannot be found since ReferenceAlleleLength[%s] != AlternativeAlleleLength[%s]", refLength, altLength);
+      throw new PcawgVariantException(message, variant, SNV_MNV_REF_ALT_LENGTH_NOT_EQUAL_ERROR);
+    }
+
     if(refLength == 1){
-      return MutationTypes.SINGLE_BASE_SUBSTITUTION;
+      return SINGLE_BASE_SUBSTITUTION;
     } else if(refLength > 1){
-      return MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
+      return MULTIPLE_BASE_SUBSTITUTION;
     } else {
       val message = String.format("The MutationType cannot be found since ReferenceAlleleLength[%s] < 1", refLength);
-      throw new PcawgVariantException(message, getVariant(), PcawgVariantErrors.SNV_MNV_REF_LENGTH_LT_1);
+      throw new PcawgVariantException(message, variant, SNV_MNV_REF_LENGTH_LT_1_ERROR);
     }
+
   }
 
   @Override
   public String getMutationType()  {
-    if (mutationType == MutationTypes.UNKNOWN){
+    if (mutationType == UNKNOWN){
       val message = String.format("The MutationType [%s] is not supported for getMutationType", mutationType.name());
-      throw new PcawgVariantException(message, getVariant(), PcawgVariantErrors.MUTATION_TYPE_NOT_SUPPORTED);
+      throw new PcawgVariantException(message, getVariant(), MUTATION_TYPE_NOT_SUPPORTED_ERROR);
     } else {
       return mutationType.toString();
     }
