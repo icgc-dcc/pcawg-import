@@ -11,21 +11,22 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.ObjectNodeConverter;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
-import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
-import org.icgc.dcc.pcawg.client.utils.FileRestorer;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFiles;
+import org.icgc.dcc.pcawg.client.utils.FileRestorer;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
@@ -77,23 +78,23 @@ public class FileIdDao implements Serializable {
 
   private Set<IdPair> procSubmitterSampleIdQuery(int batchSize) {
     log.info("Querying portal for SubmitterSampleIds...");
-    return procQuery(newSubmitterSampleIdQueryCreator(submitterSampleIds, batchSize), submitterSampleIds.size(), batchSize);
+    return procQuery(newSubmitterSampleIdQueryCreator(submitterSampleIds, batchSize), submitterSampleIds.size(), batchSize, FileIdDao::extractSubmittedSamplePair);
   }
 
   private Set<IdPair> procTcgaAliquotBarcodeQuery(int batchSize) {
     log.info("Querying portal for TcgaAliguotBarcodes...");
-    return procQuery(newTcgaAliquotBarcodeQueryCreator(tcgaAliquotBarcodes, batchSize), tcgaAliquotBarcodes.size(), batchSize);
+    return procQuery(newTcgaAliquotBarcodeQueryCreator(tcgaAliquotBarcodes, batchSize), tcgaAliquotBarcodes.size(), batchSize, FileIdDao::extractBarcodePair);
 
   }
 
-  private static <T extends ObjectNodeConverter>  Set<IdPair> procQuery(Iterable<T> queries, int totalSize, int batchSize) {
+  private static <T extends ObjectNodeConverter>  Set<IdPair> procQuery(Iterable<T> queries, int totalSize, int batchSize, Function<ObjectNode, IdPair> extractFunctor) {
     val setBuilder = ImmutableSet.<IdPair>builder();
     int count = 0;
     int total = (int)Math.ceil(totalSize/(double)batchSize);
     for (val q : queries){
       log.info("Querying Portal for Request {} / {}", ++count, total);
       val pairs = getResponse(q).stream()
-          .map(FileIdDao::extractPair)
+          .map(extractFunctor)
           .distinct()
           .collect(toImmutableSet());
       setBuilder.addAll(pairs);
@@ -120,9 +121,14 @@ public class FileIdDao implements Serializable {
     log.info("\t-Done");
   }
 
-  private static IdPair extractPair(ObjectNode o){
+  private static IdPair extractSubmittedSamplePair(ObjectNode o){
     val fileId = PortalFiles.getFileId(o);
     val submitterSampleId = PortalFiles.getSubmittedSampleId(o);
+    return IdPair.newPair(submitterSampleId, fileId);
+  }
+  private static IdPair extractBarcodePair(ObjectNode o){
+    val fileId = PortalFiles.getFileId(o);
+    val submitterSampleId = PortalFiles.getTcgaAliquotBarcode(o);
     return IdPair.newPair(submitterSampleId, fileId);
   }
 

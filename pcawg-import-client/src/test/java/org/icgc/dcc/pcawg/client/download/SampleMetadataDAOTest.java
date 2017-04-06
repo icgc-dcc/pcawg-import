@@ -44,10 +44,10 @@ public class SampleMetadataDAOTest {
      * TODO: [DCC-5532] Currently failing becuase ICGC does not contain US projects that have VCFs and BAMs mapped to the same AliquotId
      */
     //US
-//    val usProjectData = sampleMetadataDAO.fetchSampleMetadata(usId);
-//    assertThat(usProjectData.getDccProjectCode()).isEqualTo("BRCA-US");
-//    assertThat(usProjectData.getAnalyzedSampleId()).isEqualTo("TCGA-BH-A18R-01A-11D-A19H-09");
-//    assertThat(usProjectData.getMatchedSampleId()).isEqualTo("TCGA-BH-A18R-11A-42D-A19H-09");
+    val usProjectData = sampleMetadataDAO.fetchSampleMetadata(usId);
+    assertThat(usProjectData.getDccProjectCode()).isEqualTo("BRCA-US");
+    assertThat(usProjectData.getAnalyzedSampleId()).isEqualTo("TCGA-BH-A18R-01A-11D-A19H-09");
+    assertThat(usProjectData.getMatchedSampleId()).isEqualTo("TCGA-BH-A18R-11A-42D-A19H-09");
   }
 
   @Test

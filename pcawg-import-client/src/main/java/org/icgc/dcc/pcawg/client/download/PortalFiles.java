@@ -48,6 +48,7 @@ public final class PortalFiles {
   private static final String SUBMITTED_SAMPLE_ID= "submittedSampleId";
   private static final String OTHER_IDENTIFIERS = "otherIdentifiers";
   private static final String TCGA_SAMPLE_BARCODE = "tcgaSampleBarcode";
+  private static final String TCGA_ALIQUOT_BARCODE= "tcgaAliquotBarcode";
 
   public static String getObjectId(@NonNull ObjectNode file) {
     return file.path(OBJECT_ID).textValue();
@@ -93,6 +94,12 @@ public final class PortalFiles {
     return getFirstDonor(file)
         .path(OTHER_IDENTIFIERS)
         .path(TCGA_SAMPLE_BARCODE).get(0).textValue();
+  }
+
+  public static String getTcgaAliquotBarcode(@NonNull ObjectNode file) {
+    return getFirstDonor(file)
+        .path(OTHER_IDENTIFIERS)
+        .path(TCGA_ALIQUOT_BARCODE).get(0).textValue();
   }
 
   public static String getStudy(@NonNull ObjectNode file) {
