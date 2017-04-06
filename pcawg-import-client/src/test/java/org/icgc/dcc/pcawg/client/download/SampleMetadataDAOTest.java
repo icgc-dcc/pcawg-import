@@ -79,7 +79,6 @@ public class SampleMetadataDAOTest {
 
   @Test
   @SneakyThrows
-  @Ignore("[DCC-5532] Failing becuase IcgcFileIdDao cannot resolve US projects yet")
   public void testUsIcgcFileIdDao(){
     val input1 = "TCGA-FF-8046-01A-11D-2210-10";
     val expectedOutput1 = "FI9956";
