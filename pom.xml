@@ -80,7 +80,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <properties>
         <!-- Versions - DCC -->
-        <dcc-common.version>4.2.15</dcc-common.version>
+        <dcc-common.version>4.3.11</dcc-common.version>
     </properties>
 
 </project>

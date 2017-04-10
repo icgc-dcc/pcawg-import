@@ -15,14 +15,19 @@ import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
+import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
+import org.icgc.dcc.pcawg.client.utils.DictionaryCreator;
 import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +40,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_BEAN_DAO
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.DICTIONARY_CURRENT_URL;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_HAS_HEADER;
@@ -54,9 +60,9 @@ import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.LocalFsController
 import static org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory.buildBarcodeSheetBeanDao;
 import static org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory.buildSampleSheetBeanDao;
 import static org.icgc.dcc.pcawg.client.data.icgc.FileIdDao.newFileIdDao;
-import static org.icgc.dcc.pcawg.client.download.query.PortalVcfFileQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
+import static org.icgc.dcc.pcawg.client.download.query.PortalVcfFileQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @NoArgsConstructor(access = PRIVATE)
@@ -177,6 +183,19 @@ public class Factory {
   public static SampleMetadataDAO newSampleMetadataDAO(){
 //    return newFastFileSampleMetadataBeanDAOAndDownload(); // Fastest loader, and uses beans, but hardcoded column headers
     return newFileSampleMetadataBeanDAOAndDownload(); //Uses beans, but slow loading
+  }
+
+  public static DictionaryCreator buildDictionaryCreator(){
+//    return DictionaryCreator.newDictionaryCreator(DICTIONARY_BASE_URL, DICTIONARY_VERSION);
+    return DictionaryCreator.newDictionaryCreator(DICTIONARY_CURRENT_URL);
+  }
+
+  public static SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> newSSMPrimaryValidator(FileSchema ssmPrimaryFileSchema){
+    return SSMValidator.newSSMValidator(ssmPrimaryFileSchema, SSMPrimaryFieldMapping.values());
+  }
+
+  public static SSMValidator<SSMMetadata, SSMMetadataFieldMapping> newSSMMetadataValidator(FileSchema ssmMetadataFileSchema){
+    return SSMValidator.newSSMValidator(ssmMetadataFileSchema, SSMMetadataFieldMapping.values());
   }
 
 }

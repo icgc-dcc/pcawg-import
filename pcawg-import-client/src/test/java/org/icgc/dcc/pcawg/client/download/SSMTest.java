@@ -1,17 +1,23 @@
 package org.icgc.dcc.pcawg.client.download;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 import htsjdk.variant.vcf.VCFFileReader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.assertj.core.api.Assertions;
+import org.icgc.dcc.common.core.util.stream.Collectors;
+import org.icgc.dcc.common.core.util.stream.Streams;
+import org.icgc.dcc.pcawg.client.core.Factory;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata.SampleMetadataBuilder;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
+import org.icgc.dcc.pcawg.client.utils.SetLogic;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.junit.Ignore;
@@ -19,6 +25,8 @@ import org.junit.Test;
 
 import java.io.File;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
@@ -364,5 +372,62 @@ public class SSMTest {
     assertThat(ssmMetadata.getRawDataRepository()).isEqualTo(EGA);
     Assertions.fail("getRawDataAccession() not properly implemented yet");
   }
+
+  @Test
+  public void testFieldNames(){
+    val dictionaryCreator = Factory.buildDictionaryCreator();
+    val schema = dictionaryCreator.getSSMPrimaryFileSchema();
+    val expectedSet = Sets.newHashSet(schema.fieldNames());
+
+    // This is a new field that is needed for Andy
+    expectedSet.add(SSMPrimaryFieldMapping.PCAWG_FLAG.toString());
+
+    val actualSet = Streams.stream(SSMPrimaryFieldMapping.values())
+        .map(SSMPrimaryFieldMapping::toString)
+        .collect(Collectors.toImmutableSet());
+    val missingFromActual = SetLogic.missingFromActual(actualSet, expectedSet);
+    val extraInActual = SetLogic.extraInActual(actualSet,expectedSet);
+    boolean result = true;
+    if (!missingFromActual.isEmpty()){
+      log.error("The following is missing from the [{}] field list: \n{}",
+          SSMPrimaryFieldMapping.class.getName(), missingFromActual.stream().collect(joining("\n")));
+      result = false;
+    }
+
+    if (!extraInActual.isEmpty()){
+      log.error("The following are extra fields in the [{}] field list: \n{}",
+          SSMPrimaryFieldMapping.class.getName(), extraInActual.stream().collect(joining("\n")));
+      result = false;
+    }
+
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  public void testFieldOrder(){
+    val dictionaryCreator = Factory.buildDictionaryCreator();
+    val schema = dictionaryCreator.getSSMPrimaryFileSchema();
+    val actualArray = SSMPrimaryFieldMapping.values();
+    val expectedList = newArrayList(schema.fieldNames());
+    expectedList.add(SSMPrimaryFieldMapping.PCAWG_FLAG.toString()); //This field is extra and appended to the end
+
+    val actualSize =actualArray.length;
+    val expectedSize = expectedList.size() ;
+
+    assertThat(actualSize).isEqualTo(expectedSize);
+
+    boolean  result = true;
+    for (int i = 0; i < expectedSize; i++){
+      val actual = actualArray[i].toString();
+      val expected = expectedList.get(i);
+      if (!expected.equals(actual)){
+        log.error("Expected: [{}]   Actual: [{}]", expected, actual);
+        result = false;
+      }
+    }
+    assertThat(result).isTrue();
+  }
+
+
 
 }

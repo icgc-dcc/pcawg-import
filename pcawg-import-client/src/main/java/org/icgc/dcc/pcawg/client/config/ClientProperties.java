@@ -54,4 +54,9 @@ public class ClientProperties {
   public static final String SSM_M_TSV_FILENAME_EXTENSION = "txt";
 
   public static final String ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME = "icgcFileIdDao.dat";
+
+  public static final String DICTIONARY_BASE_URL = "https://submissions.dcc.icgc.org/ws/dictionaries";
+  public static final String DICTIONARY_VERSION = "0.16a";
+  public static final String DICTIONARY_CURRENT_URL = "https://submissions.dcc.icgc.org/ws/nextRelease/dictionary";
+
 }

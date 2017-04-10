@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -107,6 +108,10 @@ public class ConsensusVCFConverter {
   private final List<DccTransformerContext<SSMPrimary>> ssmPrimaryList = Lists.newArrayList();
   private final Set<DccTransformerContext<SSMMetadata>> ssmMetadataSet = Sets.newHashSet();
   private final Set<WorkflowTypes> workflowTypesSet = Sets.newHashSet();
+  private PcawgVCFException candidateException;
+
+  @Getter
+  private int variantCount;
 
   private ConsensusVCFConverter(@NonNull Path vcfPath, @NonNull SampleMetadata sampleMetadataConsensus){
     this.vcfFile = vcfPath.toFile();
@@ -159,12 +164,14 @@ public class ConsensusVCFConverter {
     }
   }
 
+
   /**
    * Main loading method. Uses configuration variable to maniluplate state variables
    */
+
   public void process(){
-    int variantCount = 1;
-    val candidateException = new PcawgVCFException(vcfFile.getAbsolutePath(),
+    variantCount = 1;
+    candidateException = new PcawgVCFException(vcfFile.getAbsolutePath(),
         String.format("VariantErrors occured in the file [%s]", vcfFile.getAbsolutePath()));
     for (val variant : vcf){
       try{
@@ -183,13 +190,21 @@ public class ConsensusVCFConverter {
     if (candidateException.hasErrors()){
       val sb = new StringBuilder();
       for (val error : candidateException.getVariantErrors()){
-        sb.append(String.format("\t%s:%s ---- ",error.name(),candidateException.getErrorVariantNumbers(error)));
+        sb.append(String.format("\t%s:%s ---- ",error.name(),candidateException.getErrorVariantStart(error)));
       }
-      log.error("The vcf file [{}] has the following errors: {}", vcfFile.getAbsolutePath(), sb.toString());
+      log.error("The vcf file [{}] has the following errors with start positions: {}", vcfFile.getAbsolutePath(), sb.toString());
       throw candidateException;
     }
 
   }
+
+  public int getBadSSMPrimaryCount(){
+    return  candidateException.getVariantErrors().stream()
+        .flatMap(e -> candidateException.getErrorVariantStart(e).stream())
+        .mapToInt(x -> x)
+        .sum();
+  }
+
 
 
   public Set<DccTransformerContext<SSMMetadata>> readSSMMetadata(){

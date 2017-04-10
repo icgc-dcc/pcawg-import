@@ -54,6 +54,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 		</dependency>
 
 		<dependency>
+			<groupId>org.icgc.dcc</groupId>
+			<artifactId>dcc-submission-core</artifactId>
+			<version>${dcc-common.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
@@ -222,7 +228,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<dcc-common.version>4.2.14</dcc-common.version>
+		<!--<dcc-common.version>4.3.11</dcc-common.version>-->
 		<!--<hadoop.version>2.7.3</hadoop.version>-->
 
 		<opencsv.version>3.9</opencsv.version>
