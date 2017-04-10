@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public enum SSMPrimaryFieldMapping {
+public enum SSMPrimaryFieldMapping implements FieldExtractor<SSMPrimary> {
   ANALYSIS_ID                         ("analysis_id", SSMPrimary::getAnalysisId),
   ANALYZED_SAMPLE_ID                  ("analyzed_sample_id", SSMPrimary::getAnalyzedSampleId),
   MUTATION_TYPE                       ("mutation_type", SSMPrimary::getMutationType),
@@ -42,6 +42,7 @@ public enum SSMPrimaryFieldMapping {
     return name;
   }
 
+  @Override
   public String extractStringValue(SSMPrimary data){
     return functor.apply(data).toString();
   }

@@ -2,11 +2,12 @@ package org.icgc.dcc.pcawg.client.model.ssm.metadata;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.FieldExtractor;
 
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public enum SSMMetadataFieldMapping {
+public enum SSMMetadataFieldMapping implements FieldExtractor<SSMMetadata> {
 
   ANALYSIS_ID                  ("analysis_id", SSMMetadata::getAnalysisId),
   ANALYZED_SAMPLE_ID           ("analyzed_sample_id", SSMMetadata::getAnalyzedSampleId),
