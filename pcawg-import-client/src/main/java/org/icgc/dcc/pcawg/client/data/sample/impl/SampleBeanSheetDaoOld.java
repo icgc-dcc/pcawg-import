@@ -11,7 +11,7 @@ import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest.SampleSheetSearchRequestBuilder;
-import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
+import org.icgc.dcc.pcawg.client.utils.persistance.ObjectPersistance;
 
 import java.io.FileReader;
 import java.io.IOException;

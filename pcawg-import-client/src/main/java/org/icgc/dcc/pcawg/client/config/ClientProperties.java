@@ -59,4 +59,6 @@ public class ClientProperties {
   public static final String DICTIONARY_VERSION = "0.16a";
   public static final String DICTIONARY_CURRENT_URL = "https://submissions.dcc.icgc.org/ws/nextRelease/dictionary";
 
+  public static final String PERSISTANCE_DIR = "persisted";
+  public static final String METADATA_CONTAINER_PERSISTANCE_FILENAME = "metadataContainer.dat";
 }

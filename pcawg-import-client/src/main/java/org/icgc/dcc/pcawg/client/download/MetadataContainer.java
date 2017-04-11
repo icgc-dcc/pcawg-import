@@ -10,6 +10,7 @@ import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.download.context.MetadataContext;
 import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +21,9 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 
 @Getter
 @Slf4j
-public class MetadataContainer {
+public class MetadataContainer implements Serializable {
+
+  public static final long serialVersionUID = 1491936567L;
 
   private List<MetadataContext> metadataContextList;
 

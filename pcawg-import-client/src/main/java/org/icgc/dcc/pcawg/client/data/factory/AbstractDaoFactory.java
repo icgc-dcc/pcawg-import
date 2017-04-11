@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.AbstractFileDao;
 import org.icgc.dcc.pcawg.client.data.SearchRequest;
-import org.icgc.dcc.pcawg.client.utils.FileRestorer;
+import org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorer;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,34 +34,37 @@ public abstract class AbstractDaoFactory<B, R extends SearchRequest<R>, D extend
 
   @NonNull private final String downloadUrl;
   @NonNull private final String inputFilename;
-  @NonNull private final FileRestorer<D> fileRestorer;
+  @NonNull private final LocalFileRestorer<D> localFileRestorer;
 
   @SuppressWarnings("unchecked")
   public final D getObject() throws IOException, ClassNotFoundException {
     List<String> a;
     val inputPath = Paths.get(inputFilename);
     val inputFileExists = Files.exists(inputPath);
-    val persistedFileExists = fileRestorer.isPersisted();
+    val persistedFileExists = localFileRestorer.isPersisted();
 
     D dao = null;
     if (inputFileExists && persistedFileExists){
-      log.info("Inputfile [{}] and persistanceFile [{}] exist, deserializing...", inputFilename, fileRestorer.getPersistedFilename());
-      dao = fileRestorer.restore();
+      log.info("Inputfile [{}] and persistanceFile [{}] exist, deserializing...", inputFilename, localFileRestorer.getPersistedPath());
+      dao = localFileRestorer.restore();
     } else if (inputFileExists && !persistedFileExists){
-      log.info("Inputfile [{}] exists and persistanceFile [{}] DNE, creating new DAO and persisting it...", inputFilename, fileRestorer.getPersistedFilename());
+      log.info("Inputfile [{}] exists and persistanceFile [{}] DNE, creating new DAO and persisting it...", inputFilename, localFileRestorer
+          .getPersistedPath());
       dao = newObject(getInputFilename());
-      fileRestorer.store(dao);
+      localFileRestorer.store(dao);
     } else if (!inputFileExists && persistedFileExists) {
-      log.info("Inputfile [{}] DNE and persistanceFile [{}] exists, cleaning everyting, creating new DAO and persisting it...", inputFilename, fileRestorer.getPersistedFilename());
+      log.info("Inputfile [{}] DNE and persistanceFile [{}] exists, cleaning everyting, creating new DAO and persisting it...", inputFilename, localFileRestorer
+          .getPersistedPath());
       val inputFile = downloadFileByURL(getDownloadUrl(), getInputFilename());
-      fileRestorer.clean();
+      localFileRestorer.clean();
       dao = newObject(inputFile.getAbsolutePath());
-      fileRestorer.store(dao);
+      localFileRestorer.store(dao);
     } else {
-      log.info("Inputfile [{}] DNE and persistanceFile [{}] DNE, download, creating new DAO and persisting it...", inputFilename, fileRestorer.getPersistedFilename());
+      log.info("Inputfile [{}] DNE and persistanceFile [{}] DNE, download, creating new DAO and persisting it...", inputFilename, localFileRestorer
+          .getPersistedPath());
       val inputFile = downloadFileByURL(getDownloadUrl(), getInputFilename());
       dao = newObject(inputFile.getAbsolutePath());
-      fileRestorer.store(dao);
+      localFileRestorer.store(dao);
     }
     return dao;
   }

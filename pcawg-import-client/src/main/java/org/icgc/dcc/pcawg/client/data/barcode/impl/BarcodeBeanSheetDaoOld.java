@@ -8,7 +8,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
-import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
+import org.icgc.dcc.pcawg.client.utils.persistance.ObjectPersistance;
 
 import java.io.FileReader;
 import java.io.IOException;

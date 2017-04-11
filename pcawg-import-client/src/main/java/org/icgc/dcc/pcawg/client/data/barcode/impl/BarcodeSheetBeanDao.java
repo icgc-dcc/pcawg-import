@@ -7,7 +7,7 @@ import org.icgc.dcc.pcawg.client.data.AbstractFileDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
-import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
+import org.icgc.dcc.pcawg.client.utils.persistance.ObjectPersistance;
 
 import java.io.IOException;
 import java.io.Reader;

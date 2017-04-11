@@ -19,9 +19,10 @@ import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalFiles;
-import org.icgc.dcc.pcawg.client.utils.FileRestorer;
+import org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorer;
 
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,12 +57,12 @@ public class FileIdDao implements Serializable {
   public static FileIdDao newFileIdDao(String persistedFilename,
       SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
       BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
-    val fileRestorer = FileRestorer.<FileIdDao>newFileRestorer(persistedFilename);
+    val fileRestorer = LocalFileRestorer.<FileIdDao>newLocalFileRestorer(Paths.get(persistedFilename));
     if (fileRestorer.isPersisted()){
-      log.info("Persisted filename for IcgcFileIdDao found [{}], restoring it...", fileRestorer.getPersistedFilename());
+      log.info("Persisted filename for IcgcFileIdDao found [{}], restoring it...", fileRestorer.getPersistedPath());
       return fileRestorer.restore();
     } else {
-      log.info("Persisted filename for IcgcFileIdDao NOT found [{}], creating a new one and storing it...", fileRestorer.getPersistedFilename());
+      log.info("Persisted filename for IcgcFileIdDao NOT found [{}], creating a new one and storing it...", fileRestorer.getPersistedPath());
       val dao = newFileIdDao(sampleSheetDao, barcodeSheetDao);
       fileRestorer.store(dao);
       return dao;

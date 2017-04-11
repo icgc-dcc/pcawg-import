@@ -28,6 +28,7 @@ import org.icgc.dcc.pcawg.client.core.Factory;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
+import org.icgc.dcc.pcawg.client.core.writer.PersistedFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
@@ -38,6 +39,7 @@ import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,9 +47,9 @@ import java.util.Optional;
 import static java.util.stream.Collectors.joining;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.pcawg.client.Importer.STATS_FIELDS.NUM_TRANSFORMED;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
 import static org.icgc.dcc.pcawg.client.core.Factory.buildDictionaryCreator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFsController;
-import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataValidator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryValidator;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
@@ -94,13 +96,16 @@ public class Importer implements Runnable {
     return Factory.newDccPrimaryTransformer(fsController, this.outputTsvDir, dccProjectCode);
   }
 
+
   @Override
   @SneakyThrows
   public void run() {
     val fsController = newFsController(hdfsEnabled, optionalHdfsHostname, optionalHdfsPort);
+    val persistDirPath = Paths.get(PERSISTANCE_DIR);
+    val persistedFactory = PersistedFactory.newPersistedFactory(persistDirPath, true);
     // Create container with all MetadataContexts
     log.info("Creating MetadataContainer");
-    val metadataContainer = newMetadataContainer();
+    val metadataContainer = persistedFactory.newMetadataContainer();
     val dictionaryCreator = buildDictionaryCreator();
     val ssmPrimaryValidator = newSSMPrimaryValidator(dictionaryCreator.getSSMPrimaryFileSchema());
     val ssmMetadataValidator = newSSMMetadataValidator(dictionaryCreator.getSSMMetadataFileSchema());
