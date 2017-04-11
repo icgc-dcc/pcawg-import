@@ -109,6 +109,7 @@ public class ConsensusVCFConverter {
   private final Set<DccTransformerContext<SSMMetadata>> ssmMetadataSet = Sets.newHashSet();
   private final Set<WorkflowTypes> workflowTypesSet = Sets.newHashSet();
   private PcawgVCFException candidateException;
+  private int erroredVariantCount = 0;
 
   @Getter
   private int variantCount;
@@ -169,10 +170,12 @@ public class ConsensusVCFConverter {
    * Main loading method. Uses configuration variable to maniluplate state variables
    */
 
+
   public void process(){
     variantCount = 1;
     candidateException = new PcawgVCFException(vcfFile.getAbsolutePath(),
         String.format("VariantErrors occured in the file [%s]", vcfFile.getAbsolutePath()));
+    erroredVariantCount = 0;
     for (val variant : vcf){
       try{
         convertConsensusVariant(variant);
@@ -180,6 +183,7 @@ public class ConsensusVCFConverter {
         for (val error : e.getErrors()){
           candidateException.addError(error, variantCount);
         }
+        erroredVariantCount++;
       } finally{
         variantCount++;
       }
@@ -198,11 +202,17 @@ public class ConsensusVCFConverter {
 
   }
 
+  public int getNumBadVariantsCount(){
+    return erroredVariantCount;
+  }
+
   public int getBadSSMPrimaryCount(){
-    return  candidateException.getVariantErrors().stream()
-        .flatMap(e -> candidateException.getErrorVariantStart(e).stream())
-        .mapToInt(x -> x)
-        .sum();
+    val set = Sets.newHashSet();
+    for (val error : candidateException.getVariantErrors()){
+      val startSet = candidateException.getErrorVariantStart(error);
+      set.addAll(startSet);
+    }
+    return set.size();
   }
 
 

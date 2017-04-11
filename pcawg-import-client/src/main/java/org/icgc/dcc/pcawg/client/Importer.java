@@ -116,6 +116,7 @@ public class Importer implements Runnable {
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()) {
       // Error counters
       int totalVariantCountForProjectCode = 0;
+      int erroredVariantCountForProjectCode = 0;
       int transformedSSMPrimaryCountForProjectCode = 0;
       int erroredSSMPrimaryCountForProjectCode = 0;
       val erroredFileList =  Lists.<String>newArrayList();
@@ -153,6 +154,7 @@ public class Importer implements Runnable {
 
           // Record number of errored variants
           erroredSSMPrimaryCountForProjectCode += consensusVCFConverter.getBadSSMPrimaryCount();
+          erroredVariantCountForProjectCode += consensusVCFConverter.getNumBadVariantsCount();
 
           //rtismaFIX stats.incr(NUM_SSM_PRIMARY_ERRORED, consensusVCFConverter.getBadSSMPrimaryCount());
           //rtismaFIX stats.incr(NUM_VCF_FILES_ERRORED);
@@ -201,14 +203,15 @@ public class Importer implements Runnable {
       if (ENABLE_TSV_VALIDATION){
         validateOutputFiles(dccMetadataTransformer, dccPrimaryTransformer);
       }
-      checkFileErrors(erroredFileList, totalVariantCountForProjectCode, dccProjectCode);
-      log.info("DccProjectCode[{}] Stats:  TotalVariants: {}   ErroredSSMPrimary: {}   TransformedSSMPrimary: {}",
+      logFileSummary(erroredFileList, dccProjectCode);
+      log.info("DccProjectCode[{}] Stats:  TotalConsensusVariants: {} ErroredVariants: {}  ErroredSSMPrimary: {}   TransformedSSMPrimary: {}",
           dccProjectCode,
           totalVariantCountForProjectCode,
+          erroredVariantCountForProjectCode,
           erroredSSMPrimaryCountForProjectCode,
           transformedSSMPrimaryCountForProjectCode);
 
-      //rtismaFIX  checkFileErrors(erroredFileList, stats.get(TOTAL_VARIANT_COUNT), dccProjectCode);
+      //rtismaFIX  logFileSummary(erroredFileList, stats.get(TOTAL_VARIANT_COUNT), dccProjectCode);
       //rtismaFIX  log.info("DccProjectCode[{}] Stats:  TotalVariants: {}   ErroredSSMPrimary: {}   TransformedSSMPrimary: {}",
       //rtismaFIX      dccProjectCode,
       //rtismaFIX      stats.get(TOTAL_VARIANT_COUNT),
@@ -336,18 +339,16 @@ public class Importer implements Runnable {
     }
   }
 
-  private static void checkFileErrors(List<String> list, final int totalBadVariantCount, String dccProjectCode){
+  private static void logFileSummary(List<String> list, String dccProjectCode){
     if (!list.isEmpty()){
-      log.error("The importer FAILED to import all vcf files. The following files were problematic:\n{}",
+      log.error("[FILE_SUMMARY]: **{}** DccProjectCode[{}] - The importer FAILED to import all vcf files. The following files were problematic:\n{}",
+          FAILED,
+          dccProjectCode,
           list.stream()
               .collect(joining("\n")));
     } else {
-      log.info("The importer SUCCESSFULLY imported all vcf files.");
+      log.info("[FILE_SUMMARY]: **{}** DccProjectCode[{}] - The importer SUCCESSFULLY imported all vcf files.", PASSED, dccProjectCode);
     }
-    if (totalBadVariantCount != 0){
-      log.error("Total Bad Variants for DccProjectCode[{}]: {}", dccProjectCode, totalBadVariantCount);
-    }
-
   }
 
   private static void validateOutputFiles(DccTransformer<SSMMetadata> dccMetadataTransformer, DccTransformer<SSMPrimary> dccPrimaryTransformer){

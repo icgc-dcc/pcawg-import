@@ -36,6 +36,8 @@ public enum MutationTypes {
   MULTIPLE_BASE_SUBSTITUTION("multiple base substitution (>=2bp and <=200bp)"),
   UNKNOWN("unknown");
 
+  private static final boolean DEFAULT_THROW_EXCEPTION_FLAG = true;
+
   @NonNull
   private final String name;
 
@@ -51,6 +53,10 @@ public enum MutationTypes {
       return UNKNOWN;
     }
   }
+  public static MutationTypes resolveVariant(VariantContext v){
+    return resolveVariant(DEFAULT_THROW_EXCEPTION_FLAG, v);
+  }
+
   public static MutationTypes resolveVariant(boolean throwException, VariantContext v){
     val ref = VCF.getReferenceAlleleString(v);
     val alt = VCF.getFirstAlternativeAlleleString(v);
