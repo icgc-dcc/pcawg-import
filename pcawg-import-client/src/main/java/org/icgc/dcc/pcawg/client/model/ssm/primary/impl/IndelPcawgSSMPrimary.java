@@ -9,7 +9,7 @@ import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.DELETION_LTE_200BP;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.INSERTION_LTE_200BP;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.UNKNOWN;
-import static org.icgc.dcc.pcawg.client.vcf.VCF.getAlternativeAlleleLength;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleLength;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAllele;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAllele;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleLength;
@@ -37,7 +37,7 @@ public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
 
   private static MutationTypes calcMutationType(VariantContext variant) throws PcawgVariantException {
     val refLength = getReferenceAlleleLength(variant);
-    val altLength = getAlternativeAlleleLength(variant);
+    val altLength = getFirstAlternativeAlleleLength(variant);
 
     MutationTypes mutationType;
     if(altLength >refLength){

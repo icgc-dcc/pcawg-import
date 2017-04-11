@@ -9,7 +9,7 @@ import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.UNKNOWN;
-import static org.icgc.dcc.pcawg.client.vcf.VCF.getAlternativeAlleleLength;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleLength;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleLength;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleString;
@@ -35,7 +35,7 @@ public class SnvMnvPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
 
   private static MutationTypes calcMutationType(VariantContext variant){
     val refLength = getReferenceAlleleLength(variant);
-    val altLength = getAlternativeAlleleLength(variant);
+    val altLength = getFirstAlternativeAlleleLength(variant);
 
     if (refLength != altLength){
       val message = String.format("The MutationType cannot be found since ReferenceAlleleLength[%s] != AlternativeAlleleLength[%s]", refLength, altLength);

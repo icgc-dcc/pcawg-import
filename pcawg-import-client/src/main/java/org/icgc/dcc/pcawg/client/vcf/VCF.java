@@ -85,7 +85,7 @@ public class VCF {
     return v.getAlternateAllele(0);
   }
 
-  public static int getAlternativeAlleleLength(VariantContext v){
+  public static int getFirstAlternativeAlleleLength(VariantContext v){
     return getFirstAlternativeAllele(v).length();
   }
 

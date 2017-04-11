@@ -17,8 +17,16 @@
  */
 package org.icgc.dcc.pcawg.client.vcf;
 
+import htsjdk.variant.variantcontext.VariantContext;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors;
+import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
+
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleLength;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleLength;
+import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_TYPE_NOT_SUPPORTED_ERROR;
 
 @RequiredArgsConstructor
 public enum MutationTypes {
@@ -35,4 +43,38 @@ public enum MutationTypes {
   public String toString() {
     return name;
   }
+
+  private static MutationTypes procError(boolean throwException, String message, VariantContext v, PcawgVariantErrors error){
+    if (throwException){
+      throw new PcawgVariantException(message, v, error);
+    } else {
+      return UNKNOWN;
+    }
+  }
+  public static MutationTypes resolveVariant(boolean throwException, VariantContext v){
+    val ref = VCF.getReferenceAlleleString(v);
+    val alt = VCF.getFirstAlternativeAlleleString(v);
+    val refLength = getReferenceAlleleLength(v);
+    val altLength = getFirstAlternativeAlleleLength(v);
+    val altIsOne = altLength ==1;
+    val refIsOne = refLength ==1;
+    val refStartsWithAlt = ref.startsWith(alt);
+    val altStartsWithRef = alt.startsWith(ref);
+    val  lengthDifference = refLength - altLength;
+    if (lengthDifference < 0 && !altIsOne && !refStartsWithAlt){
+      return refIsOne && altStartsWithRef ? INSERTION_LTE_200BP : MULTIPLE_BASE_SUBSTITUTION;
+    } else if(lengthDifference == 0 && !refStartsWithAlt && !altStartsWithRef){
+      return refIsOne ? SINGLE_BASE_SUBSTITUTION : MULTIPLE_BASE_SUBSTITUTION;
+    } else if(lengthDifference > 0 && !refIsOne && !altStartsWithRef ){
+      return altIsOne && refStartsWithAlt ? DELETION_LTE_200BP : MULTIPLE_BASE_SUBSTITUTION;
+    } else {
+      val message = String.format("The mutationType of the variant cannot be resolved: Ref[%s] Alt[%s] --> RefLength-AltLength=%s,  RefLengthIsOne[%s] AltLengthIsOne[%s], RefStartsWithAlt[%s] AltStartsWithRef[%s] ", lengthDifference, ref, alt, refIsOne, altIsOne, refStartsWithAlt, altStartsWithRef);
+      if (throwException){
+        throw new PcawgVariantException(message, v, MUTATION_TYPE_NOT_SUPPORTED_ERROR);
+      } else {
+        return UNKNOWN;
+      }
+    }
+  }
+
 }

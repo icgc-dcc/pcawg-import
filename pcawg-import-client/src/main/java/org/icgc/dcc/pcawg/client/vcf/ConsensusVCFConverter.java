@@ -156,7 +156,7 @@ public class ConsensusVCFConverter {
    */
   private void buildSSMMetadatas(){
     val ssmMetadataConsensus = newSSMMetadata(sampleMetadataConsensus);
-    addSSMMetadata(WorkflowTypes.CONSENSUS, ssmMetadataConsensus);
+    addSSMMetadata(CONSENSUS, ssmMetadataConsensus);
 
     for (val workflowType : workflowTypesSet){
       val ssmMetadata = createCallerSpecificSSMMetadata(sampleMetadataConsensus,ssmMetadataConsensus,workflowType);
