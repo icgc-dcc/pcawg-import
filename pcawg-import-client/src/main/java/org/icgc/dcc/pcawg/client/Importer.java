@@ -28,7 +28,7 @@ import org.icgc.dcc.pcawg.client.core.Factory;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
-import org.icgc.dcc.pcawg.client.core.writer.PersistedFactory;
+import org.icgc.dcc.pcawg.client.core.PersistedFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;

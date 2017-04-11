@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.core.writer;
+package org.icgc.dcc.pcawg.client.core;
 
 import lombok.Getter;
 import lombok.NonNull;

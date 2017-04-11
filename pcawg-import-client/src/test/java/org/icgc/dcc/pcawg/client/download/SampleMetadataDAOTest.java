@@ -6,7 +6,7 @@ import lombok.val;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.core.writer.PersistedFactory.newPersistedFactory;
+import static org.icgc.dcc.pcawg.client.core.PersistedFactory.newPersistedFactory;
 import static org.icgc.dcc.pcawg.client.model.portal.PortalFilename.newPortalFilename;
 
 @Slf4j
