@@ -1,6 +1,6 @@
 package org.icgc.dcc.pcawg.client.vcf;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.NonNull;
@@ -185,7 +185,7 @@ public class ConsensusVariantConverter  {
         .build();
   }
 
-  public List<DccTransformerContext<SSMPrimary>> convertSSMPrimary(VariantContext variant){
+  public Set<DccTransformerContext<SSMPrimary>> convertSSMPrimary(VariantContext variant){
     val mutationType = resolveMutationType(variant);
     val dccPrimaryTransformerCTXList = Lists.<DccTransformerContext<SSMPrimary>>newArrayList();
     val dataType = convertToDataType(mutationType);
@@ -198,7 +198,7 @@ public class ConsensusVariantConverter  {
       val ssmPrimary = createCallerSpecificSSMPrimary(sampleMetadataConsensus, ssmPrimaryConsensus, workflowType, dataType);
       addSSMPrimary(dccPrimaryTransformerCTXList, workflowType, ssmPrimary, dataType);
     }
-    return ImmutableList.copyOf(dccPrimaryTransformerCTXList);
+    return ImmutableSet.copyOf(dccPrimaryTransformerCTXList);
   }
 
 }

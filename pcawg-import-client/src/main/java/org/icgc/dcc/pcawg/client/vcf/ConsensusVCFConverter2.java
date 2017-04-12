@@ -2,7 +2,6 @@ package org.icgc.dcc.pcawg.client.vcf;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
@@ -66,11 +65,11 @@ public class ConsensusVCFConverter2 {
         sampleMetadata.getMatchedFileId());
   }
 
-  private static List<Tuple> aggregateDistinctWorkflowTypeAndDataType(List<DccTransformerContext<SSMPrimary>> dccTransformerContexts){
+  private static List<Tuple> aggregateDistinctWorkflowTypeAndDataType(Set<DccTransformerContext<SSMPrimary>> dccPrimaryTransformerContexts){
     val set = Sets.<Tuple>newHashSet();
     val list = ImmutableList.<Tuple>builder();
     // Create unique order list of tuples
-    for (val ctx : dccTransformerContexts){
+    for (val ctx : dccPrimaryTransformerContexts){
       val tuple = newTuple(ctx.getWorkflowTypes(), ctx.getDataType());
       if (!set.contains(tuple)){
         list.add(tuple);
@@ -91,7 +90,7 @@ public class ConsensusVCFConverter2 {
   /**
    * State
    */
-  private final List<DccTransformerContext<SSMPrimary>> ssmPrimaryList = Lists.newArrayList();
+  private final Set<DccTransformerContext<SSMPrimary>> ssmPrimarySet = Sets.newHashSet();
   private final Set<DccTransformerContext<SSMMetadata>> ssmMetadataSet = Sets.newHashSet();
   private final Set<WorkflowTypes> workflowTypesSet = Sets.newHashSet();
   private final ConsensusVariantConverter consensusVariantConverter;
@@ -124,11 +123,11 @@ public class ConsensusVCFConverter2 {
    * @param variant input variant to be converted/processed
    */
   private void convertConsensusVariant(VariantContext variant){
-    ssmPrimaryList.addAll(consensusVariantConverter.convertSSMPrimary(variant));
+    ssmPrimarySet.addAll(consensusVariantConverter.convertSSMPrimary(variant));
   }
 
   private void buildSSMMetadatas(){
-    val uniqeTupleList = aggregateDistinctWorkflowTypeAndDataType(ssmPrimaryList);
+    val uniqeTupleList = aggregateDistinctWorkflowTypeAndDataType(ssmPrimarySet);
     for (val tuple : uniqeTupleList){
       val workflowType = tuple.getWorkflowType();
       val dataType= tuple.getDataType();
@@ -203,8 +202,8 @@ public class ConsensusVCFConverter2 {
     return ImmutableSet.copyOf(this.ssmMetadataSet);
   }
 
-  public List<DccTransformerContext<SSMPrimary>> readSSMPrimary(){
-    return ImmutableList.copyOf(this.ssmPrimaryList);
+  public Set<DccTransformerContext<SSMPrimary>> readSSMPrimary(){
+    return ImmutableSet.copyOf(this.ssmPrimarySet);
   }
 
 

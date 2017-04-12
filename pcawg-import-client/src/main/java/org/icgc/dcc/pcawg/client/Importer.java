@@ -185,13 +185,13 @@ public class Importer implements Runnable {
 
         // SSM Metadata transformation
 
-        val ssmPrimaryList = consensusVCFConverter.readSSMPrimary();
+        val ssmPrimarySet = consensusVCFConverter.readSSMPrimary();
         ssmMetadataSet.addAll(consensusVCFConverter.readSSMMetadata());
-        validateCommon(dccProjectCode, vcfFile.getName(), ssmMetadataSet, ssmPrimaryList);
+        validateCommon(dccProjectCode, vcfFile.getName(), ssmMetadataSet, ssmPrimarySet);
 
         // SSM Primary transformation
         boolean overallPrimaryFileOk = true;
-        for (val ptx : ssmPrimaryList){
+        for (val ptx : ssmPrimarySet){
           boolean shouldTransformSSMPrimary = true;
           if (ENABLE_SSM_DICTIONARY_VALIDATION){
             shouldTransformSSMPrimary = validateSSM("SSM_PRIMARY", ssmPrimaryValidator, ptx.getObject());
