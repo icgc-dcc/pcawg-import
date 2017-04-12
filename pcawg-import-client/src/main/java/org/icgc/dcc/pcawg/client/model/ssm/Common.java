@@ -6,4 +6,8 @@ public interface Common  {
   String getAnalyzedSampleId();
   boolean getPcawgFlag();
 
+  default String getString(){
+    return String.format("[AnalysisId=%s, AnalyzedSampleId=%s]", getAnalysisId(), getAnalyzedSampleId());
+  }
+
 }

@@ -1,6 +1,8 @@
 package org.icgc.dcc.pcawg.client.model.ssm;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.model.NACodes;
@@ -14,6 +16,8 @@ import java.util.regex.Pattern;
 
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
+import static org.icgc.dcc.pcawg.client.utils.SetLogic.extraInActual;
+import static org.icgc.dcc.pcawg.client.utils.SetLogic.missingFromActual;
 import static org.icgc.dcc.submission.dictionary.model.RestrictionType.REGEX;
 import static org.icgc.dcc.submission.dictionary.model.RestrictionType.REQUIRED;
 
@@ -78,5 +82,16 @@ public final class SSMValidator <T, F extends FieldExtractor<T>> {
       }
     }
     return badList.build();
+  }
+
+  public static  Set<Common> differenceOfMetadataAndPrimary(Iterable<? extends Common> ssmMetadatas, Iterable<? extends Common> ssmPrimarys){
+    val mSet = Sets.<Common>newHashSet(ssmMetadatas);
+    val pSet = Sets.<Common>newHashSet(ssmMetadatas);
+    val outSet = ImmutableSet.<Common>builder();
+    val missingFromMset = missingFromActual(mSet, pSet);
+    val extraInMset = extraInActual(mSet, pSet);
+    outSet.addAll(missingFromMset);
+    outSet.addAll(extraInMset);
+    return outSet.build();
   }
 }

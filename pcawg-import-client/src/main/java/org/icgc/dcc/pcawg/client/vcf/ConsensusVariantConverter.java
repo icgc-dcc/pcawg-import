@@ -17,6 +17,8 @@ import org.icgc.dcc.pcawg.client.vcf.converters.MutatedFromAlleleConverterStrate
 import org.icgc.dcc.pcawg.client.vcf.converters.MutatedToAlleleConverterStrategy;
 import org.icgc.dcc.pcawg.client.vcf.converters.ReferenceGenomeAlleleConverterStrategy;
 import org.icgc.dcc.pcawg.client.vcf.converters.TumorGenotypeConverterStrategy;
+import org.icgc.dcc.pcawg.client.vcf.converters2.VariantConverterStrategy;
+import org.icgc.dcc.pcawg.client.vcf.converters2.VariantConverterStrategyMux;
 
 import java.util.List;
 import java.util.Set;
@@ -48,10 +50,18 @@ public class ConsensusVariantConverter  {
   private static final MutatedFromAlleleConverterStrategy MUTATED_FROM_ALLELE_CONVERTER_STRATEGY = new MutatedFromAlleleConverterStrategy();
   private static final MutatedToAlleleConverterStrategy MUTATED_TO_ALLELE_CONVERTER_STRATEGY = new MutatedToAlleleConverterStrategy();
   private static final TumorGenotypeConverterStrategy TUMOR_GENOTYPE_CONVERTER_STRATEGY = new TumorGenotypeConverterStrategy();
+  private static final VariantConverterStrategyMux VARIANT_CONVERTER_STRATEGY_MUX = new VariantConverterStrategyMux();
+
   private static final boolean F_CHECK_CORRECT_WORKTYPE = false;
   private static final int DEFAULT_STRAND = 1;
   private static final String DEFAULT_VERIFICATION_STATUS = "not tested";
 
+  public static class DataTypeConversionException extends RuntimeException{
+
+    public DataTypeConversionException(String message) {
+      super(message);
+    }
+  }
 
   public static DataTypes convertToDataType(MutationTypes mutationType){
     if (mutationType == SINGLE_BASE_SUBSTITUTION || mutationType == MULTIPLE_BASE_SUBSTITUTION){
@@ -61,7 +71,7 @@ public class ConsensusVariantConverter  {
     } else if (mutationType == UNKNOWN) {
       return DataTypes.UNKNOWN;
     } else {
-      throw new IllegalStateException(String.format("No implementation defined for converting the mutationtype [%s] to a DataType", mutationType.name()));
+      throw new DataTypeConversionException(String.format("No implementation defined for converting the mutationtype [%s] to a DataType", mutationType.name()));
     }
   }
   @NonNull private final SampleMetadata sampleMetadataConsensus;
@@ -118,7 +128,36 @@ public class ConsensusVariantConverter  {
     return UNDERSCORE.join(dccProjectCode, workflowType,dataType);
   }
 
-  private SSMPrimary buildConsensusSSMPrimary(MutationTypes mutationType,String analysisId, VariantContext variant){
+  private SSMPrimary buildConsensusSSMPrimary(MutationTypes mutationType, VariantConverterStrategy<VariantContext> converter,
+      String analysisId, VariantContext variant){
+    val analyzedSampleId = sampleMetadataConsensus.getAnalyzedSampleId();
+    return PlainSSMPrimary.builder()
+        .analysisId(analysisId)
+        .analyzedSampleId(analyzedSampleId)
+        .mutationType(mutationType.toString())
+        .chromosomeStart(converter.convertChromosomeStart(variant))
+        .chromosomeEnd(converter.convertChromosomeEnd(variant))
+        .referenceGenomeAllele(converter.convertReferenceGenomeAllele(variant))
+        .controlGenotype(converter.convertControlGenotype(variant))
+        .mutatedFromAllele(converter.convertMutatedFromAllele(variant))
+        .tumorGenotype(converter.convertTumorGenotype(variant))
+        .mutatedToAllele(converter.convertMutatedToAllele(variant))
+        .chromosome(getChomosome(variant))
+        .chromosomeStrand(DEFAULT_STRAND)
+        .expressedAllele( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
+        .qualityScore( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
+        .probability( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
+        .totalReadCount(calcTotalReadCount(variant))
+        .mutantAlleleReadCount(calcMutantAlleleReadCount(variant))
+        .verificationStatus(DEFAULT_VERIFICATION_STATUS)
+        .verificationPlatform( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
+        .biologicalValidationPlatform( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
+        .biologicalValidationStatus( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
+        .note(DATA_VERIFIED_TO_BE_UNKNOWN.toString())
+        .build();
+
+  }
+    private SSMPrimary buildConsensusSSMPrimary(MutationTypes mutationType, String analysisId, VariantContext variant){
     val analyzedSampleId = sampleMetadataConsensus.getAnalyzedSampleId();
     return PlainSSMPrimary.builder()
         .analysisId(analysisId)
@@ -147,11 +186,12 @@ public class ConsensusVariantConverter  {
   }
 
   public List<DccTransformerContext<SSMPrimary>> convertSSMPrimary(VariantContext variant){
-    val mutationType = resolveMutationType(false, variant); //TODO:  handle UNKNOWN???
+    val mutationType = resolveMutationType(variant);
     val dccPrimaryTransformerCTXList = Lists.<DccTransformerContext<SSMPrimary>>newArrayList();
     val dataType = convertToDataType(mutationType);
     val consensusAnalysisId = getConsensusAnalysisId(dataType);
-    val ssmPrimaryConsensus= buildConsensusSSMPrimary(mutationType, consensusAnalysisId, variant);
+    val converter = VARIANT_CONVERTER_STRATEGY_MUX.select(mutationType);
+    val ssmPrimaryConsensus= buildConsensusSSMPrimary(mutationType, converter, consensusAnalysisId, variant);
     addSSMPrimary(dccPrimaryTransformerCTXList, CONSENSUS, ssmPrimaryConsensus , dataType);
 
     for (val workflowType : extractWorkflowTypes(variant)){

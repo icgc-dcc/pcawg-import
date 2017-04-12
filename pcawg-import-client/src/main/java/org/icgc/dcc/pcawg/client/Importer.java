@@ -19,16 +19,18 @@ package org.icgc.dcc.pcawg.client;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.Factory;
+import org.icgc.dcc.pcawg.client.core.PersistedFactory;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
-import org.icgc.dcc.pcawg.client.core.PersistedFactory;
+import org.icgc.dcc.pcawg.client.model.ssm.Common;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
@@ -46,7 +48,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
+import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.Importer.STATS_FIELDS.NUM_TRANSFORMED;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
 import static org.icgc.dcc.pcawg.client.core.Factory.buildDictionaryCreator;
@@ -135,6 +139,7 @@ public class Importer implements Runnable {
       val storage = newStorage(persistVcfDownloads, vcfDownloadDirectory , bypassMD5Check, token);
       val dccPrimaryTransformer = buildDccPrimaryTransformer(fsController,dccProjectCode);
       val dccMetadataTransformer = buildDccMetadataTransformer(fsController,dccProjectCode);
+      val ssmMetadataSet = Sets.<DccTransformerContext<SSMMetadata>>newHashSet();
 
       // Loop through each file for a particular dccProjectCode
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)) {
@@ -179,14 +184,13 @@ public class Importer implements Runnable {
         //rtismaFIX    ssmPrimaryValidator,dccPrimaryStats);
 
         // SSM Metadata transformation
-        for (val mtx : consensusVCFConverter.readSSMMetadata()){
 
-          dccMetadataTransformer.transform(mtx);
-        }
+        val ssmPrimaryList = consensusVCFConverter.readSSMPrimary();
+        ssmMetadataSet.addAll(consensusVCFConverter.readSSMMetadata());
+        validateCommon(dccProjectCode, vcfFile.getName(), ssmMetadataSet, ssmPrimaryList);
 
         // SSM Primary transformation
         boolean overallPrimaryFileOk = true;
-        val ssmPrimaryList = consensusVCFConverter.readSSMPrimary();
         for (val ptx : ssmPrimaryList){
           boolean shouldTransformSSMPrimary = true;
           if (ENABLE_SSM_DICTIONARY_VALIDATION){
@@ -203,8 +207,16 @@ public class Importer implements Runnable {
         logSSMPrimaryValidationSummary(ENABLE_TSV_VALIDATION, overallPrimaryFileOk, vcfFile.getPath());
 
       }
+      // Traverse the unique DccTransformerContexT<SSMMetadata> set, and transform them
+      for (val mtx : ssmMetadataSet){
+        dccMetadataTransformer.transform(mtx);
+      }
+
+      //Close the transformers
       dccMetadataTransformer.close();
       dccPrimaryTransformer.close();
+
+      // Validate the TSVs
       if (ENABLE_TSV_VALIDATION){
         validateOutputFiles(dccMetadataTransformer, dccPrimaryTransformer);
       }
@@ -370,6 +382,19 @@ public class Importer implements Runnable {
         ssmPValidator.analyze();
         ssmPValidator.log();
       }
+    }
+  }
+
+  private static void validateCommon(String dccProjectCode,String filename, Iterable<DccTransformerContext<SSMMetadata>> ssmMetadataList, Iterable<DccTransformerContext<SSMPrimary>> ssmPrimaryList){
+    val ssmMList = stream(ssmMetadataList).map(DccTransformerContext::getObject).collect(toList());
+    val ssmPList = stream(ssmPrimaryList).map(DccTransformerContext::getObject).collect(toList());
+    val diffList = SSMValidator.differenceOfMetadataAndPrimary(ssmMList, ssmPList);
+    if (!diffList.isEmpty()){
+      log.error("[VALIDATE_COMMON_RESULT]: {} -> For DccProjectCode[{}] and File[{}], the following are mismatched: [{}]", FAILED, dccProjectCode,
+          filename,
+          diffList.stream().map(Common::getString).collect(java.util.stream.Collectors.joining(" , ")));
+    } else {
+      log.info("[VALIDATE_COMMON_RESULT]: {} -> For DccProjectCode[{}] and File[{}]",PASSED, dccProjectCode, filename);
     }
   }
 

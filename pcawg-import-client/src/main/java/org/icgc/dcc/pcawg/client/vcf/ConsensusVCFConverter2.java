@@ -16,6 +16,7 @@ import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.DataTypeConversionException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
@@ -29,6 +30,8 @@ import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter2.Tuple.newTupl
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.calcAnalysisId;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.INDEL;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.SNV_MNV;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
+import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR;
 
 @Slf4j
 public class ConsensusVCFConverter2 {
@@ -40,7 +43,6 @@ public class ConsensusVCFConverter2 {
       @NonNull SampleMetadata sampleMetadataConsensus){
     return new ConsensusVCFConverter2(vcfPath, sampleMetadataConsensus);
   }
-
 
   @Value
   public static class Tuple{
@@ -145,6 +147,7 @@ public class ConsensusVCFConverter2 {
    * Main loading method. Uses configuration variable to maniluplate state variables
    */
 
+  //TODO: need to add tests for malformed VCFs not being included in data set
 
   public void process(){
     variantCount = 1;
@@ -154,9 +157,13 @@ public class ConsensusVCFConverter2 {
     for (val variant : vcf){
       try{
         convertConsensusVariant(variant);
-      } catch (PcawgVariantException e){
+      } catch (DataTypeConversionException e ){
+        candidateException.addError(MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR, getStart(variant));
+        erroredVariantCount++;
+      } catch (PcawgVariantException  e ){
+        val start = getStart(variant);
         for (val error : e.getErrors()){
-          candidateException.addError(error, variantCount);
+          candidateException.addError(error, start);
         }
         erroredVariantCount++;
       } finally{
