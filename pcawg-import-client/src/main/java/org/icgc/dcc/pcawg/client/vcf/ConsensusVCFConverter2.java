@@ -39,6 +39,8 @@ public class ConsensusVCFConverter2 {
 
   private static final boolean REQUIRE_INDEX_CFG = false;
   private static final boolean F_CHECK_CORRECT_WORKTYPE = false;
+  private static final boolean ALLOW_MISSING_FIELDS_IN_HEADER_CFG = true;
+  private static final boolean OUTPUT_TRAILING_FORMAT_FIELDS_CFG = true;
 
   public static final ConsensusVCFConverter2 newConsensusVCFConverter(@NonNull Path vcfPath,
       @NonNull SampleMetadata sampleMetadataConsensus, final boolean enableFiltering, SnpEffCodingFilter filter){
@@ -100,6 +102,7 @@ public class ConsensusVCFConverter2 {
   private final ConsensusVariantConverter consensusVariantConverter;
   private PcawgVCFException candidateException;
   private int erroredVariantCount = 0;
+  private VCFEncoder vcfEncoder = null;
 
   @Getter
   private int variantCount;
@@ -112,6 +115,11 @@ public class ConsensusVCFConverter2 {
     this.consensusVariantConverter = new ConsensusVariantConverter(sampleMetadataConsensus);
     this.filter = filter;
     this.enableFiltering = enableFiltering;
+    if(enableFiltering){
+      //TODO: remove this hardcoding
+      vcfEncoder = new VCFEncoder(vcf.getFileHeader(),
+          ALLOW_MISSING_FIELDS_IN_HEADER_CFG, OUTPUT_TRAILING_FORMAT_FIELDS_CFG);
+    }
   }
 
 
@@ -154,22 +162,29 @@ public class ConsensusVCFConverter2 {
 
   //TODO: need to add tests for malformed VCFs not being included in data set
 
+  private boolean isVariantCoding(VariantContext variantContext){
+    if (enableFiltering && sampleMetadataConsensus.isUsProject()){
+      val variantString = vcfEncoder.encode(variantContext);
+      return filter.isCoding(variantString);
+    } else {
+      return true;
+    }
+  }
+
+  private boolean proceedWithProcessingVariant(VariantContext variantContext){
+    val isNotFiltered = variantContext.isNotFiltered();
+    val isCoding = isVariantCoding(variantContext);
+    return isCoding && isNotFiltered;
+  }
+
   public void process(){
     variantCount = 1;
     candidateException = new PcawgVCFException(vcfFile.getAbsolutePath(),
         String.format("VariantErrors occured in the file [%s]", vcfFile.getAbsolutePath()));
     erroredVariantCount = 0;
 
-    val vcfEncoder = new VCFEncoder(vcf.getFileHeader(), true, true);
     for (val variant : vcf){
-      boolean isCoding = false;
-      if (enableFiltering && sampleMetadataConsensus.isUsProject()){
-        val variantString = vcfEncoder.encode(variant);
-        isCoding = filter.isCoding(variantString);
-      } else {
-        isCoding = true;
-      }
-      if (isCoding) {
+      if (proceedWithProcessingVariant(variant)) {
         try {
           convertConsensusVariant(variant);
         } catch (DataTypeConversionException e) {
