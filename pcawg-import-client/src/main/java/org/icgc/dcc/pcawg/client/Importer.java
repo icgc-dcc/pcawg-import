@@ -34,6 +34,7 @@ import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.FieldExtractor;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
+import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter2;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
 import java.nio.file.Files;
@@ -52,7 +53,6 @@ import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataValidator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryValidator;
 import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter.newConsensusVCFConverter;
 
 @Slf4j
 @Builder
@@ -146,7 +146,7 @@ public class Importer implements Runnable {
         val consensusSampleMetadata = metadataContext.getSampleMetadata();
 
         // Convert Consensus VCF files
-        val consensusVCFConverter = newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
+        val consensusVCFConverter = ConsensusVCFConverter2.newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
         try{
           consensusVCFConverter.process();
         } catch (PcawgVCFException e){

@@ -3,6 +3,7 @@ package org.icgc.dcc.pcawg.client.core.transformer.impl;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 @Builder
@@ -11,6 +12,9 @@ public final class DccTransformerContext<T> {
 
   @NonNull
   private final WorkflowTypes workflowTypes;
+
+  @NonNull
+  private final DataTypes dataType;
 
   @NonNull
   private final T object;

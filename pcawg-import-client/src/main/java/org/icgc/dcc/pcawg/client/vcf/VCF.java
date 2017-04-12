@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.vcf;
 
+import com.google.common.base.Joiner;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -7,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.common.core.util.Joiners;
 
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +23,7 @@ public class VCF {
   private static final String T_REF_COUNT = "t_ref_count";
   private static final String T_ALT_COUNT = "t_alt_count";
   private static final String CALLERS = "Callers";
+  private static final Joiner ALLELE_JOINER = Joiners.SLASH;
 
   public static CommonInfo getCommonInfo(VariantContext v){
     return v.getCommonInfo();
@@ -103,6 +106,18 @@ public class VCF {
 
   public static String removeFirstBase(Allele a){
     return a.getBaseString().substring(1);
+  }
+
+  public static String getStrippedReferenceAlleleString(VariantContext v){
+    return removeFirstBase(v.getReference());
+  }
+
+  public static String getStrippedFirstAlternativeAlleleString(VariantContext v){
+    return removeFirstBase(getFirstAlternativeAllele(v));
+  }
+
+  public static String joinAlleles(String ref, String alt){
+    return ALLELE_JOINER.join(ref, alt);
   }
 
 }

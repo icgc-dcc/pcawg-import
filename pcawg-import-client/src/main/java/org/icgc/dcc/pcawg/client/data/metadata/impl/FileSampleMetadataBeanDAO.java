@@ -5,24 +5,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.icgc.FileIdDao;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
+import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.icgc.FileIdDao;
+import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
+import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
-import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
-import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
-import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;
 import static org.icgc.dcc.pcawg.client.data.icgc.IdResolver.getAnalyzedSampleId;
 import static org.icgc.dcc.pcawg.client.data.icgc.IdResolver.getMatchedSampleId;
-import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -56,7 +55,6 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
   public SampleMetadata fetchSampleMetadata(PortalFilename portalFilename) throws SampleMetadataNotFoundException{
     val aliquotId = portalFilename.getAliquotId();
     val workflowType = WorkflowTypes.parseStartsWith(portalFilename.getWorkflow(), F_CHECK_CORRECT_WORKTYPE);
-    val dataType = DataTypes.parseMatch(portalFilename.getDataType(), F_CHECK_CORRECT_DATATYPE);
     val sampleBean = getFirstSampleBean(aliquotId);
     val dccProjectCode = sampleBean.getDcc_project_code();
     val submitterSampleId = sampleBean.getSubmitter_sample_id();
@@ -84,7 +82,6 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
         .matchedSampleId(matchedSampleId)
         .aliquotId(aliquotId)
         .isUsProject(isUsProject)
-        .dataType(dataType)
         .workflowType(workflowType)
         .analyzedFileId(analyzedFileId)
         .matchedFileId(matchedFileId)

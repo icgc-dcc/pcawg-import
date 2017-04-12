@@ -7,7 +7,6 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeSheetFastDao;
-import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataBeanDAO;
 import org.icgc.dcc.pcawg.client.data.sample.impl.SampleSheetFastDao;
@@ -18,14 +17,12 @@ import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
 import org.icgc.dcc.pcawg.client.utils.DictionaryCreator;
-import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
@@ -127,20 +124,6 @@ public class Factory {
     return new MetadataContainer(sampleMetadataDao, portalMetadataSet);
   }
 
-  public static SSMMetadata newSSMMetadata(SampleMetadata sampleMetadata){
-    val workflowType = sampleMetadata.getWorkflowType();
-    val dataType = sampleMetadata.getDataType();
-    return PcawgSSMMetadata.newSSMMetadataImpl(
-        VariationCallingAlgorithms.get(workflowType, dataType),
-        dataType.getName(),
-        sampleMetadata.getMatchedSampleId(),
-        sampleMetadata.getAnalysisId(),
-        sampleMetadata.getAnalyzedSampleId(),
-        sampleMetadata.isUsProject(),
-        sampleMetadata.getAliquotId(),
-        sampleMetadata.getAnalyzedFileId(),
-        sampleMetadata.getMatchedFileId());
-  }
 
   private static void  downloadSheet(String url, String outputFilename){
     val outputDir = Paths.get("").toAbsolutePath().toString();

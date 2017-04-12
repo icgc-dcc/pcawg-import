@@ -51,6 +51,7 @@ public class SSMTest {
 
   private static final WorkflowTypes FIXED_CONSENSUS_WORKFLOW = WorkflowTypes.CONSENSUS;
   private static final DataTypes FIXED_INDEL_DATATYPE = DataTypes.INDEL;
+  private static final DataTypes DUMMY_DATA_TYPE = DataTypes.INDEL;
   private static final String DUMMY_ANALYSIS_ID = UNDERSCORE.join("myDccProjectCode",
       FIXED_CONSENSUS_WORKFLOW.getName(), FIXED_INDEL_DATATYPE.getName());
   private static final String DUMMY_ANALYZED_SAMPLE_ID = "myAnalyzedSampleId";
@@ -69,7 +70,6 @@ public class SSMTest {
       .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
       .matchedSampleId(DUMMY_MATCHED_SAMPLE_ID)
       .aliquotId("myAliquotId")
-      .dataType(DataTypes.INDEL)
       .dccProjectCode("myDccProjectCode")
       .analyzedFileId("myAnalyzedFileId")
       .matchedFileId("myMatchedFileId")
@@ -282,12 +282,16 @@ public class SSMTest {
     assertThat(ssmMetadata.getSeqCoverage()).isEqualTo(NA_VALUE);
   }
 
+  private static String calcAnalysisId(String dccProjectCode, WorkflowTypes workflowType, DataTypes dataType){
+    return UNDERSCORE.join(dccProjectCode, workflowType.getName(), dataType.getName());
+  }
+
   private static final SSMMetadata createSSMMetadata(SampleMetadata sampleMetadata){
+    val analysisId = calcAnalysisId(sampleMetadata.getDccProjectCode(), sampleMetadata.getWorkflowType(), DUMMY_DATA_TYPE);
     return PcawgSSMMetadata.newSSMMetadataImpl(
         sampleMetadata.getWorkflowType().getName(),
-        sampleMetadata.getDataType().getName(),
         sampleMetadata.getMatchedSampleId(),
-        sampleMetadata.getAnalysisId(),
+        analysisId,
         sampleMetadata.getAnalyzedSampleId(),
         sampleMetadata.isUsProject(),
         sampleMetadata.getAliquotId(),

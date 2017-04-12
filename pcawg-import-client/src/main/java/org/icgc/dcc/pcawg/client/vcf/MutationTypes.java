@@ -53,11 +53,11 @@ public enum MutationTypes {
       return UNKNOWN;
     }
   }
-  public static MutationTypes resolveVariant(VariantContext v){
-    return resolveVariant(DEFAULT_THROW_EXCEPTION_FLAG, v);
+  public static MutationTypes resolveMutationType(VariantContext v){
+    return resolveMutationType(DEFAULT_THROW_EXCEPTION_FLAG, v);
   }
 
-  public static MutationTypes resolveVariant(boolean throwException, VariantContext v){
+  public static MutationTypes resolveMutationType(boolean throwException, VariantContext v){
     val ref = VCF.getReferenceAlleleString(v);
     val alt = VCF.getFirstAlternativeAlleleString(v);
     val refLength = getReferenceAlleleLength(v);
