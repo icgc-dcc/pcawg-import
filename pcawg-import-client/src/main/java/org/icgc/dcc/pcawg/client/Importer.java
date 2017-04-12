@@ -30,6 +30,7 @@ import org.icgc.dcc.pcawg.client.core.PersistedFactory;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
+import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 import org.icgc.dcc.pcawg.client.model.ssm.Common;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
@@ -52,6 +53,7 @@ import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.Importer.STATS_FIELDS.NUM_TRANSFORMED;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.ENABLE_FILTERING;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
 import static org.icgc.dcc.pcawg.client.core.Factory.buildDictionaryCreator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFsController;
@@ -104,6 +106,7 @@ public class Importer implements Runnable {
   @Override
   @SneakyThrows
   public void run() {
+    SnpEffCodingFilter filter = ENABLE_FILTERING ? new SnpEffCodingFilter(): null; // This takes a minute or so to bootstrap
     val fsController = newFsController(hdfsEnabled, optionalHdfsHostname, optionalHdfsPort);
     val persistDirPath = Paths.get(PERSISTANCE_DIR);
     val persistedFactory = PersistedFactory.newPersistedFactory(persistDirPath, true);
@@ -156,7 +159,7 @@ public class Importer implements Runnable {
         val consensusSampleMetadata = metadataContext.getSampleMetadata();
 
         // Convert Consensus VCF files
-        val consensusVCFConverter = ConsensusVCFConverter2.newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
+        val consensusVCFConverter = ConsensusVCFConverter2.newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata, ENABLE_FILTERING, filter);
         try{
           consensusVCFConverter.process();
         } catch (PcawgVCFException e){

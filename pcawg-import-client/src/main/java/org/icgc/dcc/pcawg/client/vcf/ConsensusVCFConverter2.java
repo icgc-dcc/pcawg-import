@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFEncoder;
 import htsjdk.variant.vcf.VCFFileReader;
 import lombok.Getter;
 import lombok.NonNull;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
+import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
@@ -39,8 +41,8 @@ public class ConsensusVCFConverter2 {
   private static final boolean F_CHECK_CORRECT_WORKTYPE = false;
 
   public static final ConsensusVCFConverter2 newConsensusVCFConverter(@NonNull Path vcfPath,
-      @NonNull SampleMetadata sampleMetadataConsensus){
-    return new ConsensusVCFConverter2(vcfPath, sampleMetadataConsensus);
+      @NonNull SampleMetadata sampleMetadataConsensus, final boolean enableFiltering, SnpEffCodingFilter filter){
+    return new ConsensusVCFConverter2(vcfPath, sampleMetadataConsensus, enableFiltering, filter);
   }
 
   @Value
@@ -86,6 +88,8 @@ public class ConsensusVCFConverter2 {
   private final VCFFileReader vcf;
   private final File vcfFile;
   private final SampleMetadata sampleMetadataConsensus;
+  private final SnpEffCodingFilter filter;
+  private final boolean enableFiltering;
 
   /**
    * State
@@ -100,12 +104,14 @@ public class ConsensusVCFConverter2 {
   @Getter
   private int variantCount;
 
-  private ConsensusVCFConverter2(@NonNull Path vcfPath, @NonNull SampleMetadata sampleMetadataConsensus){
+  private ConsensusVCFConverter2(@NonNull Path vcfPath, @NonNull SampleMetadata sampleMetadataConsensus, final boolean enableFiltering, SnpEffCodingFilter filter){
     this.vcfFile = vcfPath.toFile();
     checkArgument(vcfFile.exists(), "The VCF File [{}] DNE", vcfPath.toString());
     this.vcf = new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
     this.sampleMetadataConsensus = sampleMetadataConsensus;
     this.consensusVariantConverter = new ConsensusVariantConverter(sampleMetadataConsensus);
+    this.filter = filter;
+    this.enableFiltering = enableFiltering;
   }
 
 
@@ -153,21 +159,35 @@ public class ConsensusVCFConverter2 {
     candidateException = new PcawgVCFException(vcfFile.getAbsolutePath(),
         String.format("VariantErrors occured in the file [%s]", vcfFile.getAbsolutePath()));
     erroredVariantCount = 0;
+
+    val vcfEncoder = new VCFEncoder(vcf.getFileHeader(), true, true);
     for (val variant : vcf){
-      try{
-        convertConsensusVariant(variant);
-      } catch (DataTypeConversionException e ){
-        candidateException.addError(MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR, getStart(variant));
-        erroredVariantCount++;
-      } catch (PcawgVariantException  e ){
-        val start = getStart(variant);
-        for (val error : e.getErrors()){
-          candidateException.addError(error, start);
-        }
-        erroredVariantCount++;
-      } finally{
-        variantCount++;
+      boolean isCoding = false;
+      if (enableFiltering && sampleMetadataConsensus.isUsProject()){
+        val variantString = vcfEncoder.encode(variant);
+        isCoding = filter.isCoding(variantString);
+      } else {
+        isCoding = true;
       }
+      if (isCoding) {
+        try {
+          convertConsensusVariant(variant);
+        } catch (DataTypeConversionException e) {
+          candidateException.addError(MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR, getStart(variant));
+          erroredVariantCount++;
+        } catch (PcawgVariantException e) {
+          val start = getStart(variant);
+          for (val error : e.getErrors()) {
+            candidateException.addError(error, start);
+          }
+          erroredVariantCount++;
+        } finally {
+          variantCount++;
+        }
+      }else{
+        log.info("NOTTT   CODINGGGGGGGGGGGG: {}", vcfEncoder.encode(variant));
+      }
+
     }
 
     buildSSMMetadatas();
