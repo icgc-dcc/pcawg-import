@@ -1,8 +1,15 @@
 package org.icgc.dcc.pcawg.client.vcf.converters;
 
-import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
+public interface VariantConverterStrategy<T> {
 
-public interface VariantConverterStrategy<T, D> {
+  String EMPTY_ALLELE_STRING = "-";
 
-  T convert(MutationTypes mutationType, D data);
+  int convertChromosomeEnd(T t);
+  int convertChromosomeStart(T t);
+  String convertControlGenotype(T t);
+  String convertMutatedFromAllele(T t);
+  String convertMutatedToAllele(T t);
+  String convertReferenceGenomeAllele(T t);
+  String convertTumorGenotype(T t);
+
 }

@@ -67,14 +67,19 @@ public enum MutationTypes {
     val refStartsWithAlt = ref.startsWith(alt);
     val altStartsWithRef = alt.startsWith(ref);
     val  lengthDifference = refLength - altLength;
+
     if (lengthDifference < 0 && !altIsOne && !refStartsWithAlt){
       return refIsOne && altStartsWithRef ? INSERTION_LTE_200BP : MULTIPLE_BASE_SUBSTITUTION;
+
     } else if(lengthDifference == 0 && !refStartsWithAlt && !altStartsWithRef){
       return refIsOne ? SINGLE_BASE_SUBSTITUTION : MULTIPLE_BASE_SUBSTITUTION;
+
     } else if(lengthDifference > 0 && !refIsOne && !altStartsWithRef ){
       return altIsOne && refStartsWithAlt ? DELETION_LTE_200BP : MULTIPLE_BASE_SUBSTITUTION;
+
     } else {
       val message = String.format("The mutationType of the variant cannot be resolved: Ref[%s] Alt[%s] --> RefLength-AltLength=%s,  RefLengthIsOne[%s] AltLengthIsOne[%s], RefStartsWithAlt[%s] AltStartsWithRef[%s] ", lengthDifference, ref, alt, refIsOne, altIsOne, refStartsWithAlt, altStartsWithRef);
+
       if (throwException){
         throw new PcawgVariantException(message, v, MUTATION_TYPE_NOT_SUPPORTED_ERROR);
       } else {

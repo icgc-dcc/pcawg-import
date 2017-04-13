@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.vcf.converters2;
+package org.icgc.dcc.pcawg.client.vcf.converters;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.val;
@@ -9,7 +9,7 @@ import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.joinAlleles;
 
-public class SnvVariantConverterStrategy implements VariantConverterStrategy<VariantContext> {
+public class MnvVariantConverterStrategy implements VariantConverterStrategy<VariantContext> {
 
   @Override public int convertChromosomeEnd(VariantContext variantContext) {
     return getStart(variantContext) + getReferenceAlleleLength(variantContext) - 1;
@@ -39,4 +39,5 @@ public class SnvVariantConverterStrategy implements VariantConverterStrategy<Var
   @Override public String convertTumorGenotype(VariantContext variantContext) {
     return joinAlleles(getReferenceAlleleString(variantContext), getFirstAlternativeAlleleString(variantContext));
   }
+
 }

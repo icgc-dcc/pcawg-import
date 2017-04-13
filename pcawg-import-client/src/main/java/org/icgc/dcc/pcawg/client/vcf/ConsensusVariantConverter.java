@@ -10,15 +10,8 @@ import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
-import org.icgc.dcc.pcawg.client.vcf.converters.ChromosomeEndConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters.ChromosomeStartConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters.ControlGenotypeConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters.MutatedFromAlleleConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters.MutatedToAlleleConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters.ReferenceGenomeAlleleConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters.TumorGenotypeConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters2.VariantConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters2.VariantConverterStrategyMux;
+import org.icgc.dcc.pcawg.client.vcf.converters.VariantConverterStrategy;
+import org.icgc.dcc.pcawg.client.vcf.converters.VariantConverterStrategyMux;
 
 import java.util.List;
 import java.util.Set;
@@ -43,13 +36,6 @@ import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 @RequiredArgsConstructor
 public class ConsensusVariantConverter  {
 
-  private static final ChromosomeEndConverterStrategy CHROMOSOME_END_CONVERTER_STRATEGY = new ChromosomeEndConverterStrategy();
-  private static final ChromosomeStartConverterStrategy CHROMOSOME_START_CONVERTER_STRATEGY = new ChromosomeStartConverterStrategy();
-  private static final ReferenceGenomeAlleleConverterStrategy REFERENCE_GENOME_ALLELE_CONVERTER_STRATEGY = new ReferenceGenomeAlleleConverterStrategy();
-  private static final ControlGenotypeConverterStrategy CONTROL_GENOTYPE_CONVERTER_STRATEGY = new ControlGenotypeConverterStrategy();
-  private static final MutatedFromAlleleConverterStrategy MUTATED_FROM_ALLELE_CONVERTER_STRATEGY = new MutatedFromAlleleConverterStrategy();
-  private static final MutatedToAlleleConverterStrategy MUTATED_TO_ALLELE_CONVERTER_STRATEGY = new MutatedToAlleleConverterStrategy();
-  private static final TumorGenotypeConverterStrategy TUMOR_GENOTYPE_CONVERTER_STRATEGY = new TumorGenotypeConverterStrategy();
   private static final VariantConverterStrategyMux VARIANT_CONVERTER_STRATEGY_MUX = new VariantConverterStrategyMux();
 
   private static final boolean F_CHECK_CORRECT_WORKTYPE = false;
@@ -156,33 +142,6 @@ public class ConsensusVariantConverter  {
         .note(DATA_VERIFIED_TO_BE_UNKNOWN.toString())
         .build();
 
-  }
-    private SSMPrimary buildConsensusSSMPrimary(MutationTypes mutationType, String analysisId, VariantContext variant){
-    val analyzedSampleId = sampleMetadataConsensus.getAnalyzedSampleId();
-    return PlainSSMPrimary.builder()
-        .analysisId(analysisId)
-        .analyzedSampleId(analyzedSampleId)
-        .mutationType(mutationType.toString())
-        .chromosomeStart(CHROMOSOME_START_CONVERTER_STRATEGY.convert(mutationType, variant ))
-        .chromosomeEnd(CHROMOSOME_END_CONVERTER_STRATEGY.convert(mutationType, variant))
-        .referenceGenomeAllele(REFERENCE_GENOME_ALLELE_CONVERTER_STRATEGY.convert(mutationType,variant))
-        .controlGenotype(CONTROL_GENOTYPE_CONVERTER_STRATEGY.convert(mutationType,variant))
-        .mutatedFromAllele(MUTATED_FROM_ALLELE_CONVERTER_STRATEGY.convert(mutationType,variant))
-        .tumorGenotype(TUMOR_GENOTYPE_CONVERTER_STRATEGY.convert(mutationType,variant))
-        .mutatedToAllele(MUTATED_TO_ALLELE_CONVERTER_STRATEGY.convert(mutationType,variant))
-        .chromosome(getChomosome(variant))
-        .chromosomeStrand(DEFAULT_STRAND)
-        .expressedAllele( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
-        .qualityScore( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
-        .probability( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
-        .totalReadCount(calcTotalReadCount(variant))
-        .mutantAlleleReadCount(calcMutantAlleleReadCount(variant))
-        .verificationStatus(DEFAULT_VERIFICATION_STATUS)
-        .verificationPlatform( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
-        .biologicalValidationPlatform( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
-        .biologicalValidationStatus( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
-        .note(DATA_VERIFIED_TO_BE_UNKNOWN.toString())
-        .build();
   }
 
   public Set<DccTransformerContext<SSMPrimary>> convertSSMPrimary(VariantContext variant){

@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.vcf.converters2;
+package org.icgc.dcc.pcawg.client.vcf.converters;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.val;
