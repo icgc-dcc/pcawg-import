@@ -26,7 +26,7 @@ public class PortalMetadataDao implements BasicDao<PortalMetadata, PortalMetadat
 
   private Stream<PortalMetadata> getStream(PortalMetadataRequest request){
     return data.stream()
-        .filter(x -> x.getPortalFilename().compareTo(request.getPortalFilename())==0);
+        .filter(x -> x.getPortalFilename().equals(request.getPortalFilename()));
   }
 
   @Override public List<PortalMetadata> find(PortalMetadataRequest request) {

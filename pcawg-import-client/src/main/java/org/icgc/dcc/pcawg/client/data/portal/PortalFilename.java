@@ -18,6 +18,7 @@
 package org.icgc.dcc.pcawg.client.data.portal;
 
 import com.google.common.collect.Iterables;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.icgc.dcc.common.core.util.Splitters;
@@ -32,7 +33,8 @@ import static org.icgc.dcc.common.core.util.Joiners.DOT;
 /**
  * Takes a filename, and extracts particular fields characteristic of ICGC VCF files
  */
-public class PortalFilename implements Serializable, Comparable<PortalFilename> {
+@EqualsAndHashCode
+public class PortalFilename implements Serializable {
 
   public static final PortalFilename newPortalFilename(String filename){
     return new PortalFilename(filename);
@@ -50,7 +52,6 @@ public class PortalFilename implements Serializable, Comparable<PortalFilename> 
 
   @Getter
   private final String[] elements;
-  private WorkflowTypes workflowType = null;
 
   public PortalFilename(@NonNull final String filename) {
     checkArgument(!filename.isEmpty(), "The filename [%s] is empty", filename);
@@ -109,19 +110,6 @@ public class PortalFilename implements Serializable, Comparable<PortalFilename> 
     return foundWorkflowType;
   }
 
-  /*
-   * Lazy initialization. Needed for when regenerating Enums
-   */
-  public WorkflowTypes getWorkflowType() {
-    if (workflowType == null) {
-      workflowType = parseWorkflowType(this.getWorkflow());
-    }
-    return workflowType;
-  }
 
-  @Override
-  public int compareTo(PortalFilename o) {
-    return this.getFilename().compareTo(o.getFilename());
-  }
 
 }

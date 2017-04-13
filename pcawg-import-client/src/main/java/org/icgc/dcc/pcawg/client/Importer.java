@@ -58,7 +58,7 @@ import static org.icgc.dcc.pcawg.client.core.Factory.buildDictionaryCreator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFsController;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataValidator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryValidator;
-import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
+import static org.icgc.dcc.pcawg.client.download.PortalStorage.newStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter.newConsensusVCFConverter;
@@ -154,7 +154,7 @@ public class Importer implements Runnable {
             ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
 
         // Download vcfFile
-        val vcfFile = storage.downloadFile(portalMetadata);
+        val vcfFile = storage.getFile(portalMetadata);
 
         // Get consensusSampleMetadata
         val consensusSampleMetadata = metadataContext.getSampleMetadata();

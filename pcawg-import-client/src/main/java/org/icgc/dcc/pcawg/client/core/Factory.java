@@ -6,7 +6,7 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.download.Portal;
-import org.icgc.dcc.pcawg.client.download.Storage;
+import org.icgc.dcc.pcawg.client.download.PortalStorage;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
@@ -39,8 +39,8 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsController.newHadoopFsController;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControllerAdapter.newHadoopFsControllerAdapter;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.LocalFsController.newLocalFsController;
-import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
-import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
+import static org.icgc.dcc.pcawg.client.download.PortalStorage.downloadFileByURL;
+import static org.icgc.dcc.pcawg.client.download.PortalStorage.newStorage;
 import static org.icgc.dcc.pcawg.client.download.query.PortalVcfFileQueryCreator.newPcawgQueryCreator;
 
 @NoArgsConstructor(access = PRIVATE)
@@ -51,7 +51,7 @@ public class Factory {
   private static final TSVConverter<SSMPrimary> SSM_PRIMARY_TSV_CONVERTER = new SSMPrimaryTSVConverter();
   private static final boolean APPEND_DCC_TRANSFORMERS = false;
 
-  public static Storage newDefaultStorage() {
+  public static PortalStorage newDefaultStorage() {
     log.info("Creating storage instance with persistMode: {}, outputDir: {}, and md5BypassEnable: {}",
         STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);
     return newStorage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);

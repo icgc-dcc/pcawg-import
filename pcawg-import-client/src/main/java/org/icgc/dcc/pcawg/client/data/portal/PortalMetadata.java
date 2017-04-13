@@ -17,14 +17,16 @@
  */
 package org.icgc.dcc.pcawg.client.data.portal;
 
-import lombok.Data;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 
 @Slf4j
-@Data
+@Value
+@Builder
 public final class PortalMetadata implements Serializable {
 
   private static final long serialVersionUID = 1484172786L;

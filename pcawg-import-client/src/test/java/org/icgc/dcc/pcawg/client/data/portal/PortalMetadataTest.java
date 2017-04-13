@@ -39,7 +39,7 @@ public class PortalMetadataTest {
     val portalFilename = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20160830.somatic.indel.vcf.gz");
     val portalFilenameCopy = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20160830.somatic.indel.vcf.gz");
     assertThat(portalFilename == portalFilenameCopy).isFalse();
-    assertThat(portalFilename.compareTo(portalFilenameCopy)).isEqualTo(0);
+    assertThat(portalFilename).isEqualTo(portalFilenameCopy);
   }
 
 }

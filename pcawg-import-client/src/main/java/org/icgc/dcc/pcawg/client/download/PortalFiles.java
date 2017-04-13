@@ -155,7 +155,17 @@ public final class PortalFiles {
     val portalFilename = getPortalFilename(objectNode);
     val fileSize = getFileSize(objectNode);
     val fileMd5sum = getFileMD5sum(objectNode);
-    return new PortalMetadata(objectId, fileId, sampleId, donorId,
-        dataType, referenceName, genomeBuild, fileSize, fileMd5sum, portalFilename);
+    return PortalMetadata.builder()
+        .objectId(objectId)
+        .fileId(fileId)
+        .sampleId(sampleId)
+        .donorId(donorId)
+        .dataType(dataType)
+        .referenceName(referenceName)
+        .genomeBuild(genomeBuild)
+        .fileSize(fileSize)
+        .fileMd5sum(fileMd5sum)
+        .portalFilename(portalFilename)
+        .build();
   }
 }

@@ -14,7 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
+import static org.icgc.dcc.pcawg.client.download.PortalStorage.downloadFileByURL;
 
 @RequiredArgsConstructor
 @Getter
