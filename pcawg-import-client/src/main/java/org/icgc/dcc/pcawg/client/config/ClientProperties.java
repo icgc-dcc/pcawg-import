@@ -61,5 +61,6 @@ public class ClientProperties {
 
   public static final String PERSISTANCE_DIR = "persisted";
   public static final String METADATA_CONTAINER_PERSISTANCE_FILENAME = "metadataContainer.dat";
-  public static final boolean ENABLE_FILTERING = true;
+  public static final boolean BYPASS_TCGA_FILTERING = true;
+  public static final boolean BYPASS_NOISE_FILTERING = true;
 }

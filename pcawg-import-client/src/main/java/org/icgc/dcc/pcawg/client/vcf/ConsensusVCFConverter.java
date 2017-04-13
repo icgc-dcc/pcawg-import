@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFEncoder;
 import htsjdk.variant.vcf.VCFFileReader;
 import lombok.Getter;
 import lombok.NonNull;
@@ -13,7 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
-import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
+import org.icgc.dcc.pcawg.client.filter.variant.VariantFilter;
+import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter2.Tuple.newTuple;
+import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter.Tuple.newTuple;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.calcAnalysisId;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.INDEL;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.SNV_MNV;
@@ -35,16 +35,14 @@ import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
 import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR;
 
 @Slf4j
-public class ConsensusVCFConverter2 {
+public class ConsensusVCFConverter {
 
   private static final boolean REQUIRE_INDEX_CFG = false;
   private static final boolean F_CHECK_CORRECT_WORKTYPE = false;
-  private static final boolean ALLOW_MISSING_FIELDS_IN_HEADER_CFG = true;
-  private static final boolean OUTPUT_TRAILING_FORMAT_FIELDS_CFG = true;
 
-  public static final ConsensusVCFConverter2 newConsensusVCFConverter(@NonNull Path vcfPath,
-      @NonNull SampleMetadata sampleMetadataConsensus, final boolean enableFiltering, SnpEffCodingFilter filter){
-    return new ConsensusVCFConverter2(vcfPath, sampleMetadataConsensus, enableFiltering, filter);
+  public static final ConsensusVCFConverter newConsensusVCFConverter(@NonNull Path vcfPath,
+      @NonNull SampleMetadata sampleMetadataConsensus, VariantFilterFactory variantFilterFactory){
+    return new ConsensusVCFConverter(vcfPath, sampleMetadataConsensus, variantFilterFactory);
   }
 
   @Value
@@ -90,8 +88,7 @@ public class ConsensusVCFConverter2 {
   private final VCFFileReader vcf;
   private final File vcfFile;
   private final SampleMetadata sampleMetadataConsensus;
-  private final SnpEffCodingFilter filter;
-  private final boolean enableFiltering;
+  private final VariantFilter variantFilter;
 
   /**
    * State
@@ -102,25 +99,19 @@ public class ConsensusVCFConverter2 {
   private final ConsensusVariantConverter consensusVariantConverter;
   private PcawgVCFException candidateException;
   private int erroredVariantCount = 0;
-  private VCFEncoder vcfEncoder = null;
 
   @Getter
   private int variantCount;
 
-  private ConsensusVCFConverter2(@NonNull Path vcfPath, @NonNull SampleMetadata sampleMetadataConsensus, final boolean enableFiltering, SnpEffCodingFilter filter){
+  private ConsensusVCFConverter(@NonNull Path vcfPath, @NonNull SampleMetadata sampleMetadataConsensus, @NonNull VariantFilterFactory variantFilterFactory){
     this.vcfFile = vcfPath.toFile();
     checkArgument(vcfFile.exists(), "The VCF File [{}] DNE", vcfPath.toString());
     this.vcf = new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
     this.sampleMetadataConsensus = sampleMetadataConsensus;
     this.consensusVariantConverter = new ConsensusVariantConverter(sampleMetadataConsensus);
-    this.filter = filter;
-    this.enableFiltering = enableFiltering;
-    if(enableFiltering){
-      //TODO: remove this hardcoding
-      vcfEncoder = new VCFEncoder(vcf.getFileHeader(),
-          ALLOW_MISSING_FIELDS_IN_HEADER_CFG, OUTPUT_TRAILING_FORMAT_FIELDS_CFG);
-    }
+    this.variantFilter = variantFilterFactory.createVariantFilter(vcf, sampleMetadataConsensus.isUsProject());
   }
+
 
 
   private void addSSMMetadata(WorkflowTypes workflowType, DataTypes dataType, SSMMetadata ssmMetadata){
@@ -162,20 +153,6 @@ public class ConsensusVCFConverter2 {
 
   //TODO: need to add tests for malformed VCFs not being included in data set
 
-  private boolean isVariantCoding(VariantContext variantContext){
-    if (enableFiltering && sampleMetadataConsensus.isUsProject()){
-      val variantString = vcfEncoder.encode(variantContext);
-      return filter.isCoding(variantString);
-    } else {
-      return true;
-    }
-  }
-
-  private boolean proceedWithProcessingVariant(VariantContext variantContext){
-    val isNotFiltered = variantContext.isNotFiltered();
-    val isCoding = isVariantCoding(variantContext);
-    return isCoding && isNotFiltered;
-  }
 
   public void process(){
     variantCount = 1;
@@ -184,7 +161,7 @@ public class ConsensusVCFConverter2 {
     erroredVariantCount = 0;
 
     for (val variant : vcf){
-      if (proceedWithProcessingVariant(variant)) {
+      if (!variantFilter.isFiltered(variant)) {
         try {
           convertConsensusVariant(variant);
         } catch (DataTypeConversionException e) {
@@ -199,8 +176,6 @@ public class ConsensusVCFConverter2 {
         } finally {
           variantCount++;
         }
-      }else{
-        log.info("NOTTT   CODINGGGGGGGGGGGG: {}", vcfEncoder.encode(variant));
       }
 
     }
