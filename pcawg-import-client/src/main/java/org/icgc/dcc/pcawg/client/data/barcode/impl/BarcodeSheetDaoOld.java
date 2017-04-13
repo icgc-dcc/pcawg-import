@@ -6,7 +6,7 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.BasicDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 import org.icgc.dcc.pcawg.client.utils.persistance.ObjectPersistance;
 
@@ -20,7 +20,7 @@ import java.util.List;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
-public class BarcodeBeanSheetDaoOld implements Serializable, BarcodeSheetDao<BarcodeSheetBean, String> {
+public class BarcodeSheetDaoOld implements Serializable, BasicDao<BarcodeSheetBean, String> {
 
   public static final long serialVersionUID = 1490628681L;
   private static final char SEPERATOR = '\t';
@@ -33,17 +33,17 @@ public class BarcodeBeanSheetDaoOld implements Serializable, BarcodeSheetDao<Bar
     return csvToBean.parse(strategy, csvReader);
   }
 
-  public static BarcodeBeanSheetDaoOld newBarcodeBeanDaoOld(String inputFilename){
-    return new BarcodeBeanSheetDaoOld(inputFilename);
+  public static BarcodeSheetDaoOld newBarcodeBeanDaoOld(String inputFilename){
+    return new BarcodeSheetDaoOld(inputFilename);
   }
 
-  public static BarcodeBeanSheetDaoOld newBarcodeBeanDaoOld(Reader reader){
-    return new BarcodeBeanSheetDaoOld(reader);
+  public static BarcodeSheetDaoOld newBarcodeBeanDaoOld(Reader reader){
+    return new BarcodeSheetDaoOld(reader);
   }
 
   @SneakyThrows
-  public static BarcodeBeanSheetDaoOld restoreBarcodeBeanDaoOld(String storedBarcodeDaoFilename){
-    return (BarcodeBeanSheetDaoOld) ObjectPersistance.restore(storedBarcodeDaoFilename);
+  public static BarcodeSheetDaoOld restoreBarcodeBeanDaoOld(String storedBarcodeDaoFilename){
+    return (BarcodeSheetDaoOld) ObjectPersistance.restore(storedBarcodeDaoFilename);
   }
 
   private final Reader reader;
@@ -58,16 +58,16 @@ public class BarcodeBeanSheetDaoOld implements Serializable, BarcodeSheetDao<Bar
   }
 
   @SneakyThrows
-  private BarcodeBeanSheetDaoOld(String inputFilename) {
+  private BarcodeSheetDaoOld(String inputFilename) {
     val file = Paths.get(inputFilename).toFile();
     checkState(file.exists(),"The inputFilename [%s] does not exist", file.getAbsolutePath());
-    checkState(file.isFile(),"The inputFilename [%s] is not a file" , file.getAbsolutePath());
+    checkState(file.isFile(),"The inputFilename [%s] is not a portal" , file.getAbsolutePath());
     this.reader = new FileReader(file);
     this.beans = convert(reader);
     this.reader.close();
   }
 
-  private BarcodeBeanSheetDaoOld(Reader reader) {
+  private BarcodeSheetDaoOld(Reader reader) {
     this.reader = reader;
     this.beans = convert(reader);
   }

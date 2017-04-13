@@ -21,10 +21,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
+import lombok.val;
+import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
+import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.pcawg.client.model.portal.PortalFilename.newPortalFilename;
+import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class PortalFiles {
@@ -142,4 +144,18 @@ public final class PortalFiles {
     return newPortalFilename(getFileName(file));
   }
 
+  public static PortalMetadata convertToPortalMetadata(@NonNull final ObjectNode objectNode){
+    val objectId = getObjectId(objectNode);
+    val fileId = getFileId(objectNode);
+    val sampleId = getSampleId(objectNode);
+    val donorId = getDonorId(objectNode);
+    val dataType = getDataType(objectNode);
+    val referenceName = getReferenceName(objectNode);
+    val genomeBuild = getGenomeBuild(objectNode);
+    val portalFilename = getPortalFilename(objectNode);
+    val fileSize = getFileSize(objectNode);
+    val fileMd5sum = getFileMD5sum(objectNode);
+    return new PortalMetadata(objectId, fileId, sampleId, donorId,
+        dataType, referenceName, genomeBuild, fileSize, fileMd5sum, portalFilename);
+  }
 }

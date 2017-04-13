@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.core.PersistedFactory.newPersistedFactory;
-import static org.icgc.dcc.pcawg.client.model.portal.PortalFilename.newPortalFilename;
+import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
 
 @Slf4j
 public class SampleMetadataDAOTest {

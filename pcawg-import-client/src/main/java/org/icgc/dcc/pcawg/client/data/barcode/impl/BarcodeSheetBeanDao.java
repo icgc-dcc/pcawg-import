@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.AbstractFileDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.BasicDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 import org.icgc.dcc.pcawg.client.utils.persistance.ObjectPersistance;
 
@@ -18,7 +18,7 @@ import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBar
 
 @Slf4j
 public class BarcodeSheetBeanDao extends AbstractFileDao<BarcodeSheetBean, BarcodeSearchRequest> implements Serializable,
-    BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> {
+    BasicDao<BarcodeSheetBean, BarcodeSearchRequest> {
 
   public static final long serialVersionUID = 1490628681L;
 

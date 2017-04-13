@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.BasicDao;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 
 import java.io.BufferedReader;
@@ -20,7 +20,7 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeSheetBeanDao.newBarcodeSheetBeanDao;
 
 @Slf4j
-public class BarcodeSheetFastDao implements BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> {
+public class BarcodeSheetFastDao implements BasicDao<BarcodeSheetBean, BarcodeSearchRequest> {
 
   public static BarcodeSheetFastDao newBarcodeSheetFastDao(String inputFilename, final boolean hasHeader){
     return new BarcodeSheetFastDao(inputFilename, hasHeader);
@@ -53,7 +53,7 @@ public class BarcodeSheetFastDao implements BarcodeSheetDao<BarcodeSheetBean, Ba
     this.hasHeader = hasHeader;
     val file = Paths.get(inputFilename).toFile();
     checkState(file.exists(),"The inputFilename [%s] does not exist", file.getAbsolutePath());
-    checkState(file.isFile(),"The inputFilename [%s] is not a file" , file.getAbsolutePath());
+    checkState(file.isFile(),"The inputFilename [%s] is not a portal" , file.getAbsolutePath());
     this.reader = new BufferedReader(new FileReader(file));
     this.beans = convert();
     this.reader.close();

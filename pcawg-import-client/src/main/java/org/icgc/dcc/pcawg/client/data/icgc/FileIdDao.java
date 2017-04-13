@@ -13,7 +13,7 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.core.ObjectNodeConverter;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.BasicDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
@@ -45,7 +45,7 @@ public class FileIdDao implements Serializable {
   private static final int DEFAULT_BATCH_SIZE = 200;
 
   public static FileIdDao newFileIdDao(SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
-      BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
+      BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
     val submitterSampleIds = getAllSubmitterSampleIds(sampleSheetDao, barcodeSheetDao);
     val tcgaAliquotBarcodes = getAllTcgaAliquotBarcodes(sampleSheetDao, barcodeSheetDao);
     val dao = new FileIdDao(tcgaAliquotBarcodes, submitterSampleIds);
@@ -56,7 +56,7 @@ public class FileIdDao implements Serializable {
   @SneakyThrows
   public static FileIdDao newFileIdDao(String persistedFilename,
       SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
-      BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
+      BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
     val fileRestorer = LocalFileRestorer.<FileIdDao>newLocalFileRestorer(Paths.get(persistedFilename));
     if (fileRestorer.isPersisted()){
       log.info("Persisted filename for IcgcFileIdDao found [{}], restoring it...", fileRestorer.getPersistedPath());

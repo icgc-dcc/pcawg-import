@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.BasicDao;
 import org.icgc.dcc.pcawg.client.data.icgc.FileIdDao;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
@@ -15,7 +15,7 @@ import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
-import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
+import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -36,7 +36,7 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
   private final SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao;
 
   @NonNull
-  private final BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao;
+  private final BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao;
 
   @NonNull
   private final FileIdDao fileIdDao;

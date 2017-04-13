@@ -14,7 +14,7 @@ import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataBeanDAO;
 import org.icgc.dcc.pcawg.client.data.sample.impl.SampleSheetBeanDao;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.download.PortalFiles;
 import org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorer;
 import org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory;
 
@@ -119,7 +119,7 @@ public class PersistedFactory {
     log.info("Retreiving portal filemeta data...");
     val portalMetadataSet = portal.getFileMetas()
         .stream()
-        .map(PortalMetadata::buildPortalMetadata)
+        .map(PortalFiles::convertToPortalMetadata)
         .collect(toImmutableSet());
 
     log.info("Creating base sampleMetadata DAO...");

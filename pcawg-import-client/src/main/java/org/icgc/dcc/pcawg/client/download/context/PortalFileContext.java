@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.download.context;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
 
 import java.io.File;
 

@@ -4,7 +4,7 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetDao;
+import org.icgc.dcc.pcawg.client.data.BasicDao;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
@@ -34,7 +34,7 @@ public class IdResolver {
     return list.get(0);
   }
 
-  private static BarcodeSheetBean getFirstBarcodeBean(BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao, BarcodeSearchRequest request) throws
+  private static BarcodeSheetBean getFirstBarcodeBean(BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao, BarcodeSearchRequest request) throws
       SampleMetadataNotFoundException {
     val beans = barcodeSheetDao.find(request);
     if(beans.isEmpty()){
@@ -45,7 +45,7 @@ public class IdResolver {
   }
 
   @SneakyThrows
-  public static String getAnalyzedSampleId(BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao, boolean isUsProject, BarcodeSearchRequest request ) {
+  public static String getAnalyzedSampleId(BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao, boolean isUsProject, BarcodeSearchRequest request ) {
     if (isUsProject){
       return getFirstBarcodeBean(barcodeSheetDao, request).getBarcode();
     } else {
@@ -64,7 +64,7 @@ public class IdResolver {
 
   @SneakyThrows
   public static String getMatchedSampleId(SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
-      BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao,
+      BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao,
       String donorUniqueId ){
     val request = createWildcardRequestBuilder()
         .donor_unique_id(donorUniqueId)
@@ -79,7 +79,7 @@ public class IdResolver {
   }
 
   public static Set<String> getAllTcgaAliquotBarcodes(SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
-      BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
+      BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
     log.info("Fetching all tcga_aliquot_barcodes from SampleDao: {} and BarcodeDao: {} instances", sampleSheetDao.getClass().getName(), barcodeSheetDao
         .getClass().getName());
     return sampleSheetDao.findAll().stream()
@@ -90,7 +90,7 @@ public class IdResolver {
   }
 
   public static Set<String> getAllSubmitterSampleIds(SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
-      BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
+      BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao){
     log.info("Fetching all submitter_sample_ids from SampleDao: {} and BarcodeDao: {} instances", sampleSheetDao.getClass().getName(), barcodeSheetDao
         .getClass().getName());
     return sampleSheetDao.findAll().stream()
@@ -102,7 +102,7 @@ public class IdResolver {
 
 
   private static Set<String> createSampleIds(SampleSheetDao<SampleSheetBean, SampleSheetSearchRequest> sampleSheetDao,
-      BarcodeSheetDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao, SampleSheetBean sampleSheetBean){
+      BasicDao<BarcodeSheetBean, BarcodeSearchRequest> barcodeSheetDao, SampleSheetBean sampleSheetBean){
     val submitterSampleId = sampleSheetBean.getSubmitter_sample_id();
     val barcodeSearchRequest = newBarcodeRequest(submitterSampleId);
       val donorUniqueId = sampleSheetBean.getDonor_unique_id();
