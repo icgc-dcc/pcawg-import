@@ -25,9 +25,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.Factory;
 import org.icgc.dcc.pcawg.client.core.PersistedFactory;
-import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.download.LocalStorageFileNotFoundException;
@@ -42,7 +40,6 @@ import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +53,8 @@ import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.Importer.STATS_FIELDS.NUM_TRANSFORMED;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
 import static org.icgc.dcc.pcawg.client.core.Factory.buildDictionaryCreator;
+import static org.icgc.dcc.pcawg.client.core.Factory.newDccMetadataTransformerFactory;
+import static org.icgc.dcc.pcawg.client.core.Factory.newDccPrimaryTransformerFactory;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFsController;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataValidator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryValidator;
@@ -102,13 +101,6 @@ public class Importer implements Runnable {
    */
   private DccProjectCodeStats2 dccStats = new DccProjectCodeStats2();
 
-  private DccTransformer<SSMMetadata> buildDccMetadataTransformer(FsController<Path> fsController, String dccProjectCode){
-    return Factory.newDccMetadataTransformer(fsController, this.outputTsvDir, dccProjectCode);
-  }
-  private DccTransformer<SSMPrimary> buildDccPrimaryTransformer(FsController<Path> fsController, String dccProjectCode){
-    return Factory.newDccPrimaryTransformer(fsController, this.outputTsvDir, dccProjectCode);
-  }
-
   private  Storage newStorage(String dccProjectCode){
     if(useCollab){
       val vcfDownloadDirectory = PATH.join(outputVcfDir, dccProjectCode);
@@ -134,6 +126,9 @@ public class Importer implements Runnable {
     val ssmPrimaryValidator = newSSMPrimaryValidator(dictionaryCreator.getSSMPrimaryFileSchema());
     val ssmMetadataValidator = newSSMMetadataValidator(dictionaryCreator.getSSMMetadataFileSchema());
 
+    val dccPrimaryTransformerFactory = newDccPrimaryTransformerFactory(fsController, outputTsvDir);
+    val dccMetadataTransformerFactory = newDccMetadataTransformerFactory(fsController, outputTsvDir);
+
 
     val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
     int countMetadataContexts = 0;
@@ -155,8 +150,8 @@ public class Importer implements Runnable {
           ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
 
       val storage = newStorage(dccProjectCode);
-      val dccPrimaryTransformer = buildDccPrimaryTransformer(fsController,dccProjectCode);
-      val dccMetadataTransformer = buildDccMetadataTransformer(fsController,dccProjectCode);
+      val dccPrimaryTransformer = dccPrimaryTransformerFactory.getDccTransformer(dccProjectCode);
+      val dccMetadataTransformer = dccMetadataTransformerFactory.getDccTransformer(dccProjectCode);
       val ssmMetadataSet = Sets.<DccTransformerContext<SSMMetadata>>newHashSet();
 
       // Loop through each file for a particular dccProjectCode

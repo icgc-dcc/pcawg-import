@@ -4,7 +4,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
-import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
+import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerFactory;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.PortalStorage;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
@@ -39,6 +39,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsController.newHadoopFsController;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControllerAdapter.newHadoopFsControllerAdapter;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.LocalFsController.newLocalFsController;
+import static org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerFactory.newDccTransformerFactory;
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.downloadFileByURL;
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.download.query.PortalCollabVcfFileQueryCreator.newPcawgCollabQueryCreator;
@@ -57,18 +58,14 @@ public class Factory {
     return newPortalStorage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);
   }
 
-  public static DccTransformer<SSMMetadata> newDccMetadataTransformer(FsController<Path> fsController, String outputTsvDir, String dccProjectCode  ){
-    val outputDirPath = Paths.get(outputTsvDir);
-    return DccTransformer.<SSMMetadata>newDccTransformer(fsController, SSM_METADATA_TSV_CONVERTER,
-        outputDirPath,dccProjectCode, SSM_M_TSV_FILENAME_PREFIX,
-        SSM_M_TSV_FILENAME_EXTENSION, APPEND_DCC_TRANSFORMERS);
+  public static DccTransformerFactory<SSMMetadata> newDccMetadataTransformerFactory(FsController<Path> fsController, String outputTsvDir){
+    return newDccTransformerFactory(fsController,SSM_METADATA_TSV_CONVERTER,Paths.get(outputTsvDir),
+        SSM_M_TSV_FILENAME_PREFIX, SSM_M_TSV_FILENAME_EXTENSION, APPEND_DCC_TRANSFORMERS);
   }
 
-  public static DccTransformer<SSMPrimary> newDccPrimaryTransformer(FsController<Path> fsController, String outputTsvDir, String dccProjectCode  ){
-    val outputDirPath = Paths.get(outputTsvDir);
-    return DccTransformer.<SSMPrimary>newDccTransformer(fsController, SSM_PRIMARY_TSV_CONVERTER,
-        outputDirPath,dccProjectCode, SSM_P_TSV_FILENAME_PREFIX,
-        SSM_P_TSV_FILENAME_EXTENSION, APPEND_DCC_TRANSFORMERS);
+  public static DccTransformerFactory<SSMPrimary> newDccPrimaryTransformerFactory(FsController<Path> fsController, String outputTsvDir){
+    return newDccTransformerFactory(fsController,SSM_PRIMARY_TSV_CONVERTER,Paths.get(outputTsvDir),
+        SSM_P_TSV_FILENAME_PREFIX, SSM_P_TSV_FILENAME_EXTENSION, APPEND_DCC_TRANSFORMERS);
   }
 
   public static FsController<Path> newFsController(final boolean isHdfs, Optional<String> optionalHostname, Optional<String> optionalPort){
