@@ -27,7 +27,8 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_HA
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.FILE_ID_DAO_PERSISTANCE_FILENAME;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.METADATA_CONTAINER_PERSISTANCE_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.METADATA_CONTAINER_COLLAB_PERSISTANCE_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.METADATA_CONTAINER_NO_COLLAB_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_HAS_HEADER;
@@ -91,7 +92,8 @@ public class PersistedFactory {
 
   @SneakyThrows
   public MetadataContainer newMetadataContainer(boolean useCollab){
-    val restorer = localFileRestorerFactory.<MetadataContainer>createFileRestorer(METADATA_CONTAINER_PERSISTANCE_FILENAME);
+    val persistanceFilename = useCollab ? METADATA_CONTAINER_COLLAB_PERSISTANCE_FILENAME : METADATA_CONTAINER_NO_COLLAB_PERSISTANCE_FILENAME;
+    val restorer = localFileRestorerFactory.<MetadataContainer>createFileRestorer(persistanceFilename);
     if (restorer.isPersisted()){
       return restorer.restore();
     } else {

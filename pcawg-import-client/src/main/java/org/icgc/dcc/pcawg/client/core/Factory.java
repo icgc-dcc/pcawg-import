@@ -42,6 +42,7 @@ import static org.icgc.dcc.pcawg.client.core.DccTransformerFactory.newDccTransfo
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.downloadFileByURL;
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.download.query.PortalCollabVcfFileQueryCreator.newPcawgCollabQueryCreator;
+import static org.icgc.dcc.pcawg.client.utils.DictionaryCreator.newDictionaryCreator;
 
 @NoArgsConstructor(access = PRIVATE)
 @Slf4j
@@ -106,7 +107,7 @@ public class Factory {
 
   public static DictionaryCreator buildDictionaryCreator(){
 //    return DictionaryCreator.newDictionaryCreator(DICTIONARY_BASE_URL, DICTIONARY_VERSION);
-    return DictionaryCreator.newDictionaryCreator(DICTIONARY_CURRENT_URL);
+    return newDictionaryCreator(DICTIONARY_CURRENT_URL);
   }
 
   public static SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> newSSMPrimaryValidator(FileSchema ssmPrimaryFileSchema){

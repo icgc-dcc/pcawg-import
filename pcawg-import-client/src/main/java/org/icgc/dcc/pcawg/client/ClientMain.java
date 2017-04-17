@@ -29,6 +29,8 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Optional;
 
+import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
+
 @SpringBootApplication
 @Slf4j
 @Configuration
@@ -43,6 +45,7 @@ public class ClientMain implements CommandLineRunner {
   public void run(String... args) {
     log.info("Args: {}", applicationConfig.toString());
 
+
     val importer = Importer.builder()
         .token(applicationConfig.getToken())
         .hdfsEnabled(applicationConfig.isHdfs())
@@ -56,7 +59,12 @@ public class ClientMain implements CommandLineRunner {
         .bypassNoiseFiltering(applicationConfig.isBypass_noise_filter())
         .bypassTcgaFiltering(applicationConfig.isBypass_tcga_filter())
         .build();
-    importer.run();
+
+    try{
+      importer.run();
+    } catch (Exception e){
+      log.error("Failed to run Importer with exception [{}] : [Message] -- {}:\n{} ", e.getClass().getSimpleName(), e.getMessage(), NEWLINE.join(e.getStackTrace()));
+    }
 
   }
 

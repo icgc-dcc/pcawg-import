@@ -25,11 +25,14 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.PersistedFactory;
+import org.icgc.dcc.pcawg.client.core.ConsensusVCFConverterFactory;
+import org.icgc.dcc.pcawg.client.core.DccTransformerFactory;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.download.LocalStorageFileNotFoundException;
+import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Storage;
+import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.Common;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
@@ -52,17 +55,18 @@ import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.Importer.STATS_FIELDS.NUM_TRANSFORMED;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
+import static org.icgc.dcc.pcawg.client.core.ConsensusVCFConverterFactory.newConsensusVCFConverterFactory;
 import static org.icgc.dcc.pcawg.client.core.Factory.buildDictionaryCreator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newDccMetadataTransformerFactory;
 import static org.icgc.dcc.pcawg.client.core.Factory.newDccPrimaryTransformerFactory;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFsController;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataValidator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryValidator;
+import static org.icgc.dcc.pcawg.client.core.PersistedFactory.newPersistedFactory;
 import static org.icgc.dcc.pcawg.client.download.LocalStorage.newLocalStorage;
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter.newConsensusVCFConverter;
 
 @Slf4j
 @Builder
@@ -99,6 +103,18 @@ public class Importer implements Runnable {
   /**
    * State
    */
+  private DccTransformerFactory<SSMPrimary> dccPrimaryTransformerFactory;
+  private DccTransformerFactory<SSMMetadata> dccMetadataTransformerFactory;
+  private MetadataContainer metadataContainer;
+  private SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator;
+  private SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator;
+  private ConsensusVCFConverterFactory consensusVCFConverterFactory;
+  private VariantFilterFactory variantFilterFactory;
+  private boolean isInitDccTransformerFactory = false;
+  private boolean isInitMetadataContainer = false;
+  private boolean isInitSSMValidators = false;
+  private boolean isInitConsensusVCFConverterFactory = false;
+
   private DccProjectCodeStats2 dccStats = new DccProjectCodeStats2();
 
   private  Storage newStorage(String dccProjectCode){
@@ -110,26 +126,46 @@ public class Importer implements Runnable {
     }
   }
 
+  private void initDccTransformerFactory(){
+    val fsController = newFsController(hdfsEnabled, optionalHdfsHostname, optionalHdfsPort);
+    dccPrimaryTransformerFactory = newDccPrimaryTransformerFactory(fsController, outputTsvDir);
+    dccMetadataTransformerFactory = newDccMetadataTransformerFactory(fsController, outputTsvDir);
+    this.isInitDccTransformerFactory = true;
+  }
 
+  private void initMetadataContainer(){
+    val persistDirPath = Paths.get(PERSISTANCE_DIR);
+    val persistedFactory = newPersistedFactory(persistDirPath, true);
+    // Create container with all MetadataContexts
+    log.info("Creating MetadataContainer");
+    metadataContainer = persistedFactory.newMetadataContainer(useCollab);
+    this.isInitMetadataContainer = true;
+  }
+
+  private void initSSMValidators(){
+    val dictionaryCreator = buildDictionaryCreator();
+    ssmPrimaryValidator = newSSMPrimaryValidator(dictionaryCreator.getSSMPrimaryFileSchema());
+    ssmMetadataValidator = newSSMMetadataValidator(dictionaryCreator.getSSMMetadataFileSchema());
+    this.isInitSSMValidators = true;
+  }
+
+  private void initConsensusVCFConverterFactory(){
+    variantFilterFactory = newVariantFilterFactory(bypassTcgaFiltering, bypassNoiseFiltering);
+    consensusVCFConverterFactory = newConsensusVCFConverterFactory(variantFilterFactory);
+    this.isInitConsensusVCFConverterFactory = true;
+  }
+
+  private void init(){
+    initDccTransformerFactory();
+    initMetadataContainer();
+//    initSSMValidators();
+    initConsensusVCFConverterFactory();
+  }
 
   @Override
   @SneakyThrows
   public void run() {
-    val variantFilterFactory = newVariantFilterFactory(bypassTcgaFiltering, bypassNoiseFiltering);
-    val fsController = newFsController(hdfsEnabled, optionalHdfsHostname, optionalHdfsPort);
-    val persistDirPath = Paths.get(PERSISTANCE_DIR);
-    val persistedFactory = PersistedFactory.newPersistedFactory(persistDirPath, true);
-    // Create container with all MetadataContexts
-    log.info("Creating MetadataContainer");
-    val metadataContainer = persistedFactory.newMetadataContainer(useCollab);
-    val dictionaryCreator = buildDictionaryCreator();
-    val ssmPrimaryValidator = newSSMPrimaryValidator(dictionaryCreator.getSSMPrimaryFileSchema());
-    val ssmMetadataValidator = newSSMMetadataValidator(dictionaryCreator.getSSMMetadataFileSchema());
-
-    val dccPrimaryTransformerFactory = newDccPrimaryTransformerFactory(fsController, outputTsvDir);
-    val dccMetadataTransformerFactory = newDccMetadataTransformerFactory(fsController, outputTsvDir);
-
-
+    init();
     val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
     int countMetadataContexts = 0;
 
@@ -170,8 +206,7 @@ public class Importer implements Runnable {
           val consensusSampleMetadata = metadataContext.getSampleMetadata();
 
           // Convert Consensus VCF files
-          val consensusVCFConverter =
-              newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata, variantFilterFactory);
+          val consensusVCFConverter = consensusVCFConverterFactory.getConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
 
           try {
             consensusVCFConverter.process();
@@ -194,7 +229,7 @@ public class Importer implements Runnable {
           boolean overallPrimaryFileOk = true;
           for (val ptx : ssmPrimarySet) {
             boolean shouldTransformSSMPrimary = true;
-            if (ENABLE_SSM_DICTIONARY_VALIDATION) {
+            if (isInitSSMValidators && ENABLE_SSM_DICTIONARY_VALIDATION) {
               shouldTransformSSMPrimary = validateSSM("SSM_PRIMARY", ssmPrimaryValidator, ptx.getObject());
             }
             if (shouldTransformSSMPrimary) {
@@ -231,13 +266,6 @@ public class Importer implements Runnable {
           erroredVariantCountForProjectCode,
           erroredSSMPrimaryCountForProjectCode,
           transformedSSMPrimaryCountForProjectCode);
-
-      //rtismaFIX  logFileSummary(erroredFileList, stats.get(TOTAL_VARIANT_COUNT), dccProjectCode);
-      //rtismaFIX  log.info("DccProjectCode[{}] Stats:  TotalVariants: {}   ErroredSSMPrimary: {}   TransformedSSMPrimary: {}",
-      //rtismaFIX      dccProjectCode,
-      //rtismaFIX      stats.get(TOTAL_VARIANT_COUNT),
-      //rtismaFIX      stats.get(NUM_SSM_PRIMARY_ERRORED),
-      //rtismaFIX      stats.get(NUM_TRANSFORMED));
     }
     variantFilterFactory.close();
   }

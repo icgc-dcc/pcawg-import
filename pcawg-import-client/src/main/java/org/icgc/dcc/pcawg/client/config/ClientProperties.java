@@ -58,13 +58,15 @@ public class ClientProperties {
 
   public static final String DICTIONARY_BASE_URL = "https://submissions.dcc.icgc.org/ws/dictionaries";
   public static final String DICTIONARY_VERSION = "0.16a";
-  public static final String DICTIONARY_CURRENT_URL = "https://submissions.dcc.icgc.org/ws/nextRelease/dictionary";
+  public static final String DICTIONARY_CURRENT_URL = "https://submissions.dcc.icgc.org/ws/dictionaries/current";
 
   public static final String PERSISTANCE_DIR = "persisted";
-  public static final String METADATA_CONTAINER_PERSISTANCE_FILENAME = "metadataContainer.dat";
+  public static final String METADATA_CONTAINER_COLLAB_PERSISTANCE_FILENAME = "metadataContainer.withCollab.dat";
+  public static final String METADATA_CONTAINER_NO_COLLAB_PERSISTANCE_FILENAME = "metadataContainer.noCollab.dat";
   public static final boolean BYPASS_TCGA_FILTERING = true;
   public static final boolean BYPASS_NOISE_FILTERING = true;
-  public static final String PORTAL_METADATA_DAO_PERSISTANCE_FILENAME = "portalMetadataDao.dat";
+  public static final String PORTAL_METADATA_DAO_COLLAB_PERSISTANCE_FILENAME = "portalMetadataDao.withCollab.dat";
+  public static final String PORTAL_METADATA_DAO_NO_COLLAB_PERSISTANCE_FILENAME = "portalMetadataDao.noCollab.dat";
   public static final boolean ENABLE_VARIANT_FILTERING = false;
   public static final boolean DEFAULT_BYPASS_TCGA_FILTER = true;
   public static final boolean DEFAULT_BYPASS_NOISE_FILTER = true;
