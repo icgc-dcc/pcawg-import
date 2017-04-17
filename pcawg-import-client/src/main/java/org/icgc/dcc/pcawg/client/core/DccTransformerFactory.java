@@ -1,8 +1,9 @@
-package org.icgc.dcc.pcawg.client.core.transformer.impl;
+package org.icgc.dcc.pcawg.client.core;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
+import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 
 import java.nio.file.Path;
