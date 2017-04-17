@@ -15,11 +15,11 @@ import static org.icgc.dcc.pcawg.client.utils.Strings.toStringArray;
 @RequiredArgsConstructor(access = PRIVATE)
 @Value
 @Slf4j
-public class PortalVcfFileQueryCreator implements ObjectNodeConverter {
+public class PortalCollabVcfFileQueryCreator implements ObjectNodeConverter {
 
-  public static final PortalVcfFileQueryCreator newPcawgQueryCreator(WorkflowTypes callerType){
-    log.info("Creating PortalVcfFileQueryCreator instance for callertype [{}]", callerType.name());
-    return new PortalVcfFileQueryCreator(callerType);
+  public static final PortalCollabVcfFileQueryCreator newPcawgCollabQueryCreator(WorkflowTypes callerType){
+    log.info("Creating PortalCollabVcfFileQueryCreator instance for callertype [{}]", callerType.name());
+    return new PortalCollabVcfFileQueryCreator(callerType);
   }
 
   @NonNull

@@ -30,6 +30,8 @@ import org.icgc.dcc.pcawg.client.core.PersistedFactory;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
+import org.icgc.dcc.pcawg.client.download.LocalStorageFileNotFoundException;
+import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.ssm.Common;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
@@ -48,17 +50,17 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.Importer.STATS_FIELDS.NUM_TRANSFORMED;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.BYPASS_NOISE_FILTERING;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.BYPASS_TCGA_FILTERING;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
 import static org.icgc.dcc.pcawg.client.core.Factory.buildDictionaryCreator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newFsController;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataValidator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryValidator;
-import static org.icgc.dcc.pcawg.client.download.PortalStorage.newStorage;
+import static org.icgc.dcc.pcawg.client.download.LocalStorage.newLocalStorage;
+import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter.newConsensusVCFConverter;
@@ -91,6 +93,10 @@ public class Importer implements Runnable {
   @NonNull
   private final Optional<String> optionalHdfsPort;
 
+  @NonNull private final boolean useCollab;
+  @NonNull private final boolean bypassTcgaFiltering;
+  @NonNull private final boolean bypassNoiseFiltering;
+
   /**
    * State
    */
@@ -103,17 +109,27 @@ public class Importer implements Runnable {
     return Factory.newDccPrimaryTransformer(fsController, this.outputTsvDir, dccProjectCode);
   }
 
+  private  Storage newStorage(String dccProjectCode){
+    if(useCollab){
+      val vcfDownloadDirectory = PATH.join(outputVcfDir, dccProjectCode);
+      return newPortalStorage(persistVcfDownloads, vcfDownloadDirectory, bypassMD5Check, token);
+    } else {
+      return newLocalStorage(Paths.get(outputVcfDir),bypassMD5Check);
+    }
+  }
+
+
 
   @Override
   @SneakyThrows
   public void run() {
-    val variantFilterFactory = newVariantFilterFactory(BYPASS_TCGA_FILTERING, BYPASS_NOISE_FILTERING);
+    val variantFilterFactory = newVariantFilterFactory(bypassTcgaFiltering, bypassNoiseFiltering);
     val fsController = newFsController(hdfsEnabled, optionalHdfsHostname, optionalHdfsPort);
     val persistDirPath = Paths.get(PERSISTANCE_DIR);
     val persistedFactory = PersistedFactory.newPersistedFactory(persistDirPath, true);
     // Create container with all MetadataContexts
     log.info("Creating MetadataContainer");
-    val metadataContainer = persistedFactory.newMetadataContainer();
+    val metadataContainer = persistedFactory.newMetadataContainer(useCollab);
     val dictionaryCreator = buildDictionaryCreator();
     val ssmPrimaryValidator = newSSMPrimaryValidator(dictionaryCreator.getSSMPrimaryFileSchema());
     val ssmMetadataValidator = newSSMMetadataValidator(dictionaryCreator.getSSMMetadataFileSchema());
@@ -138,9 +154,7 @@ public class Importer implements Runnable {
       log.info("Processing DccProjectCode ( {} / {} ): {}",
           ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
 
-      // Create storage manager for downloading files
-      val vcfDownloadDirectory = PATH.join(outputVcfDir, dccProjectCode);
-      val storage = newStorage(persistVcfDownloads, vcfDownloadDirectory , bypassMD5Check, token);
+      val storage = newStorage(dccProjectCode);
       val dccPrimaryTransformer = buildDccPrimaryTransformer(fsController,dccProjectCode);
       val dccMetadataTransformer = buildDccMetadataTransformer(fsController,dccProjectCode);
       val ssmMetadataSet = Sets.<DccTransformerContext<SSMMetadata>>newHashSet();
@@ -153,62 +167,53 @@ public class Importer implements Runnable {
         log.info("Loading File ( {} / {} ): {}",
             ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
 
-        // Download vcfFile
-        val vcfFile = storage.getFile(portalMetadata);
-
-        // Get consensusSampleMetadata
-        val consensusSampleMetadata = metadataContext.getSampleMetadata();
-
-        // Convert Consensus VCF files
-        val consensusVCFConverter = newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata, variantFilterFactory);
         try{
-          consensusVCFConverter.process();
-        } catch (PcawgVCFException e){
-          erroredFileList.add(vcfFile.getAbsolutePath());
+          // Download vcfFile
+          val vcfFile = storage.getFile(portalMetadata);
 
-          // Record number of errored variants
-          erroredSSMPrimaryCountForProjectCode += consensusVCFConverter.getBadSSMPrimaryCount();
-          erroredVariantCountForProjectCode += consensusVCFConverter.getNumBadVariantsCount();
+          // Get consensusSampleMetadata
+          val consensusSampleMetadata = metadataContext.getSampleMetadata();
 
-          //rtismaFIX stats.incr(NUM_SSM_PRIMARY_ERRORED, consensusVCFConverter.getBadSSMPrimaryCount());
-          //rtismaFIX stats.incr(NUM_VCF_FILES_ERRORED);
-        }
+          // Convert Consensus VCF files
+          val consensusVCFConverter =
+              newConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata, variantFilterFactory);
 
-        //Record number of total variants processed
-       totalVariantCountForProjectCode += consensusVCFConverter.getVariantCount();
-      //rtismaFIX        stats.incr(TOTAL_VARIANT_COUNT, consensusVCFConverter.getVariantCount());
-
-
-        //rtismaFIX process(SSM_METADATA.name(),vcfFile.getPath(),
-        //rtismaFIX     dccMetadataTransformer,Lists.newArrayList(consensusVCFConverter.readSSMMetadata()),
-        //rtismaFIX     ssmMetadataValidator,dccMetadataStats);
-
-        //rtismaFIX process(SSM_PRIMARY.name(),vcfFile.getPath(),
-        //rtismaFIX     dccPrimaryTransformer,consensusVCFConverter.readSSMPrimary(),
-        //rtismaFIX    ssmPrimaryValidator,dccPrimaryStats);
-
-        // SSM Metadata transformation
-
-        val ssmPrimarySet = consensusVCFConverter.readSSMPrimary();
-        ssmMetadataSet.addAll(consensusVCFConverter.readSSMMetadata());
-        validateCommon(dccProjectCode, vcfFile.getName(), ssmMetadataSet, ssmPrimarySet);
-
-        // SSM Primary transformation
-        boolean overallPrimaryFileOk = true;
-        for (val ptx : ssmPrimarySet){
-          boolean shouldTransformSSMPrimary = true;
-          if (ENABLE_SSM_DICTIONARY_VALIDATION){
-            shouldTransformSSMPrimary = validateSSM("SSM_PRIMARY", ssmPrimaryValidator, ptx.getObject());
+          try {
+            consensusVCFConverter.process();
+          } catch (PcawgVCFException e) {
+            erroredFileList.add(vcfFile.getAbsolutePath());
+            // Record number of errored variants
+            erroredSSMPrimaryCountForProjectCode += consensusVCFConverter.getBadSSMPrimaryCount();
+            erroredVariantCountForProjectCode += consensusVCFConverter.getNumBadVariantsCount();
           }
-          if (shouldTransformSSMPrimary){
-            dccPrimaryTransformer.transform(ptx);
-            //Record number of SSM Primary object transformeed
-            transformedSSMPrimaryCountForProjectCode++;
-          }
-          overallPrimaryFileOk &= shouldTransformSSMPrimary;
-        }
 
-        logSSMPrimaryValidationSummary(ENABLE_TSV_VALIDATION, overallPrimaryFileOk, vcfFile.getPath());
+          //Record number of total variants processed
+          totalVariantCountForProjectCode += consensusVCFConverter.getVariantCount();
+          // SSM Metadata transformation
+
+          val ssmPrimarySet = consensusVCFConverter.readSSMPrimary();
+          ssmMetadataSet.addAll(consensusVCFConverter.readSSMMetadata());
+          validateCommon(dccProjectCode, vcfFile.getName(), ssmMetadataSet, ssmPrimarySet);
+
+          // SSM Primary transformation
+          boolean overallPrimaryFileOk = true;
+          for (val ptx : ssmPrimarySet) {
+            boolean shouldTransformSSMPrimary = true;
+            if (ENABLE_SSM_DICTIONARY_VALIDATION) {
+              shouldTransformSSMPrimary = validateSSM("SSM_PRIMARY", ssmPrimaryValidator, ptx.getObject());
+            }
+            if (shouldTransformSSMPrimary) {
+              dccPrimaryTransformer.transform(ptx);
+              //Record number of SSM Primary object transformeed
+              transformedSSMPrimaryCountForProjectCode++;
+            }
+            overallPrimaryFileOk &= shouldTransformSSMPrimary;
+          }
+
+          logSSMPrimaryValidationSummary(ENABLE_TSV_VALIDATION, overallPrimaryFileOk, vcfFile.getPath());
+        }  catch (LocalStorageFileNotFoundException e){
+          log.error("[{}]: {}\n{}", e.getClass().getSimpleName(), e.getMessage(), NEWLINE.join(e.getStackTrace()));
+        }
 
       }
       // Traverse the unique DccTransformerContexT<SSMMetadata> set, and transform them

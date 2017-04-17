@@ -40,8 +40,8 @@ import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControlle
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControllerAdapter.newHadoopFsControllerAdapter;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.LocalFsController.newLocalFsController;
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.downloadFileByURL;
-import static org.icgc.dcc.pcawg.client.download.PortalStorage.newStorage;
-import static org.icgc.dcc.pcawg.client.download.query.PortalVcfFileQueryCreator.newPcawgQueryCreator;
+import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
+import static org.icgc.dcc.pcawg.client.download.query.PortalCollabVcfFileQueryCreator.newPcawgCollabQueryCreator;
 
 @NoArgsConstructor(access = PRIVATE)
 @Slf4j
@@ -54,7 +54,7 @@ public class Factory {
   public static PortalStorage newDefaultStorage() {
     log.info("Creating storage instance with persistMode: {}, outputDir: {}, and md5BypassEnable: {}",
         STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);
-    return newStorage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);
+    return newPortalStorage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);
   }
 
   public static DccTransformer<SSMMetadata> newDccMetadataTransformer(FsController<Path> fsController, String outputTsvDir, String dccProjectCode  ){
@@ -84,7 +84,7 @@ public class Factory {
   public static Portal newPortal(WorkflowTypes callerType){
     log.info("Creating new Portal instance for callerType [{}]", callerType.name());
     return Portal.builder()
-        .jsonQueryGenerator(newPcawgQueryCreator(callerType))
+        .jsonQueryGenerator(newPcawgCollabQueryCreator(callerType))
         .build();
   }
 
@@ -120,5 +120,6 @@ public class Factory {
   public static SSMValidator<SSMMetadata, SSMMetadataFieldMapping> newSSMMetadataValidator(FileSchema ssmMetadataFileSchema){
     return SSMValidator.newSSMValidator(ssmMetadataFileSchema, SSMMetadataFieldMapping.values());
   }
+
 
 }

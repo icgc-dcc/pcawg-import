@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.barcode.impl.BarcodeSheetBeanDao;
+import org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory;
 import org.icgc.dcc.pcawg.client.data.factory.impl.BarcodeBeanDaoFactory;
 import org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory;
 import org.icgc.dcc.pcawg.client.data.icgc.FileIdDao;
@@ -14,7 +15,6 @@ import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.impl.FileSampleMetadataBeanDAO;
 import org.icgc.dcc.pcawg.client.data.sample.impl.SampleSheetBeanDao;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
-import org.icgc.dcc.pcawg.client.download.PortalFiles;
 import org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorer;
 import org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory;
 
@@ -26,18 +26,18 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_BEAN_DAO
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.BARCODE_SHEET_TSV_URL;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.FILE_ID_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.METADATA_CONTAINER_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_BEAN_DAO_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
-import static org.icgc.dcc.pcawg.client.core.Factory.newPortal;
+import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newAllPortalMetadataDaoFactory;
+import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newCollabPortalMetadataDaoFactory;
 import static org.icgc.dcc.pcawg.client.data.factory.impl.SampleBeanDaoFactory.newSampleBeanDaoFactory;
 import static org.icgc.dcc.pcawg.client.data.icgc.FileIdDao.newFileIdDao;
 import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory.newFileRestorerFactory;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -90,12 +90,12 @@ public class PersistedFactory {
   private FileIdDao fileIdDao;
 
   @SneakyThrows
-  public MetadataContainer newMetadataContainer(){
+  public MetadataContainer newMetadataContainer(boolean useCollab){
     val restorer = localFileRestorerFactory.<MetadataContainer>createFileRestorer(METADATA_CONTAINER_PERSISTANCE_FILENAME);
     if (restorer.isPersisted()){
       return restorer.restore();
     } else {
-      val container = buildMetadataContainer();
+      val container = buildMetadataContainer(useCollab);
       restorer.store(container);
       return container;
     }
@@ -109,18 +109,19 @@ public class PersistedFactory {
   }
 
   public FileIdDao buildFileId(){
-    return newFileIdDao(ICGC_FILE_ID_DAO_PERSISTANCE_FILENAME, sampleSheetBeanDao, barcodeSheetBeanDao);
+    return newFileIdDao(FILE_ID_DAO_PERSISTANCE_FILENAME, sampleSheetBeanDao, barcodeSheetBeanDao);
   }
 
-  private MetadataContainer buildMetadataContainer(){
-    log.info("Creating Portal instance for [{}]", CONSENSUS);
-    val portal = newPortal(CONSENSUS);
+  private PortalMetadataDaoFactory buildPortalMetadataDaoFactory(boolean useCollab){
+    return useCollab ? newCollabPortalMetadataDaoFactory(localFileRestorerFactory) :
+        newAllPortalMetadataDaoFactory(localFileRestorerFactory);
+  }
 
-    log.info("Retreiving portal filemeta data...");
-    val portalMetadataSet = portal.getFileMetas()
-        .stream()
-        .map(PortalFiles::convertToPortalMetadata)
-        .collect(toImmutableSet());
+  @SneakyThrows
+  private MetadataContainer buildMetadataContainer(boolean useCollab){
+    val portalMetadataDaoFactory = buildPortalMetadataDaoFactory(useCollab);
+    val portalMetadataDao = portalMetadataDaoFactory.createPortalMetadataDao();
+    val portalMetadataSet = portalMetadataDao.findAll().stream().collect(toImmutableSet());
 
     log.info("Creating base sampleMetadata DAO...");
     val sampleMetadataDao = newSampleMetadataDAO();

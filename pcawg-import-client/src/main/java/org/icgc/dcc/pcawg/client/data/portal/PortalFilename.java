@@ -21,6 +21,7 @@ import com.google.common.collect.Iterables;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.icgc.dcc.common.core.util.Splitters;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
@@ -34,6 +35,7 @@ import static org.icgc.dcc.common.core.util.Joiners.DOT;
  * Takes a filename, and extracts particular fields characteristic of ICGC VCF files
  */
 @EqualsAndHashCode
+@ToString
 public class PortalFilename implements Serializable {
 
   public static final PortalFilename newPortalFilename(String filename){
@@ -88,11 +90,6 @@ public class PortalFilename implements Serializable {
 
   public String getFilename() {
     return DOT.join(elements);
-  }
-
-  @Override
-  public String toString() {
-    return getFilename();
   }
 
   private static WorkflowTypes parseWorkflowType(final String workflow) {

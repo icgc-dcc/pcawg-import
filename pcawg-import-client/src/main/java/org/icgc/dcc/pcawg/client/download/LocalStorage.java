@@ -25,6 +25,7 @@ import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 import static lombok.AccessLevel.PRIVATE;
 
 @RequiredArgsConstructor(access = PRIVATE)
+@Slf4j
 public class LocalStorage implements Storage{
 
   public static final LocalStorage newLocalStorage(Path inputDir, final boolean bypassMd5Check){
@@ -81,17 +82,22 @@ public class LocalStorage implements Storage{
   @SneakyThrows
   public File getFile(PortalMetadata portalMetadata) {
     val portalFilename = portalMetadata.getPortalFilename();
-    checkState(fileMap.containsKey(portalFilename),
-        "Cannot find the file [%s]", portalFilename);
-    val file = fileMap.get(portalFilename);
-    if (bypassMd5Check){
-      return file.toFile();
-    } else {
-      val sum = Storage.calcMd5Sum(file);
-      checkState(sum.equals(portalMetadata.getFileMd5sum()),
-          "The local file [%s] MD5CheckSum[%s], expecting[%s] from portal",
-          file.getFileName(), sum, portalMetadata.getFileMd5sum());
+    val found = fileMap.containsKey(portalFilename);
+    if(found){
+      val file = fileMap.get(portalFilename);
+      if (bypassMd5Check){
         return file.toFile();
+      } else {
+        val sum = Storage.calcMd5Sum(file);
+        checkState(sum.equals(portalMetadata.getFileMd5sum()),
+            "The local file [%s] MD5CheckSum[%s], expecting[%s] from portal",
+            file.getFileName(), sum, portalMetadata.getFileMd5sum());
+          return file.toFile();
+      }
+    } else {
+      val message = String.format("Cannot find the file [%s]", portalFilename);
+      throw new LocalStorageFileNotFoundException(message, portalMetadata);
     }
   }
 }
+

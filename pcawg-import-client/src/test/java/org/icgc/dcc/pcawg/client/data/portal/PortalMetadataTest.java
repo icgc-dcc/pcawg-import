@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
-import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newPortalMetadataDaoFactory;
+import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newAllPortalMetadataDaoFactory;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
 
 @Slf4j
@@ -18,7 +18,7 @@ public class PortalMetadataTest {
   @SneakyThrows
   public void testQuery(){
     val localFileRestorerFactory = LocalFileRestorerFactory.newFileRestorerFactory("test.persisted");
-    val factory = newPortalMetadataDaoFactory(localFileRestorerFactory);
+    val factory = newAllPortalMetadataDaoFactory(localFileRestorerFactory);
     val portalMetadataDao = factory.createPortalMetadataDao();
 
     val portalFilename = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20160830.somatic.indel.vcf.gz");

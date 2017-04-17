@@ -52,6 +52,9 @@ public class ClientMain implements CommandLineRunner {
         .outputTsvDir(applicationConfig.getTsv_dir())
         .optionalHdfsHostname(Optional.ofNullable(applicationConfig.getHdfs_hostname()))
         .optionalHdfsPort(Optional.ofNullable(applicationConfig.getHdfs_port()))
+        .useCollab(applicationConfig.isUse_collab())
+        .bypassNoiseFiltering(applicationConfig.isBypass_noise_filter())
+        .bypassTcgaFiltering(applicationConfig.isBypass_tcga_filter())
         .build();
     importer.run();
 

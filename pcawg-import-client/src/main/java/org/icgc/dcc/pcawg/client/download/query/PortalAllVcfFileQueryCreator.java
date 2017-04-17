@@ -17,7 +17,7 @@ import static org.icgc.dcc.pcawg.client.utils.Strings.toStringArray;
 @Slf4j
 public class PortalAllVcfFileQueryCreator implements ObjectNodeConverter {
 
-  public static final PortalAllVcfFileQueryCreator newPcawgQueryCreator(WorkflowTypes callerType){
+  public static final PortalAllVcfFileQueryCreator newPortalAllVcfFileQueryCreator(WorkflowTypes callerType){
     log.info("Creating {} instance for callertype [{}]",PortalAllVcfFileQueryCreator.class.getSimpleName(), callerType.name());
     return new PortalAllVcfFileQueryCreator(callerType);
   }
