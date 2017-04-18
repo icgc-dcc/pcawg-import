@@ -17,6 +17,7 @@ import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
 import org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.DataTypeConversionException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
@@ -27,11 +28,13 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor.newMonitor;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter.Tuple.newTuple;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.calcAnalysisId;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.INDEL;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.SNV_MNV;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFFileReader;
 import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR;
 
 @Slf4j
@@ -99,6 +102,7 @@ public class ConsensusVCFConverter {
   private final ConsensusVariantConverter consensusVariantConverter;
   private PcawgVCFException candidateException;
   private int erroredVariantCount = 0;
+  private final CounterMonitor variantMonitor = newMonitor("variantCounter", 100000);
 
   @Getter
   private int variantCount;
@@ -106,7 +110,7 @@ public class ConsensusVCFConverter {
   private ConsensusVCFConverter(@NonNull Path vcfPath, @NonNull SampleMetadata sampleMetadataConsensus, @NonNull VariantFilterFactory variantFilterFactory){
     this.vcfFile = vcfPath.toFile();
     checkArgument(vcfFile.exists(), "The VCF File [{}] DNE", vcfPath.toString());
-    this.vcf = new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
+    this.vcf = newDefaultVCFFileReader(vcfFile);
     this.sampleMetadataConsensus = sampleMetadataConsensus;
     this.consensusVariantConverter = new ConsensusVariantConverter(sampleMetadataConsensus);
     this.variantFilter = variantFilterFactory.createVariantFilter(vcf, sampleMetadataConsensus.isUsProject());
@@ -128,7 +132,9 @@ public class ConsensusVCFConverter {
    * @param variant input variant to be converted/processed
    */
   private void convertConsensusVariant(VariantContext variant){
-    ssmPrimarySet.addAll(consensusVariantConverter.convertSSMPrimary(variant));
+    val dccPrimaryTransformerContextSet =  consensusVariantConverter.convertSSMPrimary(variant);
+    ssmPrimarySet.addAll(dccPrimaryTransformerContextSet);
+    variantMonitor.incr(dccPrimaryTransformerContextSet.size());
   }
 
   private void buildSSMMetadatas(){
@@ -160,6 +166,7 @@ public class ConsensusVCFConverter {
         String.format("VariantErrors occured in the file [%s]", vcfFile.getAbsolutePath()));
     erroredVariantCount = 0;
 
+    variantMonitor.start();
     for (val variant : vcf){
       if (!variantFilter.isFiltered(variant)) {
         try {
@@ -179,6 +186,8 @@ public class ConsensusVCFConverter {
       }
 
     }
+    variantMonitor.stop();
+    variantMonitor.displaySummary();
 
     buildSSMMetadatas();
 
