@@ -4,12 +4,16 @@ import com.google.common.base.Joiner;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFEncoder;
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.common.core.util.Joiners;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -24,6 +28,27 @@ public class VCF {
   private static final String T_ALT_COUNT = "t_alt_count";
   private static final String CALLERS = "Callers";
   private static final Joiner ALLELE_JOINER = Joiners.SLASH;
+  private static final boolean REQUIRE_INDEX_CFG = false;
+  private static final boolean ALLOW_MISSING_FIELDS_IN_HEADER_CFG = true;
+  private static final boolean OUTPUT_TRAILING_FORMAT_FIELDS_CFG = true;
+
+  public static VCFFileReader newDefaultVCFFileReader(File vcfFile){
+    return new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
+  }
+
+  public static VCFEncoder newDefaultVCFEncoder(VCFFileReader vcfFileReader){
+    return newDefaultVCFEncoder(vcfFileReader.getFileHeader());
+  }
+
+  public static VCFEncoder newDefaultVCFEncoder(VCFHeader vcfHeader){
+    return new VCFEncoder(vcfHeader,ALLOW_MISSING_FIELDS_IN_HEADER_CFG,
+        OUTPUT_TRAILING_FORMAT_FIELDS_CFG );
+  }
+
+  public static VCFEncoder newDefaultVCFEncoder(File file){
+    val vcfFile = newDefaultVCFFileReader(file);
+    return newDefaultVCFEncoder(vcfFile.getFileHeader());
+  }
 
   public static CommonInfo getCommonInfo(VariantContext v){
     return v.getCommonInfo();
