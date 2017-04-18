@@ -64,8 +64,10 @@ public enum WorkflowTypes {
     return name.contains(this.getName());
   }
 
+  private static final WorkflowTypes[] WORKFLOW_TYPES = values();
+
   private static WorkflowTypes parse(String name, Predicate<WorkflowTypes> predicate){
-    for (val v : values()){
+    for (val v : WORKFLOW_TYPES){
       if (predicate.test(v)){
         return v;
       }
