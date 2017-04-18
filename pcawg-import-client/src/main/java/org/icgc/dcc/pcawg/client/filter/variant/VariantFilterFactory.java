@@ -4,12 +4,14 @@ import htsjdk.variant.vcf.VCFEncoder;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 
 import java.io.Closeable;
 import java.io.IOException;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFEncoder;
 
 @RequiredArgsConstructor(access = PRIVATE)
 public class VariantFilterFactory implements Closeable{
@@ -27,11 +29,13 @@ public class VariantFilterFactory implements Closeable{
   private final SnpEffCodingFilter snpEffCodingFilter;
 
   public VariantFilter createVariantFilter(VCFHeader vcfHeader, final boolean isUsProject){
-    return VariantFilter.newVariantFilter(vcfHeader,snpEffCodingFilter,isUsProject,bypassTcgaFiltering, bypassNoiseFiltering);
+    val vcfEncoder = newDefaultVCFEncoder(vcfHeader);
+    return createVariantFilter(vcfEncoder, isUsProject);
   }
 
   public VariantFilter createVariantFilter(VCFFileReader vcfFileReader, final boolean isUsProject){
-    return createVariantFilter(vcfFileReader.getFileHeader(), isUsProject);
+    val vcfEncoder = newDefaultVCFEncoder(vcfFileReader);
+    return createVariantFilter(vcfEncoder, isUsProject);
   }
 
   public VariantFilter createVariantFilter(VCFEncoder vcfEncoder, final boolean isUsProject){
