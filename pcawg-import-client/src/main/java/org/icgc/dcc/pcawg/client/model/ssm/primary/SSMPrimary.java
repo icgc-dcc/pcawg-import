@@ -1,9 +1,8 @@
 package org.icgc.dcc.pcawg.client.model.ssm.primary;
 
-import org.icgc.dcc.pcawg.client.model.ssm.Common;
+import org.icgc.dcc.pcawg.client.model.ssm.SSMCommon;
 
-
-public interface SSMPrimary extends Common {
+public interface SSMPrimary extends SSMCommon {
 
   String getMutationType();
   String getChromosome();

@@ -16,7 +16,7 @@ import static org.icgc.dcc.pcawg.client.vcf.VCF.getChomosome;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getRefCount;
 
 /**
- * Common implementations for all subclasses of AbstractPcawgSSMPrimaryBase
+ * SSMCommon implementations for all subclasses of AbstractPcawgSSMPrimaryBase
  */
 @Slf4j
 public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {

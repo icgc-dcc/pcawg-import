@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.utils.CompareState;
 
 import java.util.Set;
 import java.util.function.Predicate;
@@ -105,4 +106,11 @@ public enum WorkflowTypes {
   public String toString() {
     return this.getName();
   }
+
+  public CompareState compareState(WorkflowTypes other){
+    return CompareState.getState(this, other);
+  }
+
+
+
 }

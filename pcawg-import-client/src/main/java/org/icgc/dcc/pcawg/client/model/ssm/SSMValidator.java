@@ -84,10 +84,10 @@ public final class SSMValidator <T, F extends FieldExtractor<T>> {
     return badList.build();
   }
 
-  public static  Set<Common> differenceOfMetadataAndPrimary(Iterable<? extends Common> ssmMetadatas, Iterable<? extends Common> ssmPrimarys){
-    val mSet = Sets.<Common>newHashSet(ssmMetadatas);
-    val pSet = Sets.<Common>newHashSet(ssmMetadatas);
-    val outSet = ImmutableSet.<Common>builder();
+  public static  Set<SSMCommon> differenceOfMetadataAndPrimary(Iterable<? extends SSMCommon> ssmMetadatas, Iterable<? extends SSMCommon> ssmPrimarys){
+    val mSet = Sets.<SSMCommon>newHashSet(ssmMetadatas);
+    val pSet = Sets.<SSMCommon>newHashSet(ssmMetadatas);
+    val outSet = ImmutableSet.<SSMCommon>builder();
     val missingFromMset = missingFromActual(mSet, pSet);
     val extraInMset = extraInActual(mSet, pSet);
     outSet.addAll(missingFromMset);

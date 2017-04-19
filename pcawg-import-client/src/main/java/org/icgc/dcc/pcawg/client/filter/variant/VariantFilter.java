@@ -22,6 +22,10 @@ public class VariantFilter {
     return isNoiseFiltered(variantContext) || isTcgaFiltered(variantContext);
   }
 
+  public boolean isNotFiltered(VariantContext variantContext){
+    return ! isFiltered(variantContext);
+  }
+
   public boolean isTcgaFiltered(VariantContext variantContext){
     if (bypassTcgaFiltering){
       return false;

@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.utils.CompareState;
 
 import java.util.function.Predicate;
 
@@ -91,6 +92,10 @@ public enum DataTypes {
   @Override
   public String toString() {
     return getName();
+  }
+
+  public CompareState compareState(DataTypes other){
+    return CompareState.getState(this, other);
   }
 
 }

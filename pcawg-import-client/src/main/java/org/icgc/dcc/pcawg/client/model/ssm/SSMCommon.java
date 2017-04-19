@@ -1,6 +1,6 @@
 package org.icgc.dcc.pcawg.client.model.ssm;
 
-public interface Common  {
+public interface SSMCommon {
 
   String getAnalysisId();
   String getAnalyzedSampleId();

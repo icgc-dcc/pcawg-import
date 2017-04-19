@@ -15,7 +15,6 @@ import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
 import org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.DataTypeConversionException;
@@ -24,13 +23,16 @@ import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.common.core.util.stream.Streams.stream;
+import static org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext.newDccTransformerContext;
 import static org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor.newMonitor;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter.Tuple.newTuple;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.calcAnalysisId;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.INDEL;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.SNV_MNV;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
@@ -40,8 +42,7 @@ import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_T
 @Slf4j
 public class ConsensusVCFConverter {
 
-  private static final boolean REQUIRE_INDEX_CFG = false;
-  private static final boolean F_CHECK_CORRECT_WORKTYPE = false;
+  private static final Set<DccTransformerContext<SSMPrimary>> EMPTY_DCC_PRIMARY_TRANSFORMER_CONTEXT = ImmutableSet.<DccTransformerContext<SSMPrimary>>of();
 
   public static final ConsensusVCFConverter newConsensusVCFConverter(@NonNull Path vcfPath,
       @NonNull SampleMetadata sampleMetadataConsensus, VariantFilterFactory variantFilterFactory){
@@ -57,25 +58,13 @@ public class ConsensusVCFConverter {
     @NonNull private final DataTypes dataType;
   }
 
-  public static SSMMetadata newSSMMetadata(SampleMetadata sampleMetadata, WorkflowTypes workflowType,DataTypes dataType){
-    val analysisId = calcAnalysisId(sampleMetadata.getDccProjectCode(), workflowType, dataType);
-    return PcawgSSMMetadata.newSSMMetadataImpl(
-        VariationCallingAlgorithms.get(workflowType, dataType),
-        sampleMetadata.getMatchedSampleId(),
-        analysisId,
-        sampleMetadata.getAnalyzedSampleId(),
-        sampleMetadata.isUsProject(),
-        sampleMetadata.getAliquotId(),
-        sampleMetadata.getAnalyzedFileId(),
-        sampleMetadata.getMatchedFileId());
-  }
-
   private static List<Tuple> aggregateDistinctWorkflowTypeAndDataType(Set<DccTransformerContext<SSMPrimary>> dccPrimaryTransformerContexts){
     val set = Sets.<Tuple>newHashSet();
     val list = ImmutableList.<Tuple>builder();
     // Create unique order list of tuples
     for (val ctx : dccPrimaryTransformerContexts){
-      val tuple = newTuple(ctx.getWorkflowTypes(), ctx.getDataType());
+      val ssmClassification = ctx.getSSMClassification();
+      val tuple = newTuple(ssmClassification.getWorkflowType(), ssmClassification.getDataType());
       if (!set.contains(tuple)){
         list.add(tuple);
         set.add(tuple);
@@ -119,12 +108,7 @@ public class ConsensusVCFConverter {
 
 
   private void addSSMMetadata(WorkflowTypes workflowType, DataTypes dataType, SSMMetadata ssmMetadata){
-    ssmMetadataSet.add(
-        DccTransformerContext.<SSMMetadata>builder()
-            .object(ssmMetadata)
-            .dataType(dataType)
-            .workflowTypes(workflowType)
-            .build());
+    ssmMetadataSet.add( newDccTransformerContext(workflowType, dataType, ssmMetadata));
   }
 
   /**
@@ -134,7 +118,12 @@ public class ConsensusVCFConverter {
   private void convertConsensusVariant(VariantContext variant){
     val dccPrimaryTransformerContextSet =  consensusVariantConverter.convertSSMPrimary(variant);
     ssmPrimarySet.addAll(dccPrimaryTransformerContextSet);
-    variantMonitor.incr(dccPrimaryTransformerContextSet.size());
+  }
+
+  private Set<DccTransformerContext<SSMPrimary>> convertConsensusVariant2(VariantContext variant, CounterMonitor variantCounterMonitor){
+    val dccPrimaryTransformerContextSet =  consensusVariantConverter.convertSSMPrimary(variant);
+    variantCounterMonitor.incr(dccPrimaryTransformerContextSet.size());
+    return dccPrimaryTransformerContextSet;
   }
 
   private void buildSSMMetadatas(){
@@ -143,7 +132,7 @@ public class ConsensusVCFConverter {
       val workflowType = tuple.getWorkflowType();
       val dataType= tuple.getDataType();
       if(dataType == INDEL || dataType == SNV_MNV){
-        val ssmMetadata = newSSMMetadata(sampleMetadataConsensus,workflowType, dataType);
+        val ssmMetadata = ConsensusVariantConverter.newSSMMetadata(sampleMetadataConsensus,workflowType, dataType);
         addSSMMetadata(workflowType, dataType, ssmMetadata);
       } else {
         throw new PcawgVCFException(this.vcfFile.getName(),String.format("The dataType [%s] is not supported", dataType.getName()));
@@ -159,6 +148,34 @@ public class ConsensusVCFConverter {
 
   //TODO: need to add tests for malformed VCFs not being included in data set
 
+  public Stream<DccTransformerContext<SSMPrimary>> streamSSMPrimary(CounterMonitor variantCounterMonitor){
+    return stream(vcf)
+        .map(v -> subSetSSMPrimary(v, variantCounterMonitor))
+        .flatMap(Collection::stream);
+  }
+
+
+
+  private Set<DccTransformerContext<SSMPrimary>>  subSetSSMPrimary(VariantContext variant, CounterMonitor variantCounterMonitor){
+    Set<DccTransformerContext<SSMPrimary>> out = EMPTY_DCC_PRIMARY_TRANSFORMER_CONTEXT;
+    if (!variantFilter.isFiltered(variant)) {
+      try {
+        out = convertConsensusVariant2(variant, variantCounterMonitor);
+      } catch (DataTypeConversionException e) {
+        candidateException.addError(MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR, getStart(variant));
+        erroredVariantCount++;
+      } catch (PcawgVariantException e) {
+        val start = getStart(variant);
+        for (val error : e.getErrors()) {
+          candidateException.addError(error, start);
+        }
+        erroredVariantCount++;
+      } finally {
+        variantCount++;
+      }
+    }
+    return out;
+  }
 
   public void process(){
     variantCount = 1;

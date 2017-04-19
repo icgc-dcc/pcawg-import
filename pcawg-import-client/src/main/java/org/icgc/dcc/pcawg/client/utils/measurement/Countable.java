@@ -6,6 +6,16 @@ public interface Countable<T> {
 
   void incr(T amount);
 
+  default <A> A streamIncr(A object){
+    this.incr();
+    return object;
+  }
+
+  default <A> A streamIncr(A object, T amount){
+    this.incr(amount);
+    return object;
+  }
+
   void reset();
 
   T getCount();

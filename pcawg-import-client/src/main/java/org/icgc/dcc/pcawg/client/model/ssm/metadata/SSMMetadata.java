@@ -1,8 +1,8 @@
 package org.icgc.dcc.pcawg.client.model.ssm.metadata;
 
-import org.icgc.dcc.pcawg.client.model.ssm.Common;
+import org.icgc.dcc.pcawg.client.model.ssm.SSMCommon;
 
-public interface SSMMetadata extends Common {
+public interface SSMMetadata extends SSMCommon {
 
   String getMatchedSampleId();
   String getAssemblyVersion();
