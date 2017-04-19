@@ -3,6 +3,7 @@ package org.icgc.dcc.pcawg.client.filter.variant;
 import htsjdk.variant.vcf.VCFEncoder;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
@@ -14,6 +15,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFEncoder;
 
 @RequiredArgsConstructor(access = PRIVATE)
+@Getter
 public class VariantFilterFactory implements Closeable{
 
   public static final VariantFilterFactory newVariantFilterFactory(final boolean bypassTcgaFiltering, final boolean bypassNoiseFiltering){
@@ -21,6 +23,10 @@ public class VariantFilterFactory implements Closeable{
     if (!bypassTcgaFiltering){
       snpEffCodingFilter = new SnpEffCodingFilter();
     }
+    return new VariantFilterFactory(bypassTcgaFiltering, bypassNoiseFiltering, snpEffCodingFilter);
+  }
+
+  public static final VariantFilterFactory newVariantFilterFactory(SnpEffCodingFilter snpEffCodingFilter, final boolean bypassTcgaFiltering, final boolean bypassNoiseFiltering){
     return new VariantFilterFactory(bypassTcgaFiltering, bypassNoiseFiltering, snpEffCodingFilter);
   }
 
@@ -39,6 +45,10 @@ public class VariantFilterFactory implements Closeable{
   }
 
   public VariantFilter createVariantFilter(VCFEncoder vcfEncoder, final boolean isUsProject){
+    return new VariantFilter(vcfEncoder,snpEffCodingFilter,isUsProject,bypassTcgaFiltering, bypassNoiseFiltering);
+  }
+
+  public VariantFilter createVariantFilter(SnpEffCodingFilter snpEffCodingFilter, VCFEncoder vcfEncoder, final boolean isUsProject){
     return new VariantFilter(vcfEncoder,snpEffCodingFilter,isUsProject,bypassTcgaFiltering, bypassNoiseFiltering);
   }
 
