@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
+import org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao;
 import org.icgc.dcc.pcawg.client.vcf.ConsensusSSMPrimaryConverter;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -22,26 +25,37 @@ import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFacto
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @Slf4j
-public class ConsensusSSMPrimaryConverterTest {
+public class ConsensusSSMConverterTest {
+
+  private static PortalMetadataDao portalMetadataDao;
+  private static final Path scratchPath = Paths.get("scratch");
+  private static final Path tempDownloadPath = scratchPath.resolve("tempDownload");
+  private static final Path persistedPath = scratchPath.resolve("persisted");
+
+  @BeforeClass
+  @SneakyThrows
+  public static void init(){
+    val fileRestorerFactory = newFileRestorerFactory(persistedPath.toString());
+    val portalMetadataDaoFactory = newCollabPortalMetadataDaoFactory(fileRestorerFactory);
+    portalMetadataDao = portalMetadataDaoFactory.createPortalMetadataDao();
+  }
+
+  @SneakyThrows
+  private File getVCFFile(String filename){
+    val token = System.getProperty("token","");
+    val portalFilename = newPortalFilename(filename);
+    val storage = newPortalStorage(false, tempDownloadPath.toString(),false, token);
+    val result = portalMetadataDao.findFirst(newPortalMetadataRequest(portalFilename));
+    assertThat(result.isPresent()).isTrue();
+    val portalMetadata = result.get();
+    return storage.getFile(portalMetadata);
+  }
 
   @Test
   @SneakyThrows
-  public void testStream(){
-    Path scratchPath = Paths.get("scratch");
-    Path tempDownloadPath = scratchPath.resolve("tempDownload");
-    Path persistedPath = scratchPath.resolve("persisted");
-    val token = System.getProperty("token","");
-    val storage = newPortalStorage(false, tempDownloadPath.toString(),false, token);
+  public void testStreamSSMPrimary(){
     String filename = "f8515e5a-7de3-6be3-e040-11ac0c480d6d.consensus.20160830.somatic.snv_mnv.vcf.gz";
-    val portalFilename = newPortalFilename(filename);
-    val fileRestorerFactory = newFileRestorerFactory(persistedPath.toString());
-    val portalMetadataDaoFactory = newCollabPortalMetadataDaoFactory(fileRestorerFactory);
-    val dao = portalMetadataDaoFactory.createPortalMetadataDao();
-    val result = dao.findFirst(newPortalMetadataRequest(portalFilename));
-    assertThat(result.isPresent()).isTrue();
-    val portalMetadata = result.get();
-    val file = storage.getFile(portalMetadata);
-
+    val file = getVCFFile(filename);
     val vcfPath = file.toPath();
     val isUdProject = false;
     val sampleMetadataConsensus = SampleMetadata.builder()
@@ -60,7 +74,6 @@ public class ConsensusSSMPrimaryConverterTest {
     val conv = ConsensusSSMPrimaryConverter.newConsensusSSMPrimaryConverter(vcfPath, sampleMetadataConsensus, variantFilterFactory);
     val list = conv.streamSSMPrimary().map(DccTransformerContext::getObject).collect(toList());
     conv.checkForErrors();
-
     assertThat(conv.getTotalNumVariants()).isEqualTo(2702);
     assertThat(conv.getFilteredNumVariants()).isEqualTo(2702);
     log.info("Done");
