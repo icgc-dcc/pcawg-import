@@ -29,7 +29,7 @@ import static org.icgc.dcc.pcawg.client.vcf.ConsensusSSMPrimaryConverter.newCons
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @Slf4j
-public class ConsensusSSMConverterTest {
+public class ConsensusSSMPrimaryConverterTest {
 
   private static PortalMetadataDao portalMetadataDao;
   private static final Path scratchPath = Paths.get("scratch");
