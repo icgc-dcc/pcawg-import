@@ -30,7 +30,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.joining;
 import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
-import static org.icgc.dcc.pcawg.client.core.ConsensusVCFConverterFactory.newConsensusVCFConverterFactory;
+import static org.icgc.dcc.pcawg.client.core.VCFConverterFactory.newInitializedVCFConverterFactory;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
 import static org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor.newMonitor;
 
@@ -195,7 +195,7 @@ public class DccProjectProcessor {
 
       // Convert Consensus VCF files
       val consensusVCFConverterFactory =
-          newConsensusVCFConverterFactory(vcfFile.toPath(), consensusSampleMetadata, variantFilterFactory);
+          newInitializedVCFConverterFactory(vcfFile.toPath(), consensusSampleMetadata, variantFilterFactory);
       val consensusSSMMetadataConverter = consensusVCFConverterFactory.getConsensusSSMMetadataConverter();
       val consensusSSMPrimaryConverter = consensusVCFConverterFactory.getConsensusSSMPrimaryConverter();
 

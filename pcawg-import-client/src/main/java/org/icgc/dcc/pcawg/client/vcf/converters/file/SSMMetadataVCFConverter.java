@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.vcf;
+package org.icgc.dcc.pcawg.client.vcf.converters.file;
 
 import htsjdk.variant.vcf.VCFFileReader;
 import lombok.NonNull;
@@ -10,6 +10,11 @@ import org.icgc.dcc.pcawg.client.filter.variant.VariantFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.classification.SSMClassification;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.VCF;
+import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter;
 
 import java.io.File;
 import java.util.Collection;
@@ -21,21 +26,16 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext.newDccTransformerContext;
 import static org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata.newSSMMetadataImpl;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.calcAnalysisId;
+import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter.calcAnalysisId;
 
-@RequiredArgsConstructor
-public class ConsensusSSMMetadataConverter {
+@RequiredArgsConstructor(staticName = "newSSMMetadataVCFConverter")
+public class SSMMetadataVCFConverter {
 
-  public static ConsensusSSMMetadataConverter newConsensusSSMMetadataConverter(File vcfFile, SampleMetadata sampleMetadata,
+  public static SSMMetadataVCFConverter newSSMMetadataVCFConverter(File vcfFile, SampleMetadata sampleMetadata,
       VariantFilterFactory variantFilterFactory, ConsensusVariantConverter consensusVariantConverter ){
     val vcf = VCF.newDefaultVCFFileReader(vcfFile);
     val variantFilter = variantFilterFactory.createVariantFilter(vcf, sampleMetadata.isUsProject());
-    return new ConsensusSSMMetadataConverter(vcf, sampleMetadata, variantFilter, consensusVariantConverter);
-  }
-
-  public static ConsensusSSMMetadataConverter newConsensusSSMMetadataConverter( VCFFileReader vcf, SampleMetadata sampleMetadata,
-      VariantFilter variantFilter, ConsensusVariantConverter consensusVariantConverter){
-    return new ConsensusSSMMetadataConverter(vcf, sampleMetadata, variantFilter, consensusVariantConverter);
+    return newSSMMetadataVCFConverter(vcf, sampleMetadata, variantFilter, consensusVariantConverter);
   }
 
   @NonNull private final VCFFileReader vcf;

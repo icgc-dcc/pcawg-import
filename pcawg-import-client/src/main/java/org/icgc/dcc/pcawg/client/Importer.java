@@ -22,7 +22,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.ConsensusVCFConverterFactory;
+import org.icgc.dcc.pcawg.client.core.VCFConverterFactory;
 import org.icgc.dcc.pcawg.client.core.DccTransformerFactory;
 import org.icgc.dcc.pcawg.client.core.StorageFactory;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.icgc.dcc.pcawg.client.DccProjectProcessor.newProcessorNoValidation;
+import static org.icgc.dcc.pcawg.client.DccProjectProcessor.newProcessorWithValidation;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PERSISTANCE_DIR;
 import static org.icgc.dcc.pcawg.client.core.Factory.buildDictionaryCreator;
 import static org.icgc.dcc.pcawg.client.core.Factory.newDccMetadataTransformerFactory;
@@ -82,7 +83,7 @@ public class Importer implements Runnable {
   private MetadataContainer metadataContainer;
   private SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator;
   private SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator;
-  private ConsensusVCFConverterFactory consensusVCFConverterFactory;
+  private VCFConverterFactory VCFConverterFactory;
   private boolean isInitDccTransformerFactory = false;
   private boolean isInitMetadataContainer = false;
   private boolean isInitSSMValidators = false;
@@ -144,7 +145,7 @@ public class Importer implements Runnable {
 
       DccProjectProcessor processor = null;
       if (enableSSMValidation){
-        processor = DccProjectProcessor.newProcessorWithValidation(storageFactory,dccPrimaryTransformerFactory,
+        processor = newProcessorWithValidation(storageFactory,dccPrimaryTransformerFactory,
             dccMetadataTransformerFactory,metadataContainer,variantFilterFactory, metadataContextCounter,ssmPrimaryValidator, ssmMetadataValidator);
       } else {
         processor = newProcessorNoValidation(storageFactory, dccPrimaryTransformerFactory, dccMetadataTransformerFactory,

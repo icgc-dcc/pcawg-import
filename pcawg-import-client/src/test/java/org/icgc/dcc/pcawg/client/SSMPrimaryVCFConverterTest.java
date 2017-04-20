@@ -10,6 +10,7 @@ import org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao;
 import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.utils.SetLogic;
+import org.icgc.dcc.pcawg.client.vcf.SSMPrimaryVCFConverter;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -22,14 +23,14 @@ import java.nio.file.Paths;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.core.ConsensusVCFConverterFactory.newConsensusVCFConverterFactory;
+import static org.icgc.dcc.pcawg.client.core.VCFConverterFactory.newInitializedVCFConverterFactory;
 import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newCollabPortalMetadataDaoFactory;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataRequest.newPortalMetadataRequest;
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory.newFileRestorerFactory;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusSSMPrimaryConverter.newConsensusSSMPrimaryConverter;
+import static org.icgc.dcc.pcawg.client.vcf.SSMPrimaryVCFConverter.newConsensusSSMPrimaryConverter;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.newConsensusVariantConverter;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
 import static org.icgc.dcc.pcawg.client.model.ssm.classification.impl.SSMPrimaryClassification.newSSMPrimaryClassification;
@@ -41,7 +42,7 @@ import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.SANGER;
 
 @Slf4j
 @Ignore
-public class ConsensusSSMPrimaryConverterTest {
+public class SSMPrimaryVCFConverterTest {
 
   private static PortalMetadataDao portalMetadataDao;
   private static final Path scratchPath = Paths.get("scratch");
@@ -184,7 +185,7 @@ public class ConsensusSSMPrimaryConverterTest {
         .build();
 
     val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
-    val conv = newConsensusSSMPrimaryConverter(vcfPath, sampleMetadataConsensus, variantFilterFactory);
+    val conv = SSMPrimaryVCFConverter.newSSMPrimaryVCFConverter(vcfPath, sampleMetadataConsensus, variantFilterFactory);
     val list = conv.streamSSMPrimary().map(DccTransformerContext::getObject).collect(toList());
     conv.checkForErrors();
     assertThat(conv.getTotalNumVariants()).isEqualTo(totalNumVariants);
@@ -224,7 +225,7 @@ public class ConsensusSSMPrimaryConverterTest {
     val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
     val consensusSampleMetadata = createSampleMetadata(isUsProject, workflowType);
     val consensusVariantConverter =  newConsensusVariantConverter(consensusSampleMetadata);
-    val converterFactory = newConsensusVCFConverterFactory(vcfPath,consensusSampleMetadata,variantFilterFactory);
+    val converterFactory = newInitializedVCFConverterFactory(vcfPath,consensusSampleMetadata,variantFilterFactory);
 
     val consensusSSMMetadataConverter = converterFactory.getConsensusSSMMetadataConverter();
     val consensusSSMPrimaryConverter = converterFactory.getConsensusSSMPrimaryConverter();

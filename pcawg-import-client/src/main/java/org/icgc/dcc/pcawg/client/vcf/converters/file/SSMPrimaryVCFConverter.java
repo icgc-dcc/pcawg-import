@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.vcf;
+package org.icgc.dcc.pcawg.client.vcf.converters.file;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -14,6 +14,8 @@ import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.utils.measurement.Countable;
 import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
+import org.icgc.dcc.pcawg.client.vcf.DataTypeConversionException;
+import org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
@@ -29,24 +31,24 @@ import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFFileReader;
 import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR;
 
 @Slf4j
-public class ConsensusSSMPrimaryConverter {
+public class SSMPrimaryVCFConverter {
 
   private static final Set<DccTransformerContext<SSMPrimary>> EMPTY_DCC_PRIMARY_TRANSFORMER_CONTEXT = ImmutableSet.<DccTransformerContext<SSMPrimary>>of();
   private static final int DEFAULT_PRIMARY_COUNT_INTERVAL = 100000;
 
-  public static ConsensusSSMPrimaryConverter newConsensusSSMPrimaryConverter(Path vcfPath,
+  public static SSMPrimaryVCFConverter newSSMPrimaryVCFConverter(Path vcfPath,
       SampleMetadata sampleMetadataConsensus, VariantFilterFactory variantFilterFactory){
     val vcfFile = vcfPath.toFile();
     checkArgument(vcfFile.exists(), "The VCF File [{}] DNE", vcfPath.toString());
     val vcf = newDefaultVCFFileReader(vcfFile);
     val consensusVariantConverter = new ConsensusVariantConverter(sampleMetadataConsensus);
     val variantFilter = variantFilterFactory.createVariantFilter(vcf, sampleMetadataConsensus.isUsProject());
-    return new ConsensusSSMPrimaryConverter(vcfPath,vcf, variantFilter,consensusVariantConverter);
+    return newSSMPrimaryVCFConverter(vcfPath,vcf, variantFilter,consensusVariantConverter);
   }
 
-  public static ConsensusSSMPrimaryConverter newConsensusSSMPrimaryConverter( Path vcfPath, VCFFileReader vcf,
+  public static SSMPrimaryVCFConverter newSSMPrimaryVCFConverter( Path vcfPath, VCFFileReader vcf,
       VariantFilter variantFilter, ConsensusVariantConverter consensusVariantConverter){
-    return new ConsensusSSMPrimaryConverter(vcfPath, vcf, variantFilter, consensusVariantConverter);
+    return new SSMPrimaryVCFConverter(vcfPath, vcf, variantFilter, consensusVariantConverter);
   }
 
 
@@ -66,7 +68,7 @@ public class ConsensusSSMPrimaryConverter {
   private Countable<Integer> variantBeforeFilterCounter ;
   private Countable<Integer> variantAfterFilterCounter ;
 
-  public ConsensusSSMPrimaryConverter(Path vcfPath, VCFFileReader vcf, VariantFilter variantFilter,
+  public SSMPrimaryVCFConverter(Path vcfPath, VCFFileReader vcf, VariantFilter variantFilter,
       ConsensusVariantConverter consensusVariantConverter) {
     this.vcfPath = vcfPath;
     this.vcf = vcf;

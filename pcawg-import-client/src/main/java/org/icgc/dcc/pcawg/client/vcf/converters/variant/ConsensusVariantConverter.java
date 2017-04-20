@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.vcf;
+package org.icgc.dcc.pcawg.client.vcf.converters.variant;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -13,8 +13,12 @@ import org.icgc.dcc.pcawg.client.model.ssm.classification.impl.SSMPrimaryClassif
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
-import org.icgc.dcc.pcawg.client.vcf.converters.VariantConverterStrategy;
-import org.icgc.dcc.pcawg.client.vcf.converters.VariantConverterStrategyMux;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
+import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategy;
+import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategyMux;
 
 import java.util.List;
 import java.util.Set;

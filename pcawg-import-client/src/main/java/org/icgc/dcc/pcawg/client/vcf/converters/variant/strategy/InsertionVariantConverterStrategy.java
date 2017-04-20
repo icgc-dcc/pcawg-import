@@ -1,43 +1,42 @@
-package org.icgc.dcc.pcawg.client.vcf.converters;
+package org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy;
 
 import htsjdk.variant.variantcontext.VariantContext;
-import lombok.val;
 
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleString;
-import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleLength;
-import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getStrippedFirstAlternativeAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.joinAlleles;
 
-public class MnvVariantConverterStrategy implements VariantConverterStrategy<VariantContext> {
+public class InsertionVariantConverterStrategy implements VariantConverterStrategy<VariantContext> {
+
+  private static final String INSERTION_RESULT = joinAlleles(EMPTY_ALLELE_STRING, EMPTY_ALLELE_STRING);
 
   @Override public int convertChromosomeEnd(VariantContext variantContext) {
-    return getStart(variantContext) + getReferenceAlleleLength(variantContext) - 1;
+    return getStart(variantContext) + 1;
   }
 
   @Override public int convertChromosomeStart(VariantContext variantContext) {
-    return getStart(variantContext);
+    return getStart(variantContext)+1;
   }
 
   @Override public String convertControlGenotype(VariantContext variantContext) {
-    val ref = getReferenceAlleleString(variantContext);
-    return joinAlleles(ref, ref);
+    return INSERTION_RESULT;
   }
 
   @Override public String convertMutatedFromAllele(VariantContext variantContext) {
-    return getReferenceAlleleString(variantContext);
+    return EMPTY_ALLELE_STRING;
   }
 
   @Override public String convertMutatedToAllele(VariantContext variantContext) {
-    return getFirstAlternativeAlleleString(variantContext);
+    return getStrippedFirstAlternativeAlleleString(variantContext);
   }
 
   @Override public String convertReferenceGenomeAllele(VariantContext variantContext) {
-    return getReferenceAlleleString(variantContext);
+    return EMPTY_ALLELE_STRING;
   }
 
   @Override public String convertTumorGenotype(VariantContext variantContext) {
-    return joinAlleles(getReferenceAlleleString(variantContext), getFirstAlternativeAlleleString(variantContext));
+    return joinAlleles(EMPTY_ALLELE_STRING, getFirstAlternativeAlleleString(variantContext));
   }
 
 }
