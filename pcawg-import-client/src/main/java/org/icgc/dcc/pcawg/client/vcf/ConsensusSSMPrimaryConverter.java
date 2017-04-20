@@ -44,6 +44,11 @@ public class ConsensusSSMPrimaryConverter {
     return new ConsensusSSMPrimaryConverter(vcfPath,vcf, variantFilter,consensusVariantConverter);
   }
 
+  public static ConsensusSSMPrimaryConverter newConsensusSSMPrimaryConverter( Path vcfPath, VCFFileReader vcf,
+      VariantFilter variantFilter, ConsensusVariantConverter consensusVariantConverter){
+    return new ConsensusSSMPrimaryConverter(vcfPath, vcf, variantFilter, consensusVariantConverter);
+  }
+
 
   /**
    * Configuration
@@ -60,7 +65,6 @@ public class ConsensusSSMPrimaryConverter {
   private int erroredVariantCount = 0;
   private Countable<Integer> variantBeforeFilterCounter ;
   private Countable<Integer> variantAfterFilterCounter ;
-  private CounterMonitor primaryCounterMonitor ;
 
   public ConsensusSSMPrimaryConverter(Path vcfPath, VCFFileReader vcf, VariantFilter variantFilter,
       ConsensusVariantConverter consensusVariantConverter) {
@@ -74,12 +78,11 @@ public class ConsensusSSMPrimaryConverter {
   private void resetStreamState(){
     variantBeforeFilterCounter = newDefaultIntegerCounter();
     variantAfterFilterCounter = newDefaultIntegerCounter();
-    primaryCounterMonitor = CounterMonitor.newMonitor("primaryCounterMonitor", DEFAULT_PRIMARY_COUNT_INTERVAL);
     candidateException = new PcawgVCFException(vcfPath.toString(),
         String.format("VariantErrors occured in the file [%s]", vcfPath));
   }
 
-  public Stream<DccTransformerContext<SSMPrimary>> streamSSMPrimary(){
+  public Stream<DccTransformerContext<SSMPrimary>> streamSSMPrimary(CounterMonitor primaryCounterMonitor){
     resetStreamState();
     return stream(vcf)
         .map(variantBeforeFilterCounter::streamIncr)
@@ -89,11 +92,17 @@ public class ConsensusSSMPrimaryConverter {
         .flatMap(Set::stream);
   }
 
+  public Stream<DccTransformerContext<SSMPrimary>> streamSSMPrimary(){
+    return streamSSMPrimary(null);
+  }
+
   private Set<DccTransformerContext<SSMPrimary>> convertConsensusVariant(VariantContext variantContext, CounterMonitor primaryCounterMonitor){
     Set<DccTransformerContext<SSMPrimary>> out = EMPTY_DCC_PRIMARY_TRANSFORMER_CONTEXT;
     try{
       out = consensusVariantConverter.convertSSMPrimary(variantContext);
-      primaryCounterMonitor.incr(out.size());
+      if(primaryCounterMonitor != null){
+        primaryCounterMonitor.incr(out.size());
+      }
     } catch (DataTypeConversionException e) {
       candidateException.addError(MUTATION_TYPE_TO_DATA_TYPE_CONVERSION_ERROR, getStart(variantContext));
       erroredVariantCount++;

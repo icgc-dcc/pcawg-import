@@ -17,13 +17,10 @@
  */
 package org.icgc.dcc.pcawg.client;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -33,7 +30,6 @@ import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
-import org.icgc.dcc.pcawg.client.download.LocalStorageFileNotFoundException;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
@@ -44,9 +40,9 @@ import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.FieldExtractor;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
+import org.icgc.dcc.pcawg.client.utils.measurement.IntegerCounter;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -55,7 +51,6 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.Importer.Processor.newProcessorNoValidation;
@@ -74,6 +69,7 @@ import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
 import static org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor.newMonitor;
+import static org.icgc.dcc.pcawg.client.utils.measurement.IntegerCounter.newDefaultIntegerCounter;
 
 @Slf4j
 @Builder
@@ -116,7 +112,6 @@ public class Importer implements Runnable {
   private SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator;
   private SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator;
   private ConsensusVCFConverterFactory consensusVCFConverterFactory;
-  private VariantFilterFactory variantFilterFactory;
   private boolean isInitDccTransformerFactory = false;
   private boolean isInitMetadataContainer = false;
   private boolean isInitSSMValidators = false;
@@ -156,27 +151,21 @@ public class Importer implements Runnable {
     this.isInitSSMValidators = true;
   }
 
-  private void initConsensusVCFConverterFactory(){
-    variantFilterFactory = newVariantFilterFactory(bypassTcgaFiltering, bypassNoiseFiltering);
-    consensusVCFConverterFactory = newConsensusVCFConverterFactory(variantFilterFactory);
-    this.isInitConsensusVCFConverterFactory = true;
-  }
-
   private void init(){
     initDccTransformerFactory();
     initMetadataContainer();
 //    initSSMValidators();
-    initConsensusVCFConverterFactory();
   }
 
   @SneakyThrows
-  public void run2() {
+  @Override
+  public void run() {
     init();
-    val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
-    int countMetadataContexts = 0;
-
     val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
     int countDccProjectCodes  = 0;
+
+    val metadataContextCounter = newDefaultIntegerCounter();
+    val variantFilterFactory = newVariantFilterFactory(bypassTcgaFiltering, bypassNoiseFiltering);
 
     // Loop through each dccProjectCode
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()) {
@@ -185,9 +174,8 @@ public class Importer implements Runnable {
       val storage = newStorage(dccProjectCode);
       val dccPrimaryTransformer = dccPrimaryTransformerFactory.getDccTransformer(dccProjectCode);
       val dccMetadataTransformer = dccMetadataTransformerFactory.getDccTransformer(dccProjectCode);
-      val ssmMetadataSet = Sets.<DccTransformerContext<SSMMetadata>>newHashSet();
       val processor = newProcessorNoValidation(storage, dccPrimaryTransformer, dccMetadataTransformer,
-          metadataContainer,consensusVCFConverterFactory);
+          metadataContainer,variantFilterFactory, metadataContextCounter);
       processor.process(dccProjectCode);
 
     }
@@ -198,17 +186,19 @@ public class Importer implements Runnable {
 
     public static Processor newProcessorWithValidation( Storage storage, DccTransformer<SSMPrimary> dccPrimaryTransformer,
         DccTransformer<SSMMetadata> dccMetadataTransformer, MetadataContainer metadataContainer,
-        ConsensusVCFConverterFactory consensusVCFConverterFactory,
+        VariantFilterFactory variantFilterFactory, IntegerCounter metadataContextCounter,
         @NonNull SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator,
         @NonNull SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator){
-      return new Processor(storage, dccPrimaryTransformer, dccMetadataTransformer, metadataContainer, consensusVCFConverterFactory,
+      return new Processor(storage, dccPrimaryTransformer, dccMetadataTransformer, metadataContainer,
+          variantFilterFactory, metadataContextCounter,
     true, ssmPrimaryValidator, ssmMetadataValidator);
     }
 
     public static Processor newProcessorNoValidation( Storage storage, DccTransformer<SSMPrimary> dccPrimaryTransformer,
         DccTransformer<SSMMetadata> dccMetadataTransformer, MetadataContainer metadataContainer,
-        ConsensusVCFConverterFactory consensusVCFConverterFactory){
-      return new Processor(storage, dccPrimaryTransformer, dccMetadataTransformer, metadataContainer, consensusVCFConverterFactory,
+        VariantFilterFactory variantFilterFactory, IntegerCounter metadataContextCounter){
+      return new Processor(storage, dccPrimaryTransformer, dccMetadataTransformer, metadataContainer,
+          variantFilterFactory, metadataContextCounter,
           false, null, null);
     }
 
@@ -216,18 +206,23 @@ public class Importer implements Runnable {
     @NonNull private final DccTransformer<SSMPrimary> dccPrimaryTransformer;
     @NonNull private final DccTransformer<SSMMetadata> dccMetadataTransformer;
     @NonNull private final MetadataContainer metadataContainer;
-    @NonNull private final ConsensusVCFConverterFactory consensusVCFConverterFactory;
+    @NonNull private final VariantFilterFactory variantFilterFactory;
+    @NonNull private final IntegerCounter metadataContextCounter;
 
     private boolean enableValidation;
     private SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator;
     private SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator;
 
     public void process(String dccProjectCode){
+      val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
       for(val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val portalMetadata = metadataContext.getPortalMetadata();
+        metadataContextCounter.incr();
+        log.info("");
+        log.info("Loading File ( {} / {} ): {}",
+            metadataContextCounter.getCount(), totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
         val consensusSampleMetadata = metadataContext.getSampleMetadata();
         processPortalMetadata(portalMetadata, consensusSampleMetadata);
-
       }
     }
 
@@ -237,14 +232,22 @@ public class Importer implements Runnable {
         val vcfFile = storage.getFile(portalMetadata);
 
         // Convert Consensus VCF files
-        val consensusVCFConverter =
-            consensusVCFConverterFactory.getConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
+        val consensusVCFConverterFactory = newConsensusVCFConverterFactory(vcfFile.toPath(), consensusSampleMetadata,variantFilterFactory);
+        val consensusSSMMetadataConverter = consensusVCFConverterFactory.getConsensusSSMMetadataConverter();
+        val consensusSSMPrimaryConverter = consensusVCFConverterFactory.getConsensusSSMPrimaryConverter();
 
-        val variantCounterMonitor = newMonitor("variantCounterMonitor", 100000);
 
-        consensusVCFConverter.streamSSMPrimary(variantCounterMonitor)
+        val primaryCounterMonitor = newMonitor("primaryCounterMonitor", 100000);
+
+        primaryCounterMonitor.start();
+        consensusSSMPrimaryConverter.streamSSMPrimary(primaryCounterMonitor)
             .filter(this::shouldTransformSSMPrimary)
             .forEach(ptx -> transformSSMPrimary(dccPrimaryTransformer, ptx));
+        primaryCounterMonitor.stop();
+
+        consensusSSMMetadataConverter.convert()
+            .forEach(mtx -> transformSSMMetadata(dccMetadataTransformer, mtx));
+
 
       } catch (PcawgVCFException e) {
 
@@ -262,26 +265,8 @@ public class Importer implements Runnable {
 
   }
 
-  @RequiredArgsConstructor
-  public static class TransformerProcessor<T>{
 
-    @NonNull private final DccTransformer<T> dccTransformer;
-
-
-    public void process(DccTransformerContext<T> context){
-
-      try{
-        dccTransformer.transform(context);
-      } catch (IOException e){
-
-      }
-
-    }
-
-  }
-
-
-
+  /*
   @Override
   @SneakyThrows
   public void run() {
@@ -332,13 +317,11 @@ public class Importer implements Runnable {
           val consensusSampleMetadata = metadataContext.getSampleMetadata();
 
           // Convert Consensus VCF files
-          val consensusVCFConverter = consensusVCFConverterFactory.getConsensusVCFConverter(vcfFile.toPath(), consensusSampleMetadata);
+          val consensusVCFConverterFactory = newConsensusVCFConverterFactory(vcfFile.toPath(),consensusSampleMetadata,variantFilterFactory);
+          val consensusSSMMetadataConverter = consensusVCFConverterFactory.getConsensusSSMMetadataConverter();
+          val consensusSSMPrimaryConverter = consensusVCFConverterFactory.getConsensusSSMPrimaryConverter();
 
           val variantCounterMonitor = newMonitor("variantCounterMonitor", 100000);
-
-          consensusVCFConverter.streamSSMPrimary(variantCounterMonitor)
-              .filter(this::shouldTransformSSMPrimary)
-              .forEach(ptx -> transformSSMPrimary(dccPrimaryTransformer, ptx));
 
           try {
             consensusVCFConverter.process();
@@ -401,10 +384,15 @@ public class Importer implements Runnable {
     }
     variantFilterFactory.close();
   }
-
+*/
   @SneakyThrows
   private static void transformSSMPrimary(DccTransformer<SSMPrimary> transformer, DccTransformerContext<SSMPrimary> ptx){
     transformer.transform(ptx);
+  }
+
+  @SneakyThrows
+  private static void transformSSMMetadata(DccTransformer<SSMMetadata> transformer, DccTransformerContext<SSMMetadata> mtx){
+    transformer.transform(mtx);
   }
 
   private boolean shouldTransformSSMPrimary(DccTransformerContext<SSMPrimary> ptx){

@@ -22,13 +22,13 @@ import java.nio.file.Paths;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.pcawg.client.core.ConsensusVCFConverterFactory.newConsensusVCFConverterFactory;
 import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newCollabPortalMetadataDaoFactory;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataRequest.newPortalMetadataRequest;
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory.newFileRestorerFactory;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusSSMMetadataConverter.newConsensusSSMMetadataConverter;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusSSMPrimaryConverter.newConsensusSSMPrimaryConverter;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.newConsensusVariantConverter;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
@@ -224,15 +224,18 @@ public class ConsensusSSMPrimaryConverterTest {
     val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
     val consensusSampleMetadata = createSampleMetadata(isUsProject, workflowType);
     val consensusVariantConverter =  newConsensusVariantConverter(consensusSampleMetadata);
-    val consensusSSMMetadataConverter = newConsensusSSMMetadataConverter(file, consensusSampleMetadata, variantFilterFactory, consensusVariantConverter);
+    val converterFactory = newConsensusVCFConverterFactory(vcfPath,consensusSampleMetadata,variantFilterFactory);
+
+    val consensusSSMMetadataConverter = converterFactory.getConsensusSSMMetadataConverter();
+    val consensusSSMPrimaryConverter = converterFactory.getConsensusSSMPrimaryConverter();
+
     val result = consensusSSMMetadataConverter.convert();
 
 
-    val conv = newConsensusSSMPrimaryConverter(vcfPath, consensusSampleMetadata, variantFilterFactory);
 
     val resultSsmClasificationSet = result.stream().map(DccTransformerContext::getSSMClassification).collect(toSet());
     val resultSsmClassificationList = result.stream().map(DccTransformerContext::getSSMClassification).collect(toList());
-    val expectedSsmClassificationset = conv.streamSSMPrimary().map(DccTransformerContext::getSSMClassification).collect(
+    val expectedSsmClassificationset = consensusSSMPrimaryConverter.streamSSMPrimary().map(DccTransformerContext::getSSMClassification).collect(
         toSet());
 
     val missingFromActual = SetLogic.missingFromActual(resultSsmClasificationSet, expectedSsmClassificationset);

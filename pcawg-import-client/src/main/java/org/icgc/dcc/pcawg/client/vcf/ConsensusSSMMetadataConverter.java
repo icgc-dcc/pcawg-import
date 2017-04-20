@@ -31,6 +31,11 @@ public class ConsensusSSMMetadataConverter {
     return new ConsensusSSMMetadataConverter(vcf, sampleMetadata, variantFilter, consensusVariantConverter);
   }
 
+  public static ConsensusSSMMetadataConverter newConsensusSSMMetadataConverter( VCFFileReader vcf, SampleMetadata sampleMetadata,
+      VariantFilter variantFilter, ConsensusVariantConverter consensusVariantConverter){
+    return new ConsensusSSMMetadataConverter(vcf, sampleMetadata, variantFilter, consensusVariantConverter);
+  }
+
   @NonNull private final VCFFileReader vcf;
   @NonNull private final SampleMetadata sampleMetadata;
   @NonNull private final VariantFilter variantFilter;
