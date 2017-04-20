@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.ConsensusVCFConverterFactory;
 import org.icgc.dcc.pcawg.client.core.DccTransformerFactory;
+import org.icgc.dcc.pcawg.client.core.StorageFactory;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
@@ -53,7 +54,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
@@ -172,24 +172,22 @@ public class Importer implements Runnable {
 
     val metadataContextCounter = newDefaultIntegerCounter();
     val variantFilterFactory = newVariantFilterFactory(bypassTcgaFiltering, bypassNoiseFiltering);
+    val storageFactory = StorageFactory.builder()
+        .bypassMD5Check(bypassMD5Check)
+        .outputVcfDir(Paths.get(outputVcfDir))
+        .persistVcfDownloads(persistVcfDownloads)
+        .token(token)
+        .useCollab(useCollab)
+        .build();
 
     // Loop through each dccProjectCode
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()) {
       log.info("Processing DccProjectCode ( {} / {} ): {}",
           ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
       val storage = newStorage(dccProjectCode);
-      val dccPrimaryTransformer = dccPrimaryTransformerFactory.getDccTransformer(dccProjectCode);
-      val dccMetadataTransformer = dccMetadataTransformerFactory.getDccTransformer(dccProjectCode);
-      val processor = newProcessorNoValidation(storage, dccPrimaryTransformer, dccMetadataTransformer,
+      val processor = newProcessorNoValidation(storageFactory, dccPrimaryTransformerFactory, dccMetadataTransformerFactory,
           metadataContainer,variantFilterFactory, metadataContextCounter);
       processor.process(dccProjectCode);
-      dccPrimaryTransformer.close();
-      dccMetadataTransformer.close();
-
-      // Validate the TSVs
-      if (ENABLE_TSV_VALIDATION){
-        validateOutputFiles(dccMetadataTransformer, dccPrimaryTransformer);
-      }
 
     }
     variantFilterFactory.close();
@@ -198,40 +196,52 @@ public class Importer implements Runnable {
   @RequiredArgsConstructor
   public static class Processor{
 
-    public static Processor newProcessorWithValidation( Storage storage, DccTransformer<SSMPrimary> dccPrimaryTransformer,
-        DccTransformer<SSMMetadata> dccMetadataTransformer, MetadataContainer metadataContainer,
+    public static Processor newProcessorWithValidation( StorageFactory storageFactory, DccTransformerFactory<SSMPrimary> dccPrimaryTransformerFactory,
+        DccTransformerFactory<SSMMetadata> dccMetadataTransformerFactory, MetadataContainer metadataContainer,
         VariantFilterFactory variantFilterFactory, IntegerCounter metadataContextCounter,
         @NonNull SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator,
         @NonNull SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator){
-      return new Processor(storage, dccPrimaryTransformer, dccMetadataTransformer, metadataContainer,
+      return new Processor(storageFactory, dccPrimaryTransformerFactory, dccMetadataTransformerFactory, metadataContainer,
           variantFilterFactory, metadataContextCounter,
-    true, ssmPrimaryValidator, ssmMetadataValidator);
+    true,
+    true,
+          ssmPrimaryValidator,
+          ssmMetadataValidator);
     }
 
-    public static Processor newProcessorNoValidation( Storage storage, DccTransformer<SSMPrimary> dccPrimaryTransformer,
-        DccTransformer<SSMMetadata> dccMetadataTransformer, MetadataContainer metadataContainer,
+    public static Processor newProcessorNoValidation( StorageFactory storageFactory, DccTransformerFactory<SSMPrimary> dccPrimaryTransformerFactory,
+        DccTransformerFactory<SSMMetadata> dccMetadataTransformerFactory, MetadataContainer metadataContainer,
         VariantFilterFactory variantFilterFactory, IntegerCounter metadataContextCounter){
-      return new Processor(storage, dccPrimaryTransformer, dccMetadataTransformer, metadataContainer,
+      return new Processor(storageFactory, dccPrimaryTransformerFactory, dccMetadataTransformerFactory, metadataContainer,
           variantFilterFactory, metadataContextCounter,
-          false, null, null);
+          true,
+          false,
+          null,
+          null);
     }
 
-    @NonNull private final Storage storage;
-    @NonNull private final DccTransformer<SSMPrimary> dccPrimaryTransformer;
-    @NonNull private final DccTransformer<SSMMetadata> dccMetadataTransformer;
+    @NonNull private final StorageFactory storageFactory;
+    @NonNull private final DccTransformerFactory<SSMPrimary> dccPrimaryTransformerFactory;
+    @NonNull private final DccTransformerFactory<SSMMetadata> dccMetadataTransformerFactory;
     @NonNull private final MetadataContainer metadataContainer;
     @NonNull private final VariantFilterFactory variantFilterFactory;
     @NonNull private final IntegerCounter metadataContextCounter;
 
-    private final boolean enableValidation;
+    private final boolean enableTSVValidation;
+    private final boolean enableSSMValidation;
     private final SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator;
     private final SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator;
 
-    private Set<DccTransformerContext<SSMMetadata>> ssmMetadataDTCSet;
 
+    @SneakyThrows
     public void process(String dccProjectCode){
       val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
-      ssmMetadataDTCSet = newHashSet();
+      val storage = storageFactory.getStorage(dccProjectCode);
+      val dccMetadataTransformer = dccMetadataTransformerFactory.getDccTransformer(dccProjectCode);
+      val dccPrimaryTransformer = dccPrimaryTransformerFactory.getDccTransformer(dccProjectCode);
+
+      val ssmMetadataDTCSet = Sets.<DccTransformerContext<SSMMetadata>>newHashSet();
+
       for(val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val portalMetadata = metadataContext.getPortalMetadata();
         metadataContextCounter.incr();
@@ -239,12 +249,45 @@ public class Importer implements Runnable {
         log.info("Loading File ( {} / {} ): {}",
             metadataContextCounter.getCount(), totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
         val consensusSampleMetadata = metadataContext.getSampleMetadata();
-        processPortalMetadata(portalMetadata, consensusSampleMetadata, ssmMetadataDTCSet);
+        processPortalMetadata(dccPrimaryTransformer,dccProjectCode, storage,portalMetadata, consensusSampleMetadata, ssmMetadataDTCSet);
       }
+
+      //Transform SSMMetadatas based on unique list of SSMClassifications
       ssmMetadataDTCSet.forEach(mtx -> transformSSMMetadata(dccMetadataTransformer, mtx));
+
+      dccMetadataTransformer.close();
+      dccPrimaryTransformer.close();
+
+      if (enableTSVValidation){
+        validateMetadataOutputFiles(dccMetadataTransformer);
+        validatePrimaryOutputFiles(dccPrimaryTransformer);
+      }
+
     }
 
-    private void processPortalMetadata(PortalMetadata portalMetadata, SampleMetadata consensusSampleMetadata, Set<DccTransformerContext<SSMMetadata>> ssmMetadataDTCSet){
+    private static void validateMetadataOutputFiles(DccTransformer<SSMMetadata> dccMetadataTransformer){
+      for (val path : dccMetadataTransformer.getWrittenPaths()){
+        if (Files.exists(path)){
+          val ssmMValidator = newTsvValidator(path.toString(), SSMMetadataFieldMapping.values().length);
+          ssmMValidator.analyze();
+          ssmMValidator.log();
+        }
+      }
+    }
+
+    private static void validatePrimaryOutputFiles(DccTransformer<SSMPrimary> dccPrimaryTransformer){
+      for (val path : dccPrimaryTransformer.getWrittenPaths()){
+        if (Files.exists(path)){
+          val ssmPValidator = newTsvValidator(path.toString(), SSMPrimaryFieldMapping.values().length);
+          ssmPValidator.analyze();
+          ssmPValidator.log();
+        }
+      }
+    }
+
+    @SneakyThrows
+    private void processPortalMetadata(DccTransformer<SSMPrimary> dccPrimaryTransformer, String dccProjectCode, Storage storage, PortalMetadata portalMetadata, SampleMetadata consensusSampleMetadata, Set<DccTransformerContext<SSMMetadata>> ssmMetadataDTCSet){
+
       val ssmClassificationSet = Sets.<SSMClassification>newHashSet();
       try {
         // Download vcfFile
@@ -287,7 +330,7 @@ public class Importer implements Runnable {
 
     private boolean shouldTransformSSMPrimary(DccTransformerContext<SSMPrimary> ptx){
       boolean shouldTransformSSMPrimary = true;
-      if (enableValidation) {
+      if (enableSSMValidation) {
         shouldTransformSSMPrimary = validateSSM("SSM_PRIMARY", ssmPrimaryValidator, ptx.getObject());
       }
       return shouldTransformSSMPrimary;
@@ -402,7 +445,7 @@ public class Importer implements Runnable {
 
       // Validate the TSVs
       if (ENABLE_TSV_VALIDATION){
-        validateOutputFiles(dccMetadataTransformer, dccPrimaryTransformer);
+        validatePrimaryOutputFiles(dccMetadataTransformer, dccPrimaryTransformer);
       }
       logFileSummary(erroredFileList, dccProjectCode);
       log.info("DccProjectCode[{}] Stats:  TotalConsensusVariants: {} ErroredVariants: {}  ErroredSSMPrimary: {}   TransformedSSMPrimary: {}",
@@ -564,22 +607,6 @@ public class Importer implements Runnable {
     }
   }
 
-  private static void validateOutputFiles(DccTransformer<SSMMetadata> dccMetadataTransformer, DccTransformer<SSMPrimary> dccPrimaryTransformer){
-    for (val path : dccMetadataTransformer.getWrittenPaths()){
-      if (Files.exists(path)){
-        val ssmMValidator = newTsvValidator(path.toString(), SSMMetadataFieldMapping.values().length);
-        ssmMValidator.analyze();
-        ssmMValidator.log();
-      }
-    }
-    for (val path : dccPrimaryTransformer.getWrittenPaths()){
-      if (Files.exists(path)){
-        val ssmPValidator = newTsvValidator(path.toString(), SSMPrimaryFieldMapping.values().length);
-        ssmPValidator.analyze();
-        ssmPValidator.log();
-      }
-    }
-  }
 
   private static void validateCommon(String dccProjectCode,String filename, Iterable<DccTransformerContext<SSMMetadata>> ssmMetadataList, Iterable<DccTransformerContext<SSMPrimary>> ssmPrimaryList){
     val ssmMList = stream(ssmMetadataList).map(DccTransformerContext::getObject).collect(toList());
