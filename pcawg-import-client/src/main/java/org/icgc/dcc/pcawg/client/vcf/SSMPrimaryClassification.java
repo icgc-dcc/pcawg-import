@@ -14,15 +14,15 @@ import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.UNKNOWN;
 
 @Value
 @RequiredArgsConstructor
-public class SSMClassification {
+public class SSMPrimaryClassification {
 
   //Forces use of converting MutationType to DataType
-  public static SSMClassification newSSMClassification(WorkflowTypes workflowType, MutationTypes mutationType) {
-    return new SSMClassification(workflowType, mutationType, convertToDataType(mutationType));
+  public static SSMPrimaryClassification newSSMPrimaryClassification(WorkflowTypes workflowType, MutationTypes mutationType) {
+    return new SSMPrimaryClassification(workflowType, mutationType, convertToDataType(mutationType));
   }
 
-  public static SSMClassification newCustomSSMClassification(WorkflowTypes workflowType, MutationTypes mutationType, DataTypes dataType) {
-    return new SSMClassification(workflowType, mutationType, dataType);
+  public static SSMPrimaryClassification newCustomSSMPrimaryClassification(WorkflowTypes workflowType, MutationTypes mutationType, DataTypes dataType) {
+    return new SSMPrimaryClassification(workflowType, mutationType, dataType);
   }
 
   @NonNull private final WorkflowTypes workflowType;

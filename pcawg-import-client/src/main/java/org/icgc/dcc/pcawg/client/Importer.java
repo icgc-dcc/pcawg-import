@@ -18,9 +18,10 @@
 package org.icgc.dcc.pcawg.client;
 
 import com.google.common.collect.Maps;
-import lombok.AllArgsConstructor;
+import com.google.common.collect.Sets;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -30,6 +31,7 @@ import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.download.LocalStorageFileNotFoundException;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
@@ -41,6 +43,7 @@ import org.icgc.dcc.pcawg.client.model.ssm.primary.FieldExtractor;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.utils.measurement.IntegerCounter;
+import org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
 import java.nio.file.Files;
@@ -48,9 +51,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.pcawg.client.Importer.Processor.newProcessorNoValidation;
@@ -177,11 +183,18 @@ public class Importer implements Runnable {
       val processor = newProcessorNoValidation(storage, dccPrimaryTransformer, dccMetadataTransformer,
           metadataContainer,variantFilterFactory, metadataContextCounter);
       processor.process(dccProjectCode);
+      dccPrimaryTransformer.close();
+      dccMetadataTransformer.close();
+
+      // Validate the TSVs
+      if (ENABLE_TSV_VALIDATION){
+        validateOutputFiles(dccMetadataTransformer, dccPrimaryTransformer);
+      }
 
     }
   }
 
-  @AllArgsConstructor
+  @RequiredArgsConstructor
   public static class Processor{
 
     public static Processor newProcessorWithValidation( Storage storage, DccTransformer<SSMPrimary> dccPrimaryTransformer,
@@ -209,12 +222,15 @@ public class Importer implements Runnable {
     @NonNull private final VariantFilterFactory variantFilterFactory;
     @NonNull private final IntegerCounter metadataContextCounter;
 
-    private boolean enableValidation;
-    private SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator;
-    private SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator;
+    private final boolean enableValidation;
+    private final SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator;
+    private final SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator;
+
+    private Set<DccTransformerContext<SSMMetadata>> ssmMetadataDTCSet;
 
     public void process(String dccProjectCode){
       val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
+      ssmMetadataDTCSet = newHashSet();
       for(val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val portalMetadata = metadataContext.getPortalMetadata();
         metadataContextCounter.incr();
@@ -222,11 +238,13 @@ public class Importer implements Runnable {
         log.info("Loading File ( {} / {} ): {}",
             metadataContextCounter.getCount(), totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
         val consensusSampleMetadata = metadataContext.getSampleMetadata();
-        processPortalMetadata(portalMetadata, consensusSampleMetadata);
+        processPortalMetadata(portalMetadata, consensusSampleMetadata, ssmMetadataDTCSet);
       }
+      ssmMetadataDTCSet.forEach(mtx -> transformSSMMetadata(dccMetadataTransformer, mtx));
     }
 
-    private void processPortalMetadata(PortalMetadata portalMetadata, SampleMetadata consensusSampleMetadata){
+    private void processPortalMetadata(PortalMetadata portalMetadata, SampleMetadata consensusSampleMetadata, Set<DccTransformerContext<SSMMetadata>> ssmMetadataDTCSet){
+      val ssmClassificationSet = Sets.<SSMPrimaryClassification>newHashSet();
       try {
         // Download vcfFile
         val vcfFile = storage.getFile(portalMetadata);
@@ -242,17 +260,28 @@ public class Importer implements Runnable {
         primaryCounterMonitor.start();
         consensusSSMPrimaryConverter.streamSSMPrimary(primaryCounterMonitor)
             .filter(this::shouldTransformSSMPrimary)
+            .map(x -> aggregateSSMClassification(ssmClassificationSet, x) )
             .forEach(ptx -> transformSSMPrimary(dccPrimaryTransformer, ptx));
         primaryCounterMonitor.stop();
 
-        consensusSSMMetadataConverter.convert()
-            .forEach(mtx -> transformSSMMetadata(dccMetadataTransformer, mtx));
 
+        ssmMetadataDTCSet.addAll(consensusSSMMetadataConverter.convert());
 
+      }  catch (LocalStorageFileNotFoundException e){
+        log.error("[{}]: {}\n{}", e.getClass().getSimpleName(), e.getMessage(), NEWLINE.join(e.getStackTrace()));
       } catch (PcawgVCFException e) {
 
       }
+
+
     }
+
+    private static DccTransformerContext<SSMPrimary> aggregateSSMClassification(Set<SSMPrimaryClassification> ssmPrimaryClassificationSet, DccTransformerContext<SSMPrimary> ssmPrimaryDccTransformerContext){
+      ssmPrimaryClassificationSet.add(ssmPrimaryDccTransformerContext.getSSMPrimaryClassification());
+      return ssmPrimaryDccTransformerContext;
+    }
+
+
 
 
     private boolean shouldTransformSSMPrimary(DccTransformerContext<SSMPrimary> ptx){

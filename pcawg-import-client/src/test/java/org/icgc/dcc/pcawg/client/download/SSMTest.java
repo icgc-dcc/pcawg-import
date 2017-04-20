@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions;
 import org.icgc.dcc.common.core.util.stream.Collectors;
 import org.icgc.dcc.common.core.util.stream.Streams;
 import org.icgc.dcc.pcawg.client.core.Factory;
+import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata.SampleMetadataBuilder;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
@@ -19,6 +20,7 @@ import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
 import org.icgc.dcc.pcawg.client.utils.SetLogic;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,8 +31,13 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
+import static org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext.newDccTransformerContext;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary;
+import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.DELETION_LTE_200BP;
+import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.INSERTION_LTE_200BP;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.BROAD;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @Slf4j
 public class SSMTest {
@@ -49,7 +56,7 @@ public class SSMTest {
   private static final String MULTIPLE_BASE_SUBSTITUTION_MUTATION_TYPE =
       "multiple base substitution (>=2bp and <=200bp)";
 
-  private static final WorkflowTypes FIXED_CONSENSUS_WORKFLOW = WorkflowTypes.CONSENSUS;
+  private static final WorkflowTypes FIXED_CONSENSUS_WORKFLOW = CONSENSUS;
   private static final DataTypes FIXED_INDEL_DATATYPE = DataTypes.INDEL;
   private static final DataTypes DUMMY_DATA_TYPE = DataTypes.INDEL;
   private static final String DUMMY_ANALYSIS_ID = UNDERSCORE.join("myDccProjectCode",
@@ -430,6 +437,50 @@ public class SSMTest {
       }
     }
     assertThat(result).isTrue();
+  }
+
+  @Test
+  public void testUniqueSSMClassification(){
+    val sc1 = SSMPrimaryClassification.newSSMPrimaryClassification(CONSENSUS, INSERTION_LTE_200BP);
+    val sc2 = SSMPrimaryClassification.newSSMPrimaryClassification(CONSENSUS, DELETION_LTE_200BP);
+    val sc3 = SSMPrimaryClassification.newSSMPrimaryClassification(BROAD, DELETION_LTE_200BP);
+    val sc1_clone = SSMPrimaryClassification.newSSMPrimaryClassification(CONSENSUS, INSERTION_LTE_200BP);
+
+    assertThat(sc1).isNotEqualTo(sc2);
+    assertThat(sc1).isNotEqualTo(sc3);
+    assertThat(sc2).isNotEqualTo(sc3);
+    assertThat(sc1).isEqualTo(sc1_clone);
+
+  }
+
+  @Test
+  public void testUniqueDccTransformerContextSSMMetadata(){
+    val sc1 = SSMPrimaryClassification.newSSMPrimaryClassification(CONSENSUS, INSERTION_LTE_200BP);
+    val sc2 = SSMPrimaryClassification.newSSMPrimaryClassification(CONSENSUS, DELETION_LTE_200BP);
+    val sc3 = SSMPrimaryClassification.newSSMPrimaryClassification(BROAD, DELETION_LTE_200BP);
+    val sc1_clone = SSMPrimaryClassification.newSSMPrimaryClassification(CONSENSUS, INSERTION_LTE_200BP);
+    val sampleMetadata = TEMPLATE_SAMPLE_METADATA_BUILDER.analyzedFileId("f1").matchedFileId("f2").build();
+    val ssmMetadata = createSSMMetadata(sampleMetadata);
+
+    val dtc1 = newDccTransformerContext(sc1, ssmMetadata);
+    val dtc1_clone = newDccTransformerContext(sc1_clone, ssmMetadata);
+    val dtc2 = newDccTransformerContext(sc2, ssmMetadata);
+    val dtc3 = newDccTransformerContext(sc3, ssmMetadata);
+
+    assertThat(dtc1).isNotEqualTo(dtc2);
+    assertThat(dtc1).isNotEqualTo(dtc3);
+    assertThat(dtc2).isNotEqualTo(dtc3);
+    assertThat(dtc1).isEqualTo(dtc1_clone);
+    assertThat(dtc1 == dtc1_clone).isFalse();
+
+    val set = Sets.<DccTransformerContext<SSMMetadata>>newHashSet();
+    set.add(dtc1);
+    set.add(dtc1_clone);
+    assertThat(set).hasSize(1);
+    assertThat(set.contains(dtc1)).isTrue();
+    assertThat(set.contains(dtc1_clone)).isTrue();
+
+
   }
 
 

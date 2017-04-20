@@ -25,8 +25,8 @@ import static org.icgc.dcc.pcawg.client.model.NACodes.CORRUPTED_DATA;
 import static org.icgc.dcc.pcawg.client.model.NACodes.DATA_VERIFIED_TO_BE_UNKNOWN;
 import static org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata.newSSMMetadataImpl;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.resolveMutationType;
-import static org.icgc.dcc.pcawg.client.vcf.SSMClassification.newCustomSSMClassification;
-import static org.icgc.dcc.pcawg.client.vcf.SSMClassification.newSSMClassification;
+import static org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification.newCustomSSMPrimaryClassification;
+import static org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification.newSSMPrimaryClassification;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getAltCount;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getChomosome;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getRefCount;
@@ -99,8 +99,8 @@ public class ConsensusVariantConverter  {
     }
   }
 
-  private static void addSSMPrimary(List<DccTransformerContext<SSMPrimary>> ssmPrimaryList, SSMPrimary ssmPrimary, SSMClassification ssmClassification){
-    ssmPrimaryList.add( newDccTransformerContext(ssmClassification, ssmPrimary));
+  private static void addSSMPrimary(List<DccTransformerContext<SSMPrimary>> ssmPrimaryList, SSMPrimary ssmPrimary, SSMPrimaryClassification ssmPrimaryClassification){
+    ssmPrimaryList.add( newDccTransformerContext(ssmPrimaryClassification, ssmPrimary));
   }
 
   public static String calcAnalysisId(String dccProjectCode, WorkflowTypes workflowType,  DataTypes dataType){
@@ -144,18 +144,18 @@ public class ConsensusVariantConverter  {
 
   }
 
-  public Set<SSMClassification> getSSMClassificationSet(VariantContext variant){
-    val set = ImmutableSet.<SSMClassification>builder();
+  public Set<SSMPrimaryClassification> getSSMClassificationSet(VariantContext variant){
+    val set = ImmutableSet.<SSMPrimaryClassification>builder();
     val mutationType = resolveMutationType(variant);
 
 
-//    val consensusSSMClassification = newCustomSSMClassification(CONSENSUS, mutationType, DataTypes.UNKNOWN);
-    val consensusSSMClassification = newSSMClassification(CONSENSUS, mutationType);
+//    val consensusSSMClassification = newCustomSSMPrimaryClassification(CONSENSUS, mutationType, DataTypes.UNKNOWN);
+    val consensusSSMClassification = newSSMPrimaryClassification(CONSENSUS, mutationType);
     set.add(consensusSSMClassification);
     val dataType = consensusSSMClassification.getDataType();
 
     for (val workflowType : extractWorkflowTypes(variant)){
-      val ssmClassification = newCustomSSMClassification(workflowType, mutationType, dataType);
+      val ssmClassification = newCustomSSMPrimaryClassification(workflowType, mutationType, dataType);
       set.add(ssmClassification);
     }
     return set.build();
@@ -163,7 +163,7 @@ public class ConsensusVariantConverter  {
 
   public Set<DccTransformerContext<SSMPrimary>> convertSSMPrimary(VariantContext variant){
     val mutationType = resolveMutationType(variant);
-    val ssmConsensusClassification = newSSMClassification(CONSENSUS, mutationType);
+    val ssmConsensusClassification = newSSMPrimaryClassification(CONSENSUS, mutationType);
     val dccPrimaryTransformerCTXList = Lists.<DccTransformerContext<SSMPrimary>>newArrayList();
     val dataType = ssmConsensusClassification.getDataType();
     val consensusAnalysisId = getConsensusAnalysisId(dataType);
@@ -173,7 +173,7 @@ public class ConsensusVariantConverter  {
 
     for (val workflowType : extractWorkflowTypes(variant)){
       val ssmPrimary = createCallerSpecificSSMPrimary(sampleMetadataConsensus, ssmPrimaryConsensus, workflowType, dataType);
-      val ssmClassification = newSSMClassification(workflowType, mutationType);
+      val ssmClassification = newSSMPrimaryClassification(workflowType, mutationType);
       addSSMPrimary(dccPrimaryTransformerCTXList, ssmPrimary, ssmClassification);
     }
     return ImmutableSet.copyOf(dccPrimaryTransformerCTXList);

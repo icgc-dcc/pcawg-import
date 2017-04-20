@@ -32,7 +32,7 @@ import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFacto
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusSSMPrimaryConverter.newConsensusSSMPrimaryConverter;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.newConsensusVariantConverter;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
-import static org.icgc.dcc.pcawg.client.vcf.SSMClassification.newSSMClassification;
+import static org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification.newSSMPrimaryClassification;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.BROAD;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.DKFZ_EMBL;
@@ -233,9 +233,9 @@ public class ConsensusSSMPrimaryConverterTest {
 
 
 
-    val resultSsmClasificationSet = result.stream().map(DccTransformerContext::getSSMClassification).collect(toSet());
-    val resultSsmClassificationList = result.stream().map(DccTransformerContext::getSSMClassification).collect(toList());
-    val expectedSsmClassificationset = consensusSSMPrimaryConverter.streamSSMPrimary().map(DccTransformerContext::getSSMClassification).collect(
+    val resultSsmClasificationSet = result.stream().map(DccTransformerContext::getSSMPrimaryClassification).collect(toSet());
+    val resultSsmClassificationList = result.stream().map(DccTransformerContext::getSSMPrimaryClassification).collect(toList());
+    val expectedSsmClassificationset = consensusSSMPrimaryConverter.streamSSMPrimary().map(DccTransformerContext::getSSMPrimaryClassification).collect(
         toSet());
 
     val missingFromActual = SetLogic.missingFromActual(resultSsmClasificationSet, expectedSsmClassificationset);
@@ -245,11 +245,11 @@ public class ConsensusSSMPrimaryConverterTest {
     assertThat(result).hasSameSizeAs(expectedSsmClassificationset);
     assertThat(resultSsmClassificationList).hasSize(5);
     assertThat(resultSsmClasificationSet).hasSize(5);
-    assertThat(resultSsmClasificationSet).contains(newSSMClassification(SANGER, SINGLE_BASE_SUBSTITUTION));
-    assertThat(resultSsmClasificationSet).contains(newSSMClassification(CONSENSUS, SINGLE_BASE_SUBSTITUTION));
-    assertThat(resultSsmClasificationSet).contains(newSSMClassification(BROAD, SINGLE_BASE_SUBSTITUTION));
-    assertThat(resultSsmClasificationSet).contains(newSSMClassification(DKFZ_EMBL, SINGLE_BASE_SUBSTITUTION));
-    assertThat(resultSsmClasificationSet).contains(newSSMClassification(MUSE, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(SANGER, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(CONSENSUS, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(BROAD, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(DKFZ_EMBL, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(MUSE, SINGLE_BASE_SUBSTITUTION));
 
 
 

@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.model.ssm.metadata.impl;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.Joiners.COLON;
 
 @RequiredArgsConstructor(access = PRIVATE)
+@EqualsAndHashCode
 public class PcawgSSMMetadata implements SSMMetadata {
   private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
   private static final String DEFAULT_PLATFORM = "Illumina HiSeq";
