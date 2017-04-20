@@ -32,7 +32,7 @@ import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFacto
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusSSMPrimaryConverter.newConsensusSSMPrimaryConverter;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.newConsensusVariantConverter;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
-import static org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification.newSSMPrimaryClassification;
+import static org.icgc.dcc.pcawg.client.model.ssm.classification.impl.SSMPrimaryClassification.newSSMPrimaryClassification;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.BROAD;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.DKFZ_EMBL;
@@ -233,9 +233,9 @@ public class ConsensusSSMPrimaryConverterTest {
 
 
 
-    val resultSsmClasificationSet = result.stream().map(DccTransformerContext::getSSMPrimaryClassification).collect(toSet());
-    val resultSsmClassificationList = result.stream().map(DccTransformerContext::getSSMPrimaryClassification).collect(toList());
-    val expectedSsmClassificationset = consensusSSMPrimaryConverter.streamSSMPrimary().map(DccTransformerContext::getSSMPrimaryClassification).collect(
+    val resultSsmClasificationSet = result.stream().map(DccTransformerContext::getSSMClassification).collect(toSet());
+    val resultSsmClassificationList = result.stream().map(DccTransformerContext::getSSMClassification).collect(toList());
+    val expectedSsmClassificationset = consensusSSMPrimaryConverter.streamSSMPrimary().map(DccTransformerContext::getSSMClassification).collect(
         toSet());
 
     val missingFromActual = SetLogic.missingFromActual(resultSsmClasificationSet, expectedSsmClassificationset);

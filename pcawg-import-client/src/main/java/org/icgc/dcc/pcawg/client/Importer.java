@@ -37,13 +37,13 @@ import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMCommon;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
+import org.icgc.dcc.pcawg.client.model.ssm.classification.SSMClassification;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.FieldExtractor;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.utils.measurement.IntegerCounter;
-import org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
 import java.nio.file.Files;
@@ -244,7 +244,7 @@ public class Importer implements Runnable {
     }
 
     private void processPortalMetadata(PortalMetadata portalMetadata, SampleMetadata consensusSampleMetadata, Set<DccTransformerContext<SSMMetadata>> ssmMetadataDTCSet){
-      val ssmClassificationSet = Sets.<SSMPrimaryClassification>newHashSet();
+      val ssmClassificationSet = Sets.<SSMClassification>newHashSet();
       try {
         // Download vcfFile
         val vcfFile = storage.getFile(portalMetadata);
@@ -276,8 +276,8 @@ public class Importer implements Runnable {
 
     }
 
-    private static DccTransformerContext<SSMPrimary> aggregateSSMClassification(Set<SSMPrimaryClassification> ssmPrimaryClassificationSet, DccTransformerContext<SSMPrimary> ssmPrimaryDccTransformerContext){
-      ssmPrimaryClassificationSet.add(ssmPrimaryDccTransformerContext.getSSMPrimaryClassification());
+    private static DccTransformerContext<SSMPrimary> aggregateSSMClassification(Set<SSMClassification> ssmPrimaryClassificationSet, DccTransformerContext<SSMPrimary> ssmPrimaryDccTransformerContext){
+      ssmPrimaryClassificationSet.add(ssmPrimaryDccTransformerContext.getSSMClassification());
       return ssmPrimaryDccTransformerContext;
     }
 

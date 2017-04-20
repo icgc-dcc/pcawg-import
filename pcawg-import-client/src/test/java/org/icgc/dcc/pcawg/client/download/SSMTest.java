@@ -20,7 +20,7 @@ import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
 import org.icgc.dcc.pcawg.client.utils.SetLogic;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
-import org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification;
+import org.icgc.dcc.pcawg.client.model.ssm.classification.impl.SSMPrimaryClassification;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.junit.Ignore;
 import org.junit.Test;

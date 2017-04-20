@@ -62,7 +62,7 @@ public class ConsensusVCFConverter {
     val list = ImmutableList.<Tuple>builder();
     // Create unique order list of tuples
     for (val ctx : dccPrimaryTransformerContexts){
-      val ssmClassification = ctx.getSSMPrimaryClassification();
+      val ssmClassification = ctx.getSSMClassification();
       val tuple = newTuple(ssmClassification.getWorkflowType(), ssmClassification.getDataType());
       if (!set.contains(tuple)){
         list.add(tuple);

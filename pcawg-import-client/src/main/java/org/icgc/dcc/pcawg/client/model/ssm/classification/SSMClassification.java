@@ -1,8 +1,9 @@
-package org.icgc.dcc.pcawg.client.vcf;
+package org.icgc.dcc.pcawg.client.model.ssm.classification;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import org.icgc.dcc.pcawg.client.vcf.DataTypeConversionException;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.INDEL;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.SNV_MNV;
@@ -12,24 +13,9 @@ import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.MULTIPLE_BASE_SUBSTITU
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.UNKNOWN;
 
-@Value
-@RequiredArgsConstructor
-public class SSMPrimaryClassification {
+public interface SSMClassification {
 
-  //Forces use of converting MutationType to DataType
-  public static SSMPrimaryClassification newSSMPrimaryClassification(WorkflowTypes workflowType, MutationTypes mutationType) {
-    return new SSMPrimaryClassification(workflowType, mutationType, convertToDataType(mutationType));
-  }
-
-  public static SSMPrimaryClassification newCustomSSMPrimaryClassification(WorkflowTypes workflowType, MutationTypes mutationType, DataTypes dataType) {
-    return new SSMPrimaryClassification(workflowType, mutationType, dataType);
-  }
-
-  @NonNull private final WorkflowTypes workflowType;
-  @NonNull private final MutationTypes mutationType;
-  @NonNull private final DataTypes dataType;
-
-  public static DataTypes convertToDataType(MutationTypes mutationType){
+  static DataTypes convertToDataType(MutationTypes mutationType){
     if (mutationType == SINGLE_BASE_SUBSTITUTION || mutationType == MULTIPLE_BASE_SUBSTITUTION){
       return SNV_MNV;
     } else if (mutationType == DELETION_LTE_200BP || mutationType == INSERTION_LTE_200BP){
@@ -40,5 +26,9 @@ public class SSMPrimaryClassification {
       throw new DataTypeConversionException(String.format("No implementation defined for converting the MutationType [%s] to a DataType", mutationType.name()));
     }
   }
+
+  WorkflowTypes getWorkflowType();
+
+  DataTypes getDataType();
 
 }

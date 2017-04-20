@@ -8,6 +8,7 @@ import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
+import org.icgc.dcc.pcawg.client.model.ssm.classification.SSMClassification;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 
 import java.io.File;
@@ -62,13 +63,13 @@ public class ConsensusSSMMetadataConverter {
   }
 
 
-  public static Stream<DccTransformerContext<SSMMetadata>> streamConvertSSMClassification(Set<SSMPrimaryClassification> ssmPrimaryClassifications, SampleMetadata sampleMetadata ){
-    return ssmPrimaryClassifications.stream()
+  public static Stream<DccTransformerContext<SSMMetadata>> streamConvertSSMClassification(Set<SSMClassification> ssmClassifications, SampleMetadata sampleMetadata ){
+    return ssmClassifications.stream()
         .map(x -> newDccTransformerContext(x, newSSMMetadata(sampleMetadata, x.getWorkflowType(), x.getDataType())));
   }
 
-  public static Set<DccTransformerContext<SSMMetadata>> convertSSMClassifications(Set<SSMPrimaryClassification> ssmPrimaryClassifications, SampleMetadata sampleMetadata ){
-    return streamConvertSSMClassification(ssmPrimaryClassifications, sampleMetadata)
+  public static Set<DccTransformerContext<SSMMetadata>> convertSSMClassifications(Set<SSMClassification> ssmClassifications, SampleMetadata sampleMetadata ){
+    return streamConvertSSMClassification(ssmClassifications, sampleMetadata)
         .collect(toImmutableSet());
   }
 

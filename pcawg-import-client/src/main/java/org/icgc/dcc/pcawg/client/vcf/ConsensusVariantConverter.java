@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
+import org.icgc.dcc.pcawg.client.model.ssm.classification.SSMClassification;
+import org.icgc.dcc.pcawg.client.model.ssm.classification.impl.SSMPrimaryClassification;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
@@ -23,10 +25,10 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext.newDccTransformerContext;
 import static org.icgc.dcc.pcawg.client.model.NACodes.CORRUPTED_DATA;
 import static org.icgc.dcc.pcawg.client.model.NACodes.DATA_VERIFIED_TO_BE_UNKNOWN;
+import static org.icgc.dcc.pcawg.client.model.ssm.classification.impl.SSMMetadataClassification.newSSMMetadataClassification;
+import static org.icgc.dcc.pcawg.client.model.ssm.classification.impl.SSMPrimaryClassification.newSSMPrimaryClassification;
 import static org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata.newSSMMetadataImpl;
 import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.resolveMutationType;
-import static org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification.newCustomSSMPrimaryClassification;
-import static org.icgc.dcc.pcawg.client.vcf.SSMPrimaryClassification.newSSMPrimaryClassification;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getAltCount;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getChomosome;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getRefCount;
@@ -144,18 +146,18 @@ public class ConsensusVariantConverter  {
 
   }
 
-  public Set<SSMPrimaryClassification> getSSMClassificationSet(VariantContext variant){
-    val set = ImmutableSet.<SSMPrimaryClassification>builder();
+  public Set<SSMClassification> getSSMClassificationSet(VariantContext variant){
+    val set = ImmutableSet.<SSMClassification>builder();
     val mutationType = resolveMutationType(variant);
 
 
 //    val consensusSSMClassification = newCustomSSMPrimaryClassification(CONSENSUS, mutationType, DataTypes.UNKNOWN);
-    val consensusSSMClassification = newSSMPrimaryClassification(CONSENSUS, mutationType);
+    val consensusSSMClassification = newSSMMetadataClassification(CONSENSUS, mutationType);
     set.add(consensusSSMClassification);
     val dataType = consensusSSMClassification.getDataType();
 
     for (val workflowType : extractWorkflowTypes(variant)){
-      val ssmClassification = newCustomSSMPrimaryClassification(workflowType, mutationType, dataType);
+      val ssmClassification = newSSMMetadataClassification(workflowType, dataType);
       set.add(ssmClassification);
     }
     return set.build();
