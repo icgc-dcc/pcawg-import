@@ -3,7 +3,6 @@ package org.icgc.dcc.pcawg.client.vcf;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.DataTypeConversionException;
 
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.INDEL;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.SNV_MNV;
@@ -20,6 +19,10 @@ public class SSMClassification {
   //Forces use of converting MutationType to DataType
   public static SSMClassification newSSMClassification(WorkflowTypes workflowType, MutationTypes mutationType) {
     return new SSMClassification(workflowType, mutationType, convertToDataType(mutationType));
+  }
+
+  public static SSMClassification newCustomSSMClassification(WorkflowTypes workflowType, MutationTypes mutationType, DataTypes dataType) {
+    return new SSMClassification(workflowType, mutationType, dataType);
   }
 
   @NonNull private final WorkflowTypes workflowType;

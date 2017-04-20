@@ -9,8 +9,10 @@ import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao;
 import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
+import org.icgc.dcc.pcawg.client.utils.SetLogic;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -18,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newCollabPortalMetadataDaoFactory;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
@@ -25,10 +28,19 @@ import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataRequest.newPor
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory.newFileRestorerFactory;
+import static org.icgc.dcc.pcawg.client.vcf.ConsensusSSMMetadataConverter.newConsensusSSMMetadataConverter;
 import static org.icgc.dcc.pcawg.client.vcf.ConsensusSSMPrimaryConverter.newConsensusSSMPrimaryConverter;
+import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.newConsensusVariantConverter;
+import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
+import static org.icgc.dcc.pcawg.client.vcf.SSMClassification.newSSMClassification;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.BROAD;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.DKFZ_EMBL;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.MUSE;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.SANGER;
 
 @Slf4j
+@Ignore
 public class ConsensusSSMPrimaryConverterTest {
 
   private static PortalMetadataDao portalMetadataDao;
@@ -172,12 +184,73 @@ public class ConsensusSSMPrimaryConverterTest {
         .build();
 
     val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
-
     val conv = newConsensusSSMPrimaryConverter(vcfPath, sampleMetadataConsensus, variantFilterFactory);
     val list = conv.streamSSMPrimary().map(DccTransformerContext::getObject).collect(toList());
     conv.checkForErrors();
     assertThat(conv.getTotalNumVariants()).isEqualTo(totalNumVariants);
     assertThat(conv.getFilteredNumVariants()).isEqualTo(filteredNumVariants);
+  }
+
+  private static final String DUMMY_ALIQUOT_ID = "1q2w3e4r5t";
+  private static final String DUMMY_DCC_PROJECT_CODE = "BOCA-UK";
+  private static final String DUMMY_MATCHED_SAMPLE_ID = "PD03a";
+  private static final String DUMMY_ANALYZED_SAMPLE_ID = "PD03b";
+  private static final String DUMMY_MATCHED_FILE_ID = "F03a";
+  private static final String DUMMY_ANALYZED_FILE_ID = "F03b";
+
+
+  private static SampleMetadata createSampleMetadata(boolean isUsProject, WorkflowTypes workflowType){
+    return SampleMetadata.builder()
+        .aliquotId(DUMMY_ALIQUOT_ID)
+        .dccProjectCode(DUMMY_DCC_PROJECT_CODE)
+        .isUsProject(isUsProject)
+        .workflowType(workflowType)
+        .matchedSampleId(DUMMY_MATCHED_SAMPLE_ID)
+        .matchedFileId(DUMMY_MATCHED_FILE_ID)
+        .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
+        .analyzedFileId(DUMMY_ANALYZED_FILE_ID)
+        .build();
+  }
+  @Test
+  public void testConvert(){
+    val isUsProject = true;
+    val workflowType = CONSENSUS;
+    val bypassTcgaFiltering = true;
+    val bypassNoiseFiltering = true;
+    val filename = "f8515e5a-7de3-6be3-e040-11ac0c480d6d.consensus.20160830.somatic.snv_mnv.vcf.gz";
+    val portalFilename = newPortalFilename(filename);
+    val file = getVCFFile(portalFilename);
+    val vcfPath = file.toPath();
+    val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
+    val consensusSampleMetadata = createSampleMetadata(isUsProject, workflowType);
+    val consensusVariantConverter =  newConsensusVariantConverter(consensusSampleMetadata);
+    val consensusSSMMetadataConverter = newConsensusSSMMetadataConverter(file, consensusSampleMetadata, variantFilterFactory, consensusVariantConverter);
+    val result = consensusSSMMetadataConverter.convert();
+
+
+    val conv = newConsensusSSMPrimaryConverter(vcfPath, consensusSampleMetadata, variantFilterFactory);
+
+    val resultSsmClasificationSet = result.stream().map(DccTransformerContext::getSSMClassification).collect(toSet());
+    val resultSsmClassificationList = result.stream().map(DccTransformerContext::getSSMClassification).collect(toList());
+    val expectedSsmClassificationset = conv.streamSSMPrimary().map(DccTransformerContext::getSSMClassification).collect(
+        toSet());
+
+    val missingFromActual = SetLogic.missingFromActual(resultSsmClasificationSet, expectedSsmClassificationset);
+    val extraInActual = SetLogic.extraInActual(resultSsmClasificationSet, expectedSsmClassificationset);
+    assertThat(missingFromActual).hasSize(0);
+    assertThat(extraInActual).hasSize(0);
+    assertThat(result).hasSameSizeAs(expectedSsmClassificationset);
+    assertThat(resultSsmClassificationList).hasSize(5);
+    assertThat(resultSsmClasificationSet).hasSize(5);
+    assertThat(resultSsmClasificationSet).contains(newSSMClassification(SANGER, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMClassification(CONSENSUS, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMClassification(BROAD, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMClassification(DKFZ_EMBL, SINGLE_BASE_SUBSTITUTION));
+    assertThat(resultSsmClasificationSet).contains(newSSMClassification(MUSE, SINGLE_BASE_SUBSTITUTION));
+
+
+
+
   }
 
 

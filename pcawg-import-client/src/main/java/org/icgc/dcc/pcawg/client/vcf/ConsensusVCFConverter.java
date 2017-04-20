@@ -17,7 +17,6 @@ import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
-import org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.DataTypeConversionException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
