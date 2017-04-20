@@ -192,6 +192,7 @@ public class Importer implements Runnable {
       }
 
     }
+    variantFilterFactory.close();
   }
 
   @RequiredArgsConstructor
