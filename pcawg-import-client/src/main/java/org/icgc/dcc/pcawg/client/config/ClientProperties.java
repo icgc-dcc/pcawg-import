@@ -70,4 +70,5 @@ public class ClientProperties {
   public static final boolean ENABLE_VARIANT_FILTERING = false;
   public static final boolean DEFAULT_BYPASS_TCGA_FILTER = true;
   public static final boolean DEFAULT_BYPASS_NOISE_FILTER = true;
+  public static final boolean DEFAULT_ENABLE_SSM_VALIDATION = false;
 }

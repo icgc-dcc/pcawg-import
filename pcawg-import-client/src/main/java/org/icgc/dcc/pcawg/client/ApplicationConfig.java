@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.DEFAULT_BYPASS_NOISE_FILTER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.DEFAULT_BYPASS_TCGA_FILTER;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.DEFAULT_ENABLE_SSM_VALIDATION;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.OUTPUT_TSV_DIRECTORY;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
@@ -45,5 +46,6 @@ public class ApplicationConfig {
 
       private boolean bypass_tcga_filter = DEFAULT_BYPASS_TCGA_FILTER;
       private boolean bypass_noise_filter = DEFAULT_BYPASS_NOISE_FILTER;
+      private boolean enable_ssm_validation = DEFAULT_ENABLE_SSM_VALIDATION;
 
 }

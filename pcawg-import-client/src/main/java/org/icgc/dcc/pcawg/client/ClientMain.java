@@ -45,7 +45,6 @@ public class ClientMain implements CommandLineRunner {
   public void run(String... args) {
     log.info("Args: {}", applicationConfig.toString());
 
-
     val importer = Importer.builder()
         .token(applicationConfig.getToken())
         .hdfsEnabled(applicationConfig.isHdfs())
@@ -58,6 +57,7 @@ public class ClientMain implements CommandLineRunner {
         .useCollab(applicationConfig.isUse_collab())
         .bypassNoiseFiltering(applicationConfig.isBypass_noise_filter())
         .bypassTcgaFiltering(applicationConfig.isBypass_tcga_filter())
+        .enableSSMValidation(applicationConfig.isEnable_ssm_validation())
         .build();
 
     try{
