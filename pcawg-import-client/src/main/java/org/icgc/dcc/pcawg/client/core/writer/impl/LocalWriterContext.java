@@ -13,6 +13,6 @@ public final class LocalWriterContext implements WriterContext<Path> {
 
   @NonNull private final Path path;
 
-  @NonNull private final boolean append;
+  private final boolean append;
 
 }

@@ -14,11 +14,14 @@ import lombok.val;
 import org.icgc.dcc.common.core.util.Joiners;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
@@ -33,6 +36,7 @@ public class VCF {
   private static final boolean OUTPUT_TRAILING_FORMAT_FIELDS_CFG = true;
 
   public static VCFFileReader newDefaultVCFFileReader(File vcfFile){
+    checkFileExists(vcfFile);
     return new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
   }
 
@@ -48,6 +52,14 @@ public class VCF {
   public static VCFEncoder newDefaultVCFEncoder(File file){
     val vcfFile = newDefaultVCFFileReader(file);
     return newDefaultVCFEncoder(vcfFile.getFileHeader());
+  }
+
+  public static Stream<VariantContext> newVariantStream(Path vcfPath){
+    return stream(newDefaultVCFFileReader(vcfPath.toFile()));
+  }
+
+  private static void checkFileExists(File vcfFile){
+    checkArgument(vcfFile.exists(), "The VCF File [{}] DNE", vcfFile.getName());
   }
 
   public static CommonInfo getCommonInfo(VariantContext v){

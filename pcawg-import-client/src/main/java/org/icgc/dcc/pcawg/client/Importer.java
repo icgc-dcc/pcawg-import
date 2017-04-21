@@ -22,7 +22,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.VCFConverterFactory;
 import org.icgc.dcc.pcawg.client.core.DccTransformerFactory;
 import org.icgc.dcc.pcawg.client.core.StorageFactory;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
@@ -70,10 +69,10 @@ public class Importer implements Runnable {
   @NonNull
   private final Optional<String> optionalHdfsPort;
 
-  @NonNull private final boolean useCollab;
-  @NonNull private final boolean bypassTcgaFiltering;
-  @NonNull private final boolean bypassNoiseFiltering;
-  @NonNull private final boolean enableSSMValidation;
+  private final boolean useCollab;
+  private final boolean bypassTcgaFiltering;
+  private final boolean bypassNoiseFiltering;
+  private final boolean enableSSMValidation;
 
   /**
    * State
@@ -83,11 +82,9 @@ public class Importer implements Runnable {
   private MetadataContainer metadataContainer;
   private SSMValidator<SSMPrimary, SSMPrimaryFieldMapping> ssmPrimaryValidator;
   private SSMValidator<SSMMetadata, SSMMetadataFieldMapping> ssmMetadataValidator;
-  private VCFConverterFactory VCFConverterFactory;
   private boolean isInitDccTransformerFactory = false;
   private boolean isInitMetadataContainer = false;
   private boolean isInitSSMValidators = false;
-  private boolean isInitConsensusVCFConverterFactory = false;
 
   private void initDccTransformerFactory(){
     val fsController = newFsController(hdfsEnabled, optionalHdfsHostname, optionalHdfsPort);

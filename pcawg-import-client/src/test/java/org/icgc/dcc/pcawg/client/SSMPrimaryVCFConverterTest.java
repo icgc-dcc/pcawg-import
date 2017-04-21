@@ -3,14 +3,12 @@ package org.icgc.dcc.pcawg.client;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao;
 import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
-import org.icgc.dcc.pcawg.client.utils.SetLogic;
-import org.icgc.dcc.pcawg.client.vcf.SSMPrimaryVCFConverter;
+import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -20,25 +18,18 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.core.VCFConverterFactory.newInitializedVCFConverterFactory;
 import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newCollabPortalMetadataDaoFactory;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataRequest.newPortalMetadataRequest;
 import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory.newFileRestorerFactory;
-import static org.icgc.dcc.pcawg.client.vcf.SSMPrimaryVCFConverter.newConsensusSSMPrimaryConverter;
-import static org.icgc.dcc.pcawg.client.vcf.ConsensusVariantConverter.newConsensusVariantConverter;
-import static org.icgc.dcc.pcawg.client.vcf.MutationTypes.SINGLE_BASE_SUBSTITUTION;
-import static org.icgc.dcc.pcawg.client.model.ssm.classification.impl.SSMPrimaryClassification.newSSMPrimaryClassification;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.BROAD;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.DKFZ_EMBL;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.MUSE;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.SANGER;
+import static org.icgc.dcc.pcawg.client.vcf.converters.file.MetadataDTCConverter.newMetadataDTCConverter;
+import static org.icgc.dcc.pcawg.client.vcf.converters.file.PrimaryDTCConverter.newPrimaryDTCConverter;
+import static org.icgc.dcc.pcawg.client.vcf.converters.file.VCFStreamFilter.newVCFStreamFilter;
+import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter.newConsensusVariantConverter;
 
 @Slf4j
 @Ignore
@@ -185,11 +176,11 @@ public class SSMPrimaryVCFConverterTest {
         .build();
 
     val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
-    val conv = SSMPrimaryVCFConverter.newSSMPrimaryVCFConverter(vcfPath, sampleMetadataConsensus, variantFilterFactory);
-    val list = conv.streamSSMPrimary().map(DccTransformerContext::getObject).collect(toList());
-    conv.checkForErrors();
-    assertThat(conv.getTotalNumVariants()).isEqualTo(totalNumVariants);
-    assertThat(conv.getFilteredNumVariants()).isEqualTo(filteredNumVariants);
+    val vcfStreamFilter = newVCFStreamFilter(vcfPath,sampleMetadataConsensus,variantFilterFactory);
+    vcfStreamFilter.streamFilteredVariants();
+
+    assertThat(vcfStreamFilter.getTotalNumVariants()).isEqualTo(totalNumVariants);
+    assertThat(vcfStreamFilter.getFilteredNumVariants()).isEqualTo(filteredNumVariants);
   }
 
   private static final String DUMMY_ALIQUOT_ID = "1q2w3e4r5t";
@@ -225,33 +216,9 @@ public class SSMPrimaryVCFConverterTest {
     val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
     val consensusSampleMetadata = createSampleMetadata(isUsProject, workflowType);
     val consensusVariantConverter =  newConsensusVariantConverter(consensusSampleMetadata);
-    val converterFactory = newInitializedVCFConverterFactory(vcfPath,consensusSampleMetadata,variantFilterFactory);
-
-    val consensusSSMMetadataConverter = converterFactory.getConsensusSSMMetadataConverter();
-    val consensusSSMPrimaryConverter = converterFactory.getConsensusSSMPrimaryConverter();
-
-    val result = consensusSSMMetadataConverter.convert();
-
-
-
-    val resultSsmClasificationSet = result.stream().map(DccTransformerContext::getSSMClassification).collect(toSet());
-    val resultSsmClassificationList = result.stream().map(DccTransformerContext::getSSMClassification).collect(toList());
-    val expectedSsmClassificationset = consensusSSMPrimaryConverter.streamSSMPrimary().map(DccTransformerContext::getSSMClassification).collect(
-        toSet());
-
-    val missingFromActual = SetLogic.missingFromActual(resultSsmClasificationSet, expectedSsmClassificationset);
-    val extraInActual = SetLogic.extraInActual(resultSsmClasificationSet, expectedSsmClassificationset);
-    assertThat(missingFromActual).hasSize(0);
-    assertThat(extraInActual).hasSize(0);
-    assertThat(result).hasSameSizeAs(expectedSsmClassificationset);
-    assertThat(resultSsmClassificationList).hasSize(5);
-    assertThat(resultSsmClasificationSet).hasSize(5);
-    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(SANGER, SINGLE_BASE_SUBSTITUTION));
-    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(CONSENSUS, SINGLE_BASE_SUBSTITUTION));
-    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(BROAD, SINGLE_BASE_SUBSTITUTION));
-    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(DKFZ_EMBL, SINGLE_BASE_SUBSTITUTION));
-    assertThat(resultSsmClasificationSet).contains(newSSMPrimaryClassification(MUSE, SINGLE_BASE_SUBSTITUTION));
-
+    val metadataDTCConverter  = newMetadataDTCConverter();
+    val primaryDTCConverter = newPrimaryDTCConverter(consensusVariantConverter);
+    val primaryCounterMonitor = CounterMonitor.newMonitor("testPRIMARY", 100000);
 
 
 
