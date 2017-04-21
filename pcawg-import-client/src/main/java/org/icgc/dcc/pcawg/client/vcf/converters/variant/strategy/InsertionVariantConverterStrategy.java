@@ -2,7 +2,6 @@ package org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy;
 
 import htsjdk.variant.variantcontext.VariantContext;
 
-import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getStrippedFirstAlternativeAlleleString;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.joinAlleles;
@@ -36,7 +35,7 @@ public class InsertionVariantConverterStrategy implements VariantConverterStrate
   }
 
   @Override public String convertTumorGenotype(VariantContext variantContext) {
-    return joinAlleles(EMPTY_ALLELE_STRING, getFirstAlternativeAlleleString(variantContext));
+    return joinAlleles(EMPTY_ALLELE_STRING, getStrippedFirstAlternativeAlleleString(variantContext));
   }
 
 }
