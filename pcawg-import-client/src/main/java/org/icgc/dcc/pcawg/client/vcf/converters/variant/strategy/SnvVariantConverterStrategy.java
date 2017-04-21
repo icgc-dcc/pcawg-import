@@ -39,4 +39,5 @@ public class SnvVariantConverterStrategy implements VariantConverterStrategy<Var
   @Override public String convertTumorGenotype(VariantContext variantContext) {
     return joinAlleles(getReferenceAlleleString(variantContext), getFirstAlternativeAlleleString(variantContext));
   }
+
 }
