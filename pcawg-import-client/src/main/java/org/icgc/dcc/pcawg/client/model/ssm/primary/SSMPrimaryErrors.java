@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
+package org.icgc.dcc.pcawg.client.model.ssm.primary;
 
 public enum SSMPrimaryErrors {
 
