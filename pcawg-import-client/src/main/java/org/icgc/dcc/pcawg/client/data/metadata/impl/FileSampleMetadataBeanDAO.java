@@ -9,6 +9,7 @@ import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest;
 import org.icgc.dcc.pcawg.client.data.barcode.BarcodeSheetBean;
 import org.icgc.dcc.pcawg.client.data.BasicDao;
 import org.icgc.dcc.pcawg.client.data.icgc.FileIdDao;
+import org.icgc.dcc.pcawg.client.data.metadata.BasicSampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
@@ -76,7 +77,7 @@ public class FileSampleMetadataBeanDAO implements SampleMetadataDAO {
     val analyzedFileId = analyzedFileIdResult.get();
     val matchedFileId = matchedFileIdResult.get();
 
-    return SampleMetadata.builder()
+    return BasicSampleMetadata.builder()
         .analyzedSampleId(analyzedSampleId)
         .dccProjectCode(dccProjectCode)
         .matchedSampleId(matchedSampleId)

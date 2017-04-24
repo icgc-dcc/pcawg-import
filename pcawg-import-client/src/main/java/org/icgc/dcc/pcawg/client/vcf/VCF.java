@@ -55,7 +55,10 @@ public class VCF {
   }
 
   public static Stream<VariantContext> newVariantStream(Path vcfPath){
-    return stream(newDefaultVCFFileReader(vcfPath.toFile()));
+    return newVariantStream(newDefaultVCFFileReader(vcfPath.toFile()));
+  }
+  public static Stream<VariantContext> newVariantStream(VCFFileReader vcfFileReader){
+    return stream(vcfFileReader);
   }
 
   private static void checkFileExists(File vcfFile){

@@ -3,6 +3,7 @@ package org.icgc.dcc.pcawg.client;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.data.metadata.BasicSampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao;
@@ -164,7 +165,7 @@ public class SSMPrimaryVCFConverterTest {
 
     val file = getVCFFile(portalFilename);
     val vcfPath = file.toPath();
-    val sampleMetadataConsensus = SampleMetadata.builder()
+    val sampleMetadataConsensus = BasicSampleMetadata.builder()
         .analyzedSampleId("a")
         .matchedSampleId("b")
         .aliquotId("q1w2e3r4t5")
@@ -192,7 +193,7 @@ public class SSMPrimaryVCFConverterTest {
 
 
   private static SampleMetadata createSampleMetadata(boolean isUsProject, WorkflowTypes workflowType){
-    return SampleMetadata.builder()
+    return BasicSampleMetadata.builder()
         .aliquotId(DUMMY_ALIQUOT_ID)
         .dccProjectCode(DUMMY_DCC_PROJECT_CODE)
         .isUsProject(isUsProject)

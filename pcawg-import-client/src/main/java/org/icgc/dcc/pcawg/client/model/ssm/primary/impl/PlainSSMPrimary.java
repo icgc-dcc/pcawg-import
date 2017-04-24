@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 @Builder
 @Value
@@ -11,7 +13,9 @@ public class PlainSSMPrimary implements SSMPrimary {
 
   public static PlainSSMPrimaryBuilder builderWith(SSMPrimary p){
     return builder()
-              .analysisId                      (p.getAnalysisId())
+              .workflowType                    (p.getWorkflowType())
+              .dataType                        (p.getDataType())
+              .dccProjectCode                  (p.getDccProjectCode())
               .analyzedSampleId                (p.getAnalyzedSampleId())
               .mutationType                    (p.getMutationType())
               .pcawgFlag                       (p.getPcawgFlag())
@@ -36,7 +40,6 @@ public class PlainSSMPrimary implements SSMPrimary {
               .note                            (p.getNote());
   }
 
- @NonNull private final String   analysisId;
  @NonNull private final String   analyzedSampleId;
  @NonNull private final String   mutationType;
           private final boolean  pcawgFlag;
@@ -59,6 +62,9 @@ public class PlainSSMPrimary implements SSMPrimary {
  @NonNull private final String   biologicalValidationStatus;
  @NonNull private final String   biologicalValidationPlatform;
  @NonNull private final String   note;
+ @NonNull private final WorkflowTypes workflowType;
+ @NonNull private final String dccProjectCode;
+ @NonNull private final DataTypes dataType;
 
  public boolean getPcawgFlag(){
   return pcawgFlag;

@@ -76,8 +76,7 @@ public final class DccTransformer<T> implements Transformer<DccTransformerContex
 
   @Override
   public void transform(DccTransformerContext<T> ctx) throws IOException {
-    val ssmClassification = ctx.getSSMClassification();
-    transform(ssmClassification.getWorkflowType(), ctx.getObject());
+    transform(ctx.getWorkflowTypes(), ctx.getObject());
   }
 
   public void transform(WorkflowTypes workflowType, T t) throws IOException {

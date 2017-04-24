@@ -6,11 +6,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.Joiners.COLON;
 
-@RequiredArgsConstructor(access = PRIVATE)
+@RequiredArgsConstructor(access = PRIVATE, staticName = "newPcawgSSMMetadata")
 @EqualsAndHashCode
 public class PcawgSSMMetadata implements SSMMetadata {
   private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
@@ -19,44 +21,16 @@ public class PcawgSSMMetadata implements SSMMetadata {
   private static final String TCGA = "TCGA";
   private static final String EGA = "EGA";
 
-  public static final PcawgSSMMetadata newSSMMetadataImpl(String variationCallingAlgorithm,
-      String matchedSampleId,
-      String analysisId,
-      String analyzedSampleId,
-      boolean isUsProject,
-      String aliquotId,
-      String analyzedFileId,
-      String matchedFileId ){
-    return new PcawgSSMMetadata(variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId, isUsProject, aliquotId, analyzedFileId, matchedFileId);
-  }
-
-  @NonNull
-  private final String variationCallingAlgorithm;
-
-  @NonNull
-  @Getter
-  private final String matchedSampleId;
-
-  @NonNull
-  @Getter
-  private final String analysisId;
-
-  @NonNull
-  @Getter
-  private final String analyzedSampleId;
-
+  @NonNull private final String variationCallingAlgorithm;
+  @NonNull @Getter private final String matchedSampleId;
+  @NonNull @Getter private final String analyzedSampleId;
   private final boolean isUsProject;
-
-  @NonNull
-  private final String aliquotId;
-
-  @NonNull
-  @Getter
-  private final String analyzedFileId;
-
-  @NonNull
-  @Getter
-  private final String matchedFileId;
+  @NonNull private final String aliquotId;
+  @NonNull @Getter private final String analyzedFileId;
+  @NonNull @Getter private final String matchedFileId;
+  @NonNull @Getter private final String dccProjectCode;
+  @NonNull @Getter private final WorkflowTypes workflowType;
+  @NonNull @Getter private final DataTypes dataType;
 
   @Override
   public String getAssemblyVersion() {

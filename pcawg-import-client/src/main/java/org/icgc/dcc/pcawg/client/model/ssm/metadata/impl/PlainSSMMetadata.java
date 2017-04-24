@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 @Builder
 @Value
@@ -25,6 +27,9 @@ public class PlainSSMMetadata implements SSMMetadata {
       .sequencingStrategy          (ssmMetadata.getSequencingStrategy()				  )
       .seqCoverage                 (ssmMetadata.getSeqCoverage()								)
       .rawDataRepository           (ssmMetadata.getRawDataRepository()					)
+      .workflowType                (ssmMetadata.getWorkflowType())
+      .dccProjectCode              (ssmMetadata.getDccProjectCode())
+      .dataType                    (ssmMetadata.getDataType())
       .rawDataAccession            (ssmMetadata.getRawDataAccession()					  );
   }
 
@@ -43,10 +48,12 @@ public class PlainSSMMetadata implements SSMMetadata {
   @NonNull private final String seqCoverage;
   @NonNull private final String rawDataRepository;
   @NonNull private final String rawDataAccession;
+  @NonNull private final String dccProjectCode;
+  @NonNull private final WorkflowTypes workflowType;
+  @NonNull private final DataTypes dataType;
 
   public boolean getPcawgFlag(){
     return this.pcawgFlag;
   }
-
 
 }
