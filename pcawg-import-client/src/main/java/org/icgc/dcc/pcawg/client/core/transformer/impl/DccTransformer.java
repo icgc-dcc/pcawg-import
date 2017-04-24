@@ -32,10 +32,17 @@ import static org.icgc.dcc.pcawg.client.core.transformer.impl.BaseTransformer.ne
  * for a specific dccProjectCode are opened upon call, and closed when this object is closed.
  * @param <T>
  */
-@RequiredArgsConstructor(staticName = "newDccTransformer")
+@RequiredArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class DccTransformer<T> implements Transformer<DccTransformerContext<T>> {
+
+  public static <T> DccTransformer<T> newDccTransformer(FsController<Path> fsController, TSVConverter<T> tsvConverter,
+      Path outputDirectory,
+      String dccProjectCode, String fileNamePrefix, String fileExtension, boolean append) {
+    return new DccTransformer<T>(fsController, tsvConverter, outputDirectory, dccProjectCode, fileNamePrefix,
+        fileExtension, append);
+  }
 
   private static <T> Map<WorkflowTypes, Transformer<T>> createEmptyTransformerMap(){
     return Maps.newEnumMap(WorkflowTypes.class);
@@ -61,6 +68,7 @@ public final class DccTransformer<T> implements Transformer<DccTransformerContex
    */
   private Map<WorkflowTypes, Transformer<T>> transformerMap = Maps.newEnumMap(WorkflowTypes.class);
   private Map<WorkflowTypes, Boolean> hasBeenWritenMap= Maps.newEnumMap(WorkflowTypes.class);
+
 
   public List<Path> getWrittenPaths(){
     val out = ImmutableList.<Path>builder();

@@ -6,8 +6,12 @@ import lombok.Value;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 @Value
-@RequiredArgsConstructor(staticName = "newDccTransformerContext")
+@RequiredArgsConstructor
 public class DccTransformerContext<T> {
+
+  public static <T> DccTransformerContext<T> newDccTransformerContext(WorkflowTypes workflowTypes, T object) {
+    return new DccTransformerContext<T>(workflowTypes, object);
+  }
 
   @NonNull private final WorkflowTypes workflowTypes;
 

@@ -21,6 +21,7 @@ import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static java.lang.Boolean.TRUE;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.pcawg.client.model.NACodes.CORRUPTED_DATA;
 import static org.icgc.dcc.pcawg.client.model.NACodes.DATA_VERIFIED_TO_BE_UNKNOWN;
@@ -205,6 +206,7 @@ public class ConsensusVariantConverter  {
         .biologicalValidationPlatform( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
         .biologicalValidationStatus( DATA_VERIFIED_TO_BE_UNKNOWN.toString())
         .note(DATA_VERIFIED_TO_BE_UNKNOWN.toString())
+        .pcawgFlag(TRUE)
         .build();
   }
 

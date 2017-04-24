@@ -4,13 +4,14 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.metadata.BasicSampleMetadata;
-import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
+import org.icgc.dcc.pcawg.client.data.metadata.ConsensusSampleMetadata;
 import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao;
 import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategyMux;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -192,12 +193,11 @@ public class SSMPrimaryVCFConverterTest {
   private static final String DUMMY_ANALYZED_FILE_ID = "F03b";
 
 
-  private static SampleMetadata createSampleMetadata(boolean isUsProject, WorkflowTypes workflowType){
-    return BasicSampleMetadata.builder()
+  private static ConsensusSampleMetadata createConsensusSampleMetadata(boolean isUsProject, WorkflowTypes workflowType){
+    return ConsensusSampleMetadata.builder()
         .aliquotId(DUMMY_ALIQUOT_ID)
         .dccProjectCode(DUMMY_DCC_PROJECT_CODE)
         .isUsProject(isUsProject)
-        .workflowType(workflowType)
         .matchedSampleId(DUMMY_MATCHED_SAMPLE_ID)
         .matchedFileId(DUMMY_MATCHED_FILE_ID)
         .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
@@ -215,10 +215,11 @@ public class SSMPrimaryVCFConverterTest {
     val file = getVCFFile(portalFilename);
     val vcfPath = file.toPath();
     val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
-    val consensusSampleMetadata = createSampleMetadata(isUsProject, workflowType);
+    val consensusSampleMetadata = createConsensusSampleMetadata(isUsProject, workflowType);
     val consensusVariantConverter =  newConsensusVariantConverter(consensusSampleMetadata);
     val metadataDTCConverter  = newMetadataDTCConverter();
-    val primaryDTCConverter = newPrimaryDTCConverter(consensusVariantConverter);
+    val variantConverterStrategyMux = new VariantConverterStrategyMux();
+    val primaryDTCConverter = newPrimaryDTCConverter(consensusVariantConverter, variantConverterStrategyMux);
     val primaryCounterMonitor = CounterMonitor.newMonitor("testPRIMARY", 100000);
 
 

@@ -12,7 +12,7 @@ import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.Joiners.COLON;
 
-@RequiredArgsConstructor(access = PRIVATE, staticName = "newPcawgSSMMetadata")
+@RequiredArgsConstructor(access = PRIVATE)
 @EqualsAndHashCode
 public class PcawgSSMMetadata implements SSMMetadata {
   private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
@@ -31,6 +31,14 @@ public class PcawgSSMMetadata implements SSMMetadata {
   @NonNull @Getter private final String dccProjectCode;
   @NonNull @Getter private final WorkflowTypes workflowType;
   @NonNull @Getter private final DataTypes dataType;
+
+  public static PcawgSSMMetadata newPcawgSSMMetadata(String variationCallingAlgorithm, String matchedSampleId,
+      String analyzedSampleId,
+      boolean isUsProject, String aliquotId, String analyzedFileId, String matchedFileId, String dccProjectCode,
+      WorkflowTypes workflowType, DataTypes dataType) {
+    return new PcawgSSMMetadata(variationCallingAlgorithm, matchedSampleId, analyzedSampleId, isUsProject, aliquotId,
+        analyzedFileId, matchedFileId, dccProjectCode, workflowType, dataType);
+  }
 
   @Override
   public String getAssemblyVersion() {
