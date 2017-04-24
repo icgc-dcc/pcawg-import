@@ -11,6 +11,7 @@ import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.Joiners.COLON;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.DEFAULT_STUDY;
 
 @RequiredArgsConstructor(access = PRIVATE)
 @EqualsAndHashCode
@@ -100,8 +101,8 @@ public class PcawgSSMMetadata implements SSMMetadata {
 
   //For andy, just a placeholder
   @Override
-  public boolean getPcawgFlag() {
-    return true;
+  public String getStudy() {
+    return DEFAULT_STUDY;
   }
 
 }

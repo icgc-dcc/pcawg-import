@@ -10,8 +10,8 @@ import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
 import org.icgc.dcc.pcawg.client.vcf.DataTypeConversionException;
-import org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter;
-import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategyMux;
+import org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantProcessor;
+import org.icgc.dcc.pcawg.client.vcf.converters.variant.VariantProcessor;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgErrorException;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
@@ -25,9 +25,8 @@ import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_T
 @Slf4j
 public class PrimaryDTCConverter {
 
-  public static PrimaryDTCConverter newPrimaryDTCConverter(ConsensusVariantConverter consensusVariantConverter,
-      VariantConverterStrategyMux variantConverterStrategyMux ){
-    return new PrimaryDTCConverter(consensusVariantConverter, variantConverterStrategyMux);
+  public static PrimaryDTCConverter newPrimaryDTCConverter(ConsensusVariantProcessor consensusVariantProcessor){
+    return new PrimaryDTCConverter(consensusVariantProcessor);
   }
 
   /**
@@ -38,8 +37,7 @@ public class PrimaryDTCConverter {
   /**
    * Dependencies
    */
-  @NonNull private final ConsensusVariantConverter consensusVariantConverter;
-  @NonNull private final VariantConverterStrategyMux variantConverterStrategyMux;
+  @NonNull private final VariantProcessor variantProcessor;
 
   /**
    * State
@@ -47,10 +45,8 @@ public class PrimaryDTCConverter {
   private PcawgErrorException candidateException;
   private int erroredVariantCount;
 
-  public PrimaryDTCConverter(
-      ConsensusVariantConverter consensusVariantConverter, VariantConverterStrategyMux variantConverterStrategyMux) {
-    this.consensusVariantConverter = consensusVariantConverter;
-    this.variantConverterStrategyMux = variantConverterStrategyMux;
+  public PrimaryDTCConverter(VariantProcessor variantProcessor) {
+    this.variantProcessor = variantProcessor;
     resetStreamState();
   }
 
@@ -62,7 +58,7 @@ public class PrimaryDTCConverter {
   public Set<DccTransformerContext<SSMPrimary>> convert(VariantContext variantContext, CounterMonitor primaryCounterMonitor){
     Set<DccTransformerContext<SSMPrimary>> out = EMPTY_DCC_PRIMARY_TRANSFORMER_CONTEXT;
     try{
-      val ssmPrimarySet = consensusVariantConverter.convertSSMPrimary(variantConverterStrategyMux, variantContext);
+      val ssmPrimarySet = variantProcessor.convertSSMPrimary(variantContext);
       out = ssmPrimarySet.stream()
           .map(x -> newDccTransformerContext(x.getWorkflowType(),x))
           .collect(toImmutableSet());

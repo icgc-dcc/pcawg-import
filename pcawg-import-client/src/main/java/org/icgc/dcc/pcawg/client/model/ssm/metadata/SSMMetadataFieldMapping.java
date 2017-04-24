@@ -23,7 +23,7 @@ public enum SSMMetadataFieldMapping implements FieldExtractor<SSMMetadata> {
   SEQ_COVERAGE                 ("seq_coverage", SSMMetadata::getSeqCoverage),
   RAW_DATA_REPOSITORY          ("raw_data_repository", SSMMetadata::getRawDataRepository),
   RAW_DATA_ACCESSION           ("raw_data_accession", SSMMetadata::getRawDataAccession),
-  PCAWG_FLAG                   ("pcawg_flag", SSMMetadata::getPcawgFlag);
+  STUDY                        ("_study", SSMMetadata::getStudy);
 
   @NonNull
   private final String name;

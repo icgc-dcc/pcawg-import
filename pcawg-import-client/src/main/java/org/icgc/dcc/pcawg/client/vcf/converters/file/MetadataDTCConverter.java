@@ -1,9 +1,7 @@
 package org.icgc.dcc.pcawg.client.vcf.converters.file;
 
-import htsjdk.variant.variantcontext.VariantContext;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
-import org.icgc.dcc.pcawg.client.data.metadata.ConsensusSampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
@@ -17,8 +15,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext.newDccTransformerContext;
 import static org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata.newPcawgSSMMetadata;
-import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter.extractWorkflowTypes;
-import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter.resolveDataType;
 
 public class MetadataDTCConverter {
 
@@ -32,22 +28,16 @@ public class MetadataDTCConverter {
     ssmMetadataSet = newHashSet();
   }
 
-  @Deprecated
-  public VariantContext accumulateVariants(ConsensusSampleMetadata consensusSampleMetadata,VariantContext variant){
-    ssmMetadataSet.addAll(convertSSMMetadata(consensusSampleMetadata, variant));
-    return variant;
-  }
-
-  public SSMPrimary accumulateSSMPrimary(ConsensusSampleMetadata consensusSampleMetadata, SSMPrimary ssmPrimary){
-    val ssmMetadata = buildWorkflowSpecificSSMMetadata(ssmPrimary.getWorkflowType(), consensusSampleMetadata, ssmPrimary.getDataType());
+  public SSMPrimary accumulateSSMPrimary(SampleMetadata sampleMetadata, SSMPrimary ssmPrimary){
+    val ssmMetadata = buildWorkflowSpecificSSMMetadata(ssmPrimary.getWorkflowType(), sampleMetadata, ssmPrimary.getDataType());
     ssmMetadataSet.add(ssmMetadata);
     return ssmPrimary;
   }
 
-  public DccTransformerContext<SSMPrimary> accumulatePrimaryDTC(ConsensusSampleMetadata consensusSampleMetadata, DccTransformerContext<SSMPrimary> input){
+  public DccTransformerContext<SSMPrimary> accumulatePrimaryDTC(SampleMetadata sampleMetadata, DccTransformerContext<SSMPrimary> input){
     val workflowType = input.getWorkflowTypes();
     val dataType = input.getObject().getDataType();
-    val ssmMetadata = buildWorkflowSpecificSSMMetadata(workflowType, consensusSampleMetadata, dataType );
+    val ssmMetadata = buildWorkflowSpecificSSMMetadata(workflowType, sampleMetadata, dataType );
     ssmMetadataSet.add(ssmMetadata);
     return input;
   }
@@ -76,15 +66,6 @@ public class MetadataDTCConverter {
         dataType);
 
   }
-
-  private static Set<SSMMetadata> convertSSMMetadata(ConsensusSampleMetadata consensusSampleMetadata, VariantContext variantContext){
-    val dataType = resolveDataType(variantContext);
-    return extractWorkflowTypes(variantContext).stream()
-        .map(w -> buildWorkflowSpecificSSMMetadata(w, consensusSampleMetadata, dataType))
-        .collect(toImmutableSet());
-
-  }
-
 
 }
 

@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.vcf.converters.variant;
+package org.icgc.dcc.pcawg.client.vcf;
 
 public class NotConsensusWorkflowTypeException extends RuntimeException {
 

@@ -18,7 +18,7 @@ public class PlainSSMPrimary implements SSMPrimary {
               .dccProjectCode                  (p.getDccProjectCode())
               .analyzedSampleId                (p.getAnalyzedSampleId())
               .mutationType                    (p.getMutationType())
-              .pcawgFlag                       (p.getPcawgFlag())
+              .study                       (p.getStudy())
               .chromosome                      (p.getChromosome())
               .chromosomeStart                 (p.getChromosomeStart())
               .chromosomeEnd                   (p.getChromosomeEnd())
@@ -42,7 +42,7 @@ public class PlainSSMPrimary implements SSMPrimary {
 
  @NonNull private final String   analyzedSampleId;
  @NonNull private final String   mutationType;
-          private final boolean  pcawgFlag;
+ @NonNull private final String study;
  @NonNull private final String   chromosome;
           private final int      chromosomeStart;
           private final int      chromosomeEnd;
@@ -66,8 +66,9 @@ public class PlainSSMPrimary implements SSMPrimary {
  @NonNull private final String dccProjectCode;
  @NonNull private final DataTypes dataType;
 
- public boolean getPcawgFlag(){
-  return pcawgFlag;
+ @Override
+ public String getStudy(){
+   return study;
  }
 
 }

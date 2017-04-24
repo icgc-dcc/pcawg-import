@@ -31,7 +31,7 @@ import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.MetadataDTCConverter.newMetadataDTCConverter;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.PrimaryDTCConverter.newPrimaryDTCConverter;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.VCFStreamFilter.newVCFStreamFilter;
-import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter.newConsensusVariantConverter;
+import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantProcessor.newConsensusVariantProcessor;
 
 @Slf4j
 @Ignore
@@ -216,10 +216,10 @@ public class SSMPrimaryVCFConverterTest {
     val vcfPath = file.toPath();
     val variantFilterFactory = newVariantFilterFactory(codingFilter, bypassTcgaFiltering, bypassNoiseFiltering);
     val consensusSampleMetadata = createConsensusSampleMetadata(isUsProject, workflowType);
-    val consensusVariantConverter =  newConsensusVariantConverter(consensusSampleMetadata);
-    val metadataDTCConverter  = newMetadataDTCConverter();
     val variantConverterStrategyMux = new VariantConverterStrategyMux();
-    val primaryDTCConverter = newPrimaryDTCConverter(consensusVariantConverter, variantConverterStrategyMux);
+    val consensusVariantProcessor = newConsensusVariantProcessor(consensusSampleMetadata, variantConverterStrategyMux);
+    val metadataDTCConverter  = newMetadataDTCConverter();
+    val primaryDTCConverter = newPrimaryDTCConverter(consensusVariantProcessor);
     val primaryCounterMonitor = CounterMonitor.newMonitor("testPRIMARY", 100000);
 
 

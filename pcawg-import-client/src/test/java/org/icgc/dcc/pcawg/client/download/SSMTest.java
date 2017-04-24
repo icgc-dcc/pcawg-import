@@ -33,11 +33,12 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.DEFAULT_STUDY;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.INDEL;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.SNV_MNV;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newVariantStream;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
-import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter.newConsensusVariantConverter;
+import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantProcessor.newConsensusVariantProcessor;
 
 @Slf4j
 public class SSMTest {
@@ -101,9 +102,9 @@ public class SSMTest {
 
   private static SSMPrimary getFirstConsensusSSMPrimary(String vcfFilename, DataTypes dataType) {
     val vcf = readVCF(vcfFilename);
-    val consensusVariantConverter = newConsensusVariantConverter(DUMMY_NON_US_CONSENSUS_SAMPLE_METADATA);
+    val consensusVariantProcessor = newConsensusVariantProcessor(DUMMY_NON_US_CONSENSUS_SAMPLE_METADATA, VARIANT_CONVERTER_STRATEGY_MUX);
     val result = newVariantStream(vcf)
-        .map(v -> consensusVariantConverter.convertSSMPrimary(VARIANT_CONVERTER_STRATEGY_MUX,v))
+        .map(consensusVariantProcessor::convertSSMPrimary)
         .flatMap(Collection::stream)
         .filter(p -> p.getWorkflowType() == CONSENSUS)
         .filter(p -> p.getDataType() == dataType)
@@ -126,7 +127,7 @@ public class SSMTest {
   private static void assertSSMPrimary2(SSMPrimary exp, SSMPrimary act) {
     assertThat(exp.getAnalysisId()).isEqualTo(act.getAnalysisId());
     assertThat(exp.getAnalyzedSampleId()).isEqualTo(act.getAnalyzedSampleId());
-    assertThat(exp.getPcawgFlag()).isEqualTo(act.getPcawgFlag());
+    assertThat(exp.getStudy()).isEqualTo(act.getStudy());
     assertThat(exp.getMutationType()).isEqualTo(act.getMutationType());
     assertThat(exp.getChromosome()).isEqualTo(act.getChromosome());
     assertThat(exp.getChromosomeStart()).isEqualTo(act.getChromosomeStart());
@@ -180,7 +181,7 @@ public class SSMTest {
         .biologicalValidationStatus("-777")
         .biologicalValidationPlatform("-777")
         .note("-777")
-        .pcawgFlag(true)
+        .study(DEFAULT_STUDY)
         .build();
   }
 
@@ -217,7 +218,7 @@ public class SSMTest {
         .biologicalValidationStatus("-777")
         .biologicalValidationPlatform("-777")
         .note("-777")
-        .pcawgFlag(true)
+        .study(DEFAULT_STUDY)
         .build();
   }
 
@@ -249,7 +250,7 @@ public class SSMTest {
         .biologicalValidationStatus("-777")
         .biologicalValidationPlatform("-777")
         .note("-777")
-        .pcawgFlag(true)
+        .study(DEFAULT_STUDY)
         .build();
   }
 
@@ -281,7 +282,7 @@ public class SSMTest {
         .biologicalValidationStatus("-777")
         .biologicalValidationPlatform("-777")
         .note("-777")
-        .pcawgFlag(true)
+        .study(DEFAULT_STUDY)
         .build();
   }
 
@@ -413,7 +414,7 @@ public class SSMTest {
     val expectedSet = Sets.newHashSet(schema.fieldNames());
 
     // This is a new field that is needed for Andy
-    expectedSet.add(SSMPrimaryFieldMapping.PCAWG_FLAG.toString());
+    expectedSet.add(SSMPrimaryFieldMapping.STUDY.toString());
 
     val actualSet = Streams.stream(SSMPrimaryFieldMapping.values())
         .map(SSMPrimaryFieldMapping::toString)
@@ -442,7 +443,7 @@ public class SSMTest {
     val schema = dictionaryCreator.getSSMPrimaryFileSchema();
     val actualArray = SSMPrimaryFieldMapping.values();
     val expectedList = newArrayList(schema.fieldNames());
-    expectedList.add(SSMPrimaryFieldMapping.PCAWG_FLAG.toString()); //This field is extra and appended to the end
+    expectedList.add(SSMPrimaryFieldMapping.STUDY.toString()); //This field is extra and appended to the end
 
     val actualSize =actualArray.length;
     val expectedSize = expectedList.size() ;

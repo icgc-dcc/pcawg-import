@@ -11,7 +11,7 @@ public interface SSMCommon {
   WorkflowTypes getWorkflowType();
   DataTypes getDataType();
   String getDccProjectCode();
-  boolean getPcawgFlag();
+  String getStudy();
 
   default String getString(){
     return String.format("[AnalysisId=%s, AnalyzedSampleId=%s]", getAnalysisId(), getAnalyzedSampleId());

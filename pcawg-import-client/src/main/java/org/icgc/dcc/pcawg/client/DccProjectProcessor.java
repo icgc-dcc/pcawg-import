@@ -9,10 +9,8 @@ import org.icgc.dcc.pcawg.client.core.DccTransformerFactory;
 import org.icgc.dcc.pcawg.client.core.StorageFactory;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
-import org.icgc.dcc.pcawg.client.data.metadata.ConsensusSampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
-import org.icgc.dcc.pcawg.client.download.LocalStorageFileNotFoundException;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
@@ -25,19 +23,17 @@ import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
 import org.icgc.dcc.pcawg.client.utils.measurement.IntegerCounter;
 import org.icgc.dcc.pcawg.client.vcf.converters.file.MetadataDTCConverter;
 import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategyMux;
-import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVCFException;
 
 import java.nio.file.Files;
 import java.util.Collection;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.joining;
 import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.pcawg.client.tsv.TsvValidator.newTsvValidator;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.MetadataDTCConverter.newMetadataDTCConverter;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.PrimaryDTCConverter.newPrimaryDTCConverter;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.VCFStreamFilter.newVCFStreamFilter;
-import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantConverter.newConsensusVariantConverter;
+import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantProcessor.newConsensusVariantProcessor;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -127,10 +123,6 @@ public class DccProjectProcessor {
     }
   }
 
-  private static ConsensusSampleMetadata convertToConsensusSampleMetadata(SampleMetadata sampleMetadata){
-    checkArgument(sampleMetadata instanceof ConsensusSampleMetadata, "Current implmentation only supports use of {} as sampleMetadata implementaiton", ConsensusSampleMetadata.class.getName());
-    return (ConsensusSampleMetadata)sampleMetadata;
-  }
 
   @SneakyThrows
   public void process(String dccProjectCode) {
@@ -146,8 +138,8 @@ public class DccProjectProcessor {
       log.info("");
       log.info("Loading File ( {} / {} ): {}",
           metadataContextCounter.getCount(), totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
-      val consensusSampleMetadata = convertToConsensusSampleMetadata(metadataContext.getSampleMetadata());
-      processPortalMetadata(dccPrimaryTransformer, dccProjectCode, storage, portalMetadata, consensusSampleMetadata,
+      val sampleMetadata = metadataContext.getSampleMetadata();
+      processPortalMetadata(dccPrimaryTransformer, dccProjectCode, storage, portalMetadata, sampleMetadata,
           metadataDTCConverter);
     }
 
@@ -194,15 +186,15 @@ public class DccProjectProcessor {
 
   @SneakyThrows
   private void processPortalMetadata(DccTransformer<SSMPrimary> dccPrimaryTransformer, String dccProjectCode,
-      Storage storage, PortalMetadata portalMetadata, ConsensusSampleMetadata consensusSampleMetadata, MetadataDTCConverter metadataDTCConverter) {
+      Storage storage, PortalMetadata portalMetadata, SampleMetadata sampleMetadata, MetadataDTCConverter metadataDTCConverter) {
 
     try {
       // Download vcfFile
       val vcfFile = storage.getFile(portalMetadata);
 
-      val vcfStreamFilter = newVCFStreamFilter(vcfFile.toPath(), consensusSampleMetadata,variantFilterFactory);
-      val consensusVariantConverter = newConsensusVariantConverter(consensusSampleMetadata);
-      val primaryDTCConverter = newPrimaryDTCConverter(consensusVariantConverter, VARIANT_CONVERTER_STRATEGY_MUX);
+      val vcfStreamFilter = newVCFStreamFilter(vcfFile.toPath(), sampleMetadata,variantFilterFactory);
+      val consensusVariantProcessor = newConsensusVariantProcessor(sampleMetadata, VARIANT_CONVERTER_STRATEGY_MUX);
+      val primaryDTCConverter = newPrimaryDTCConverter(consensusVariantProcessor);
       val primaryCounterMonitor = CounterMonitor.newMonitor("PRIMARY_DTC_CONV", 100000);
 
       primaryCounterMonitor.start();
@@ -210,14 +202,12 @@ public class DccProjectProcessor {
           .map(v -> primaryDTCConverter.convert(v, primaryCounterMonitor)) // Convert variants to PrimaryDTC objects
           .flatMap(Collection::stream)
           .filter(this::shouldTransformSSMPrimary)
-          .map(pdtc -> metadataDTCConverter.accumulatePrimaryDTC(consensusSampleMetadata, pdtc) ) // Accumulate data for later MetadataDTC creation, primary DTC just pass through
+          .map(pdtc -> metadataDTCConverter.accumulatePrimaryDTC(sampleMetadata, pdtc) ) // Accumulate data for later MetadataDTC creation, primary DTC just pass through
           .forEach(ptx -> transformSSMPrimary(dccPrimaryTransformer, ptx));
       primaryCounterMonitor.stop();
 
-    } catch (LocalStorageFileNotFoundException e) {
+    } catch (Exception e) {
       log.error("[{}]: {}\n{}", e.getClass().getSimpleName(), e.getMessage(), NEWLINE.join(e.getStackTrace()));
-    } catch (PcawgVCFException e) {
-      //TODO: do error calculation and stats here
     }
 
   }
