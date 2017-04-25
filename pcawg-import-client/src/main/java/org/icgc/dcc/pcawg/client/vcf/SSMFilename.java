@@ -3,6 +3,7 @@ package org.icgc.dcc.pcawg.client.vcf;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.icgc.dcc.common.core.util.Joiners.DOT;

@@ -23,7 +23,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.icgc.dcc.common.core.util.Splitters;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import java.io.Serializable;
 

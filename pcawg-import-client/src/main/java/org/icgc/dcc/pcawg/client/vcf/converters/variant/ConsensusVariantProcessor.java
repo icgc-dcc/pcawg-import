@@ -9,7 +9,7 @@ import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
 import org.icgc.dcc.pcawg.client.vcf.NotConsensusWorkflowTypeException;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategy;
 import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategyMux;
 
@@ -24,7 +24,7 @@ import static org.icgc.dcc.pcawg.client.vcf.VCF.getAltCount;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getChomosome;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getRefCount;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.streamCallers;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
+import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.vcf.converters.variant.VariantProcessor.resolveMutationType;
 
 @Slf4j

@@ -15,7 +15,7 @@ import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
 import org.icgc.dcc.pcawg.client.utils.DictionaryCreator;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 import java.nio.file.Path;

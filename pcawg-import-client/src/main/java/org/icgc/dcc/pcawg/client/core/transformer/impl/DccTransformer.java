@@ -12,7 +12,7 @@ import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.core.transformer.Transformer;
 import org.icgc.dcc.pcawg.client.core.writer.impl.LocalWriterContext;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import java.io.IOException;
 import java.io.Writer;

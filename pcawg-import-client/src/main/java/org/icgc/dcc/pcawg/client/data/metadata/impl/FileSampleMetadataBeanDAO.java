@@ -17,7 +17,7 @@ import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
 import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.pcawg.client.data.barcode.BarcodeSearchRequest.newBarcodeRequest;

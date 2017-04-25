@@ -4,8 +4,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.vcf.DataTypes;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.DataTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 @Builder
 @Value

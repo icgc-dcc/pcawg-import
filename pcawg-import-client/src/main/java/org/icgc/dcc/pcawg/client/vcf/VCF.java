@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j

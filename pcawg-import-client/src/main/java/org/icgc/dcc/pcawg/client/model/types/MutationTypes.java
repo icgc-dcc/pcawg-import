@@ -15,13 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.pcawg.client.vcf;
+package org.icgc.dcc.pcawg.client.model.types;
 
-import htsjdk.variant.variantcontext.VariantContext;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors;
-import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
 @RequiredArgsConstructor
 public enum MutationTypes {
@@ -37,14 +34,6 @@ public enum MutationTypes {
   @Override
   public String toString() {
     return name;
-  }
-
-  private static MutationTypes procError(boolean throwException, String message, VariantContext v, PcawgVariantErrors error){
-    if (throwException){
-      throw new PcawgVariantException(message, v, error);
-    } else {
-      return UNKNOWN;
-    }
   }
 
 }

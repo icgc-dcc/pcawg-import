@@ -1,10 +1,12 @@
 package org.icgc.dcc.pcawg.client.data.metadata;
 
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
+
 public interface SampleMetadata {
 
   String getAliquotId();
 
-  org.icgc.dcc.pcawg.client.vcf.WorkflowTypes getWorkflowType();
+  WorkflowTypes getWorkflowType();
 
   boolean isUsProject();
 

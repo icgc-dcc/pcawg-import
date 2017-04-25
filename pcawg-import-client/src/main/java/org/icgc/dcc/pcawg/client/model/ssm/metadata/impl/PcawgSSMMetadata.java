@@ -6,8 +6,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.vcf.DataTypes;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.DataTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.Joiners.COLON;

@@ -5,9 +5,9 @@ import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.model.types.DataTypes;
 import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import java.util.Set;
 

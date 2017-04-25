@@ -10,7 +10,7 @@ import org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao;
 import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
 import org.icgc.dcc.pcawg.client.utils.measurement.CounterMonitor;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategyMux;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -27,7 +27,7 @@ import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataRequest.newPor
 import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory.newFileRestorerFactory;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
+import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.MetadataDTCConverter.newMetadataDTCConverter;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.PrimaryDTCConverter.newPrimaryDTCConverter;
 import static org.icgc.dcc.pcawg.client.vcf.converters.file.VCFStreamFilter.newVCFStreamFilter;

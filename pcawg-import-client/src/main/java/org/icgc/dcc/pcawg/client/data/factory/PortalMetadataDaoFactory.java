@@ -18,7 +18,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.PORTAL_METADATA_
 import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao.newPortalMetadataDao;
 import static org.icgc.dcc.pcawg.client.download.query.PortalAllVcfFileQueryCreator.newPortalAllVcfFileQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.query.PortalCollabVcfFileQueryCreator.newPcawgCollabQueryCreator;
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
+import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.CONSENSUS;
 
 @AllArgsConstructor
 public class PortalMetadataDaoFactory {

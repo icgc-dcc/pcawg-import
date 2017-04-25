@@ -1,7 +1,7 @@
 package org.icgc.dcc.pcawg.client.model.ssm;
 
-import org.icgc.dcc.pcawg.client.vcf.DataTypes;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.DataTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
 

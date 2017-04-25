@@ -3,11 +3,11 @@ package org.icgc.dcc.pcawg.client.data.metadata;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import java.io.Serializable;
 
-import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
+import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.CONSENSUS;
 
 @Value
 @Builder

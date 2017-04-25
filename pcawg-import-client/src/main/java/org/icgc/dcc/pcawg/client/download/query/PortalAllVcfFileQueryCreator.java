@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.pcawg.client.core.ObjectNodeConverter;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.json.JsonNodeBuilders.object;
