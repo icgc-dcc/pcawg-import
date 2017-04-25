@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.storage.LocalStorageFileNotFoundException;
 import org.icgc.dcc.pcawg.client.storage.Storage;
 
 import java.io.File;
