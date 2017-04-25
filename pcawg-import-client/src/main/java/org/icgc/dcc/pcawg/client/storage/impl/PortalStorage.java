@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.pcawg.client.download;
+package org.icgc.dcc.pcawg.client.storage.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Cleanup;
@@ -25,6 +25,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.storage.Storage;
 
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -39,7 +40,7 @@ import static java.nio.file.Files.copy;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_API;
-import static org.icgc.dcc.pcawg.client.download.Storage.calcMd5Sum;
+import static org.icgc.dcc.pcawg.client.storage.Storage.calcMd5Sum;
 
 @Value
 @Slf4j

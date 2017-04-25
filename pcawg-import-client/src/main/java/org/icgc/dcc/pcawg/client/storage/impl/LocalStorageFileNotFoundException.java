@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.download;
+package org.icgc.dcc.pcawg.client.storage.impl;
 
 import lombok.Getter;
 import lombok.NonNull;

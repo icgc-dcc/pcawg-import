@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.download;
+package org.icgc.dcc.pcawg.client.storage.impl;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.storage.Storage;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,9 +27,9 @@ import static lombok.AccessLevel.PRIVATE;
 
 @RequiredArgsConstructor(access = PRIVATE)
 @Slf4j
-public class LocalStorage implements Storage{
+public class LocalStorage implements Storage {
 
-  public static final LocalStorage newLocalStorage(Path inputDir, final boolean bypassMd5Check){
+  public static LocalStorage newLocalStorage(Path inputDir, final boolean bypassMd5Check){
     return new LocalStorage(createFileMap(inputDir), bypassMd5Check);
   }
 

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.download.Portal;
-import org.icgc.dcc.pcawg.client.download.PortalStorage;
+import org.icgc.dcc.pcawg.client.storage.impl.PortalStorage;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
@@ -39,8 +39,8 @@ import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControlle
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.HadoopFsControllerAdapter.newHadoopFsControllerAdapter;
 import static org.icgc.dcc.pcawg.client.core.fscontroller.impl.LocalFsController.newLocalFsController;
 import static org.icgc.dcc.pcawg.client.core.DccTransformerFactory.newDccTransformerFactory;
-import static org.icgc.dcc.pcawg.client.download.PortalStorage.downloadFileByURL;
-import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
+import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.downloadFileByURL;
+import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.download.query.PortalCollabVcfFileQueryCreator.newPcawgCollabQueryCreator;
 import static org.icgc.dcc.pcawg.client.utils.DictionaryCreator.newDictionaryCreator;
 

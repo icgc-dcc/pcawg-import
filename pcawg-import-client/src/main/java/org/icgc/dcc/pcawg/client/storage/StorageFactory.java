@@ -1,15 +1,14 @@
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.storage;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.download.Storage;
 
 import java.nio.file.Path;
 
-import static org.icgc.dcc.pcawg.client.download.LocalStorage.newLocalStorage;
-import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
+import static org.icgc.dcc.pcawg.client.storage.impl.LocalStorage.newLocalStorage;
+import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.newPortalStorage;
 
 @RequiredArgsConstructor
 @Builder

@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
-import static org.icgc.dcc.pcawg.client.download.LocalStorage.newLocalStorage;
+import static org.icgc.dcc.pcawg.client.storage.impl.LocalStorage.newLocalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFEncoder;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFFileReader;

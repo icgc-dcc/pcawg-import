@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.download;
+package org.icgc.dcc.pcawg.client.storage;
 
 import com.google.common.hash.Hashing;
 import lombok.NonNull;

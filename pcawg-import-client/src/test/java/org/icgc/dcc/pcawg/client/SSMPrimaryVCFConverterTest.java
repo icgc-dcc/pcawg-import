@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newCollabPortalMetadataDaoFactory;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataRequest.newPortalMetadataRequest;
-import static org.icgc.dcc.pcawg.client.download.PortalStorage.newPortalStorage;
+import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory.newFileRestorerFactory;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
