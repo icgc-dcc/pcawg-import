@@ -10,7 +10,7 @@ import org.icgc.dcc.pcawg.client.storage.StorageFactory;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformer;
 import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
-import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.storage.Storage;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;

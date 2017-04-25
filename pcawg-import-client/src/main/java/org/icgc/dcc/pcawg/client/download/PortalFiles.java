@@ -22,11 +22,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
-import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
+import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
+import static org.icgc.dcc.pcawg.client.model.portal.PortalFilename.newPortalFilename;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class PortalFiles {

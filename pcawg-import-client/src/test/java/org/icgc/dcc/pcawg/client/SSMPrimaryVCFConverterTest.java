@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.metadata.BasicSampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.ConsensusSampleMetadata;
-import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
+import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao;
 import org.icgc.dcc.pcawg.client.filter.coding.SnpEffCodingFilter;
 import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory.newCollabPortalMetadataDaoFactory;
-import static org.icgc.dcc.pcawg.client.data.portal.PortalFilename.newPortalFilename;
+import static org.icgc.dcc.pcawg.client.model.portal.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataRequest.newPortalMetadataRequest;
 import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.newPortalStorage;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;

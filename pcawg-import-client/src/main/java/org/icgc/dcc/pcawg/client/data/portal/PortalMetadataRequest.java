@@ -3,6 +3,7 @@ package org.icgc.dcc.pcawg.client.data.portal;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
 
 @RequiredArgsConstructor
 @Data

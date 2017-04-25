@@ -16,7 +16,7 @@ import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetBean;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetDao;
 import org.icgc.dcc.pcawg.client.data.sample.SampleSheetSearchRequest;
-import org.icgc.dcc.pcawg.client.data.portal.PortalFilename;
+import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static com.google.common.base.Preconditions.checkState;
