@@ -88,15 +88,12 @@ public class PcawgSSMMetadata implements SSMMetadata {
 
   @Override
   public String getRawDataRepository() {
-    return isUsProject ? TCGA:EGA;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
-  /**
-   * TODO: [DCC-5507] hardcoded nonUS RawDataAccession id. Once DCC-5507 is complete, will be able to create class that retreives this information. For now baked in
-   */
   @Override
   public String getRawDataAccession() {
-    return isUsProject ? getAnalyzedSampleId() : COLON.join(getAnalyzedFileId(),getMatchedFileId());
+    return COLON.join(getAnalyzedFileId(),getMatchedFileId());
   }
 
   //For andy, just a placeholder

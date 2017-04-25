@@ -18,35 +18,35 @@ public class VariantFilter {
   private final boolean bypassTcgaFiltering;
   private final boolean bypassNoiseFiltering;
 
-  public boolean isFiltered(VariantContext variantContext){
-    return isNoiseFiltered(variantContext) || isTcgaFiltered(variantContext);
+  public boolean passedAllFilters(VariantContext variantContext){
+    return passedNoiseFilter(variantContext) && passedTcgaFilter(variantContext);
   }
 
-  public boolean isNotFiltered(VariantContext variantContext){
-    return ! isFiltered(variantContext);
+  public boolean notPassedAllFilters(VariantContext variantContext){
+    return ! passedAllFilters(variantContext);
   }
 
-  public boolean isTcgaFiltered(VariantContext variantContext){
+  public boolean passedTcgaFilter(VariantContext variantContext){
     if (bypassTcgaFiltering){
-      return false;
+      return true;
     } else if (isUsProject){
       if (snpEffCodingFilter == null){
         log.error("SnpEffCodingFilter is null but not expecting null");
-        return true;
+        return false;
       }else {
         val variantString = encoder.encode(variantContext);
-        return !snpEffCodingFilter.isCoding(variantString);
+        return snpEffCodingFilter.isCoding(variantString);
       }
     } else {
-      return false;
+      return true;
     }
   }
 
-  public boolean isNoiseFiltered(VariantContext variantContext){
+  public boolean passedNoiseFilter(VariantContext variantContext){
     if (bypassNoiseFiltering) {
-      return false;
+      return true;
     } else {
-      return variantContext.isFiltered();
+      return variantContext.isNotFiltered();
     }
   }
 

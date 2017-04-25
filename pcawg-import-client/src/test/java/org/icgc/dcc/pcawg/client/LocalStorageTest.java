@@ -172,7 +172,7 @@ public class LocalStorageTest {
 
       for (val variant : vcfFileReader){
         val variantString = vcfEncoder.encode(variant);
-        val isFiltered = varFilter.isFiltered(variant);
+        val isFiltered = varFilter.passedAllFilters(variant);
         if (isFiltered){
           if(foundNum < foundMax){
             printer.write("FILTERED\t"+variantString+"\n");

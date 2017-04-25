@@ -57,7 +57,7 @@ public class VCFStreamFilter {
   public Stream<VariantContext> streamFilteredVariants(){
     return stream(vcf)
         .map(variantBeforeFilterCounter::streamIncr)
-        .filter(variantFilter::isNotFiltered)
+        .filter(variantFilter::passedAllFilters)
         .map(variantAfterFilterCounter::streamIncr);
   }
 

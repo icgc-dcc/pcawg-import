@@ -53,6 +53,8 @@ public class VariantFilterFactory implements Closeable{
   }
 
   @Override public void close() throws IOException {
-    snpEffCodingFilter.destroy();
+    if (snpEffCodingFilter != null){
+      snpEffCodingFilter.destroy();
+    }
   }
 }
