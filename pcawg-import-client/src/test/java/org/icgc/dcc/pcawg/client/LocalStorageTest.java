@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.assertj.core.util.Maps;
 import org.icgc.dcc.pcawg.client.data.portal.PortalMetadata;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -98,6 +99,7 @@ public class LocalStorageTest {
 
   @Test
   @SneakyThrows
+  @Ignore
   public void testFilter(){
     val printer = new FileWriter("rob.vcf", false);
     val varFiltFactory = newVariantFilterFactory(false, true);

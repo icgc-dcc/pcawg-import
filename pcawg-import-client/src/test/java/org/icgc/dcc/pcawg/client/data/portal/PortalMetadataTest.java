@@ -21,7 +21,7 @@ public class PortalMetadataTest {
     val factory = newAllPortalMetadataDaoFactory(localFileRestorerFactory);
     val portalMetadataDao = factory.createPortalMetadataDao();
 
-    val portalFilename = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20160830.somatic.indel.vcf.gz");
+    val portalFilename = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20161006.somatic.indel.vcf.gz");
     val request = PortalMetadataRequest.newPortalMetadataRequest(portalFilename);
     val resultList = portalMetadataDao.find(request);
     assertThat(resultList).isNotEmpty().isNotNull();
@@ -36,8 +36,8 @@ public class PortalMetadataTest {
 
   @Test
   public void testPortalFilename(){
-    val portalFilename = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20160830.somatic.indel.vcf.gz");
-    val portalFilenameCopy = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20160830.somatic.indel.vcf.gz");
+    val portalFilename = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20161006.somatic.indel.vcf.gz");
+    val portalFilenameCopy = newPortalFilename("f8467ec8-2d61-ba21-e040-11ac0c483584.consensus.20161006.somatic.indel.vcf.gz");
     assertThat(portalFilename == portalFilenameCopy).isFalse();
     assertThat(portalFilename).isEqualTo(portalFilenameCopy);
   }

@@ -13,6 +13,7 @@ import org.icgc.dcc.pcawg.client.core.Factory;
 import org.icgc.dcc.pcawg.client.data.metadata.ConsensusSampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.ConsensusSampleMetadata.ConsensusSampleMetadataBuilder;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
+import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.common.core.util.Joiners.COLON;
 import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.DEFAULT_STUDY;
 import static org.icgc.dcc.pcawg.client.vcf.DataTypes.INDEL;
@@ -391,8 +393,9 @@ public class SSMTest {
   public void testUsSSMMetadata() {
     val ssmMetadata = createSSMMetadata(DUMMY_US_CONSENSUS_SAMPLE_METADATA);
     assertCommonSMMMetadata(ssmMetadata);
-    assertThat(ssmMetadata.getRawDataRepository()).isEqualTo(TCGA);
-    assertThat(ssmMetadata.getRawDataAccession()).isEqualTo(DUMMY_US_CONSENSUS_SAMPLE_METADATA.getAnalyzedSampleId());
+    assertThat(ssmMetadata.getRawDataRepository()).isEqualTo(NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString());
+    assertThat(ssmMetadata.getRawDataAccession()).isEqualTo(
+        COLON.join(DUMMY_US_CONSENSUS_SAMPLE_METADATA.getAnalyzedFileId(), DUMMY_US_CONSENSUS_SAMPLE_METADATA.getMatchedFileId()));
   }
 
   /**
