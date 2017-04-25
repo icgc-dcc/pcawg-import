@@ -7,7 +7,7 @@ import org.icgc.dcc.pcawg.client.core.types.DataTypes;
 import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.tsv.transformer.impl.DccTransformerContext;
-import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
+import org.icgc.dcc.pcawg.client.core.types.VariationCallingAlgorithmTypes;
 
 import java.util.Set;
 
@@ -54,7 +54,7 @@ public class MetadataDTCConverter {
 
   private static SSMMetadata buildWorkflowSpecificSSMMetadata(WorkflowTypes workflowType, SampleMetadata sampleMetadata, DataTypes dataType){
     return newPcawgSSMMetadata(
-        VariationCallingAlgorithms.get(workflowType, dataType),
+        VariationCallingAlgorithmTypes.get(workflowType, dataType),
         sampleMetadata.getMatchedSampleId(),
         sampleMetadata.getAnalyzedSampleId(),
         sampleMetadata.isUsProject(),

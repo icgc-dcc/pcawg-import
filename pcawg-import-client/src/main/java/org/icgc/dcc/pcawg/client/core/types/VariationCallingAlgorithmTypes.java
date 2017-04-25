@@ -1,9 +1,7 @@
-package org.icgc.dcc.pcawg.client.vcf;
+package org.icgc.dcc.pcawg.client.core.types;
 
 import lombok.NonNull;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.types.DataTypes;
-import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +23,7 @@ import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.UNKNOWN;
 /**
  * Rules for resolving the variantion_calling_algorithm text for a given workflowType and dataType
  */
-public enum VariationCallingAlgorithms {
+public enum VariationCallingAlgorithmTypes {
 
   CONSENSUS_PCAWG_SNV_MNV("PCAWG Consensus SNV-MNV caller", CONSENSUS, set(SNV_MNV)),
   CONSENSUS_PCAWG_INDEL("PCAWG Consensus INDEL caller", CONSENSUS, set(INDEL)),
@@ -36,7 +34,7 @@ public enum VariationCallingAlgorithms {
   SMUFIN_PIPELINE("SMUFIN variant call pipeline", SMUFIN, set(SNV_MNV, INDEL)),
   UNKNOWN_PIPELINE("Unknown variant call pipeline", UNKNOWN, set(SNV_MNV, INDEL));
 
-  private static final String CLASS_NAME = VariationCallingAlgorithms.class.getName();
+  private static final String CLASS_NAME = VariationCallingAlgorithmTypes.class.getName();
 
   private static Map<WorkflowTypes, Map<DataTypes, String>> workflowMap;
 
@@ -67,7 +65,7 @@ public enum VariationCallingAlgorithms {
     return dataTypeMap.get(dataType);
   }
 
-  VariationCallingAlgorithms(@NonNull String text, final WorkflowTypes workflowType, @NonNull Set<DataTypes> dataTypes) {
+  VariationCallingAlgorithmTypes(@NonNull String text, final WorkflowTypes workflowType, @NonNull Set<DataTypes> dataTypes) {
     dataTypes.forEach(x -> add(workflowType, x, text));
   }
 
