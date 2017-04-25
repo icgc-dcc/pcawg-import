@@ -22,7 +22,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.DccTransformerFactory;
+import org.icgc.dcc.pcawg.client.tsv.DccTransformerFactory;
 import org.icgc.dcc.pcawg.client.storage.StorageFactory;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;

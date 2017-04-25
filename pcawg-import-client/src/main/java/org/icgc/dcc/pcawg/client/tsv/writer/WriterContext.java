@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.core.writer;
+package org.icgc.dcc.pcawg.client.tsv.writer;
 
 public interface WriterContext<T>{
 

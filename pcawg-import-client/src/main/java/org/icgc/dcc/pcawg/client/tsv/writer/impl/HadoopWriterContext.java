@@ -1,10 +1,10 @@
-package org.icgc.dcc.pcawg.client.core.writer.impl;
+package org.icgc.dcc.pcawg.client.tsv.writer.impl;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.pcawg.client.core.writer.WriterContext;
+import org.icgc.dcc.pcawg.client.tsv.writer.WriterContext;
 
 @Builder
 @Value

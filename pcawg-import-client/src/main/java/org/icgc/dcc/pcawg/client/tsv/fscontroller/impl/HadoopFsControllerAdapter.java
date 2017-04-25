@@ -1,11 +1,11 @@
-package org.icgc.dcc.pcawg.client.core.fscontroller.impl;
+package org.icgc.dcc.pcawg.client.tsv.fscontroller.impl;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
-import org.icgc.dcc.pcawg.client.core.writer.impl.HadoopWriterContext;
-import org.icgc.dcc.pcawg.client.core.writer.WriterContext;
+import org.icgc.dcc.pcawg.client.tsv.fscontroller.FsController;
+import org.icgc.dcc.pcawg.client.tsv.writer.impl.HadoopWriterContext;
+import org.icgc.dcc.pcawg.client.tsv.writer.WriterContext;
 
 import java.io.IOException;
 import java.io.Writer;

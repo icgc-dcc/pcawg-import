@@ -1,7 +1,7 @@
 package org.icgc.dcc.pcawg.client.vcf.converters.file;
 
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext;
+import org.icgc.dcc.pcawg.client.tsv.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
-import static org.icgc.dcc.pcawg.client.core.transformer.impl.DccTransformerContext.newDccTransformerContext;
+import static org.icgc.dcc.pcawg.client.tsv.transformer.impl.DccTransformerContext.newDccTransformerContext;
 import static org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata.newPcawgSSMMetadata;
 
 public class MetadataDTCConverter {

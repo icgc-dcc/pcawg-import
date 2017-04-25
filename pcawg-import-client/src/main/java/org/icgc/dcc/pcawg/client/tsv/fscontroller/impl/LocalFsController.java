@@ -1,8 +1,8 @@
-package org.icgc.dcc.pcawg.client.core.fscontroller.impl;
+package org.icgc.dcc.pcawg.client.tsv.fscontroller.impl;
 
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
-import org.icgc.dcc.pcawg.client.core.writer.WriterContext;
+import org.icgc.dcc.pcawg.client.tsv.fscontroller.FsController;
+import org.icgc.dcc.pcawg.client.tsv.writer.WriterContext;
 
 import java.io.FileWriter;
 import java.io.IOException;

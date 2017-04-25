@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.core.transformer.impl;
+package org.icgc.dcc.pcawg.client.tsv.transformer.impl;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

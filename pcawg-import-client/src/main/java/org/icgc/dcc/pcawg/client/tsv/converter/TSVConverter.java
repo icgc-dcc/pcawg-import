@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.tsv;
+package org.icgc.dcc.pcawg.client.tsv.converter;
 
 import java.util.stream.Collector;
 import java.util.stream.Collectors;

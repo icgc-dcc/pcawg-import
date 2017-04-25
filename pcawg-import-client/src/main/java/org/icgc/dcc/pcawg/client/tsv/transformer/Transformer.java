@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.core.transformer;
+package org.icgc.dcc.pcawg.client.tsv.transformer;
 
 import java.io.Closeable;
 import java.io.Flushable;

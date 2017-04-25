@@ -1,9 +1,9 @@
-package org.icgc.dcc.pcawg.client.tsv.impl;
+package org.icgc.dcc.pcawg.client.tsv.converter.impl;
 
 import lombok.NoArgsConstructor;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
-import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
+import org.icgc.dcc.pcawg.client.tsv.converter.TSVConverter;
 
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 

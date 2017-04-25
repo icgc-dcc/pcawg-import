@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.core.transformer.impl;
+package org.icgc.dcc.pcawg.client.tsv.transformer.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.fscontroller.FsController;
-import org.icgc.dcc.pcawg.client.core.transformer.Transformer;
-import org.icgc.dcc.pcawg.client.core.writer.impl.LocalWriterContext;
-import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
+import org.icgc.dcc.pcawg.client.tsv.fscontroller.FsController;
+import org.icgc.dcc.pcawg.client.tsv.transformer.Transformer;
+import org.icgc.dcc.pcawg.client.tsv.writer.impl.LocalWriterContext;
+import org.icgc.dcc.pcawg.client.tsv.converter.TSVConverter;
 import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static org.icgc.dcc.common.core.util.Joiners.DOT;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
-import static org.icgc.dcc.pcawg.client.core.transformer.impl.BaseTransformer.newBaseTransformer;
+import static org.icgc.dcc.pcawg.client.tsv.transformer.impl.BaseTransformer.newBaseTransformer;
 
 /**
  * This class creates a pool of Writers (lazily) and records which one was actually writen to.

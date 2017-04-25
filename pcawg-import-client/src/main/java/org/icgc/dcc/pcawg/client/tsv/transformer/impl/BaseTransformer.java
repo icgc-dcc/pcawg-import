@@ -1,10 +1,10 @@
-package org.icgc.dcc.pcawg.client.core.transformer.impl;
+package org.icgc.dcc.pcawg.client.tsv.transformer.impl;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.pcawg.client.core.transformer.Transformer;
-import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
+import org.icgc.dcc.pcawg.client.tsv.transformer.Transformer;
+import org.icgc.dcc.pcawg.client.tsv.converter.TSVConverter;
 
 import java.io.IOException;
 import java.io.Writer;
