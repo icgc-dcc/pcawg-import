@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.storage;
 import com.google.common.hash.Hashing;
 import lombok.NonNull;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 
 import java.io.File;
 import java.io.IOException;

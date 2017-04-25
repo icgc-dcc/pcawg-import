@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.data.metadata;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 
 import java.io.Serializable;
 

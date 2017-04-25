@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryErrors;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimaryErrors;
 
 import java.util.Collection;
 import java.util.Iterator;

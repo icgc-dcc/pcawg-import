@@ -1,8 +1,8 @@
 package org.icgc.dcc.pcawg.client.tsv.converter.impl;
 
 import lombok.NoArgsConstructor;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimaryFieldMapping;
 import org.icgc.dcc.pcawg.client.tsv.converter.TSVConverter;
 
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;

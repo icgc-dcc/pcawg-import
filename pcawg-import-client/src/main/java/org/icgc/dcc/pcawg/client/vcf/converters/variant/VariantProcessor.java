@@ -2,22 +2,22 @@ package org.icgc.dcc.pcawg.client.vcf.converters.variant;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.core.types.DataTypes;
+import org.icgc.dcc.pcawg.client.core.types.MutationTypes;
 import org.icgc.dcc.pcawg.client.vcf.DataTypeConversionException;
-import org.icgc.dcc.pcawg.client.model.types.DataTypes;
-import org.icgc.dcc.pcawg.client.model.types.MutationTypes;
 import org.icgc.dcc.pcawg.client.vcf.VCF;
 import org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantException;
 
 import java.util.Set;
 
-import static org.icgc.dcc.pcawg.client.model.types.DataTypes.INDEL;
-import static org.icgc.dcc.pcawg.client.model.types.DataTypes.SNV_MNV;
-import static org.icgc.dcc.pcawg.client.model.types.MutationTypes.DELETION_LTE_200BP;
-import static org.icgc.dcc.pcawg.client.model.types.MutationTypes.INSERTION_LTE_200BP;
-import static org.icgc.dcc.pcawg.client.model.types.MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
-import static org.icgc.dcc.pcawg.client.model.types.MutationTypes.SINGLE_BASE_SUBSTITUTION;
-import static org.icgc.dcc.pcawg.client.model.types.MutationTypes.UNKNOWN;
+import static org.icgc.dcc.pcawg.client.core.types.DataTypes.INDEL;
+import static org.icgc.dcc.pcawg.client.core.types.DataTypes.SNV_MNV;
+import static org.icgc.dcc.pcawg.client.core.types.MutationTypes.DELETION_LTE_200BP;
+import static org.icgc.dcc.pcawg.client.core.types.MutationTypes.INSERTION_LTE_200BP;
+import static org.icgc.dcc.pcawg.client.core.types.MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
+import static org.icgc.dcc.pcawg.client.core.types.MutationTypes.SINGLE_BASE_SUBSTITUTION;
+import static org.icgc.dcc.pcawg.client.core.types.MutationTypes.UNKNOWN;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAlleleLength;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleLength;
 import static org.icgc.dcc.pcawg.client.vcf.errors.PcawgVariantErrors.MUTATION_TYPE_NOT_SUPPORTED_ERROR;
@@ -41,13 +41,13 @@ public interface VariantProcessor {
     val  lengthDifference = refLength - altLength;
 
     if (lengthDifference < 0 && !altIsOne && !refStartsWithAlt){
-      return refIsOne && altStartsWithRef ? MutationTypes.INSERTION_LTE_200BP : MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
+      return refIsOne && altStartsWithRef ? INSERTION_LTE_200BP : MULTIPLE_BASE_SUBSTITUTION;
 
     } else if(lengthDifference == 0 && !refStartsWithAlt && !altStartsWithRef){
-      return refIsOne ? MutationTypes.SINGLE_BASE_SUBSTITUTION : MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
+      return refIsOne ? SINGLE_BASE_SUBSTITUTION : MULTIPLE_BASE_SUBSTITUTION;
 
     } else if(lengthDifference > 0 && !refIsOne && !altStartsWithRef ){
-      return altIsOne && refStartsWithAlt ? MutationTypes.DELETION_LTE_200BP : MutationTypes.MULTIPLE_BASE_SUBSTITUTION;
+      return altIsOne && refStartsWithAlt ? DELETION_LTE_200BP : MULTIPLE_BASE_SUBSTITUTION;
 
     } else {
       val message = String.format("The mutationType of the variant cannot be resolved: Ref[%s] Alt[%s] --> RefLength-AltLength=%s,  RefLengthIsOne[%s] AltLengthIsOne[%s], RefStartsWithAlt[%s] AltStartsWithRef[%s] ", lengthDifference, ref, alt, refIsOne, altIsOne, refStartsWithAlt, altStartsWithRef);
@@ -55,7 +55,7 @@ public interface VariantProcessor {
       if (throwException){
         throw new PcawgVariantException(message, v, MUTATION_TYPE_NOT_SUPPORTED_ERROR);
       } else {
-        return MutationTypes.UNKNOWN;
+        return UNKNOWN;
       }
     }
   }

@@ -1,20 +1,20 @@
 package org.icgc.dcc.pcawg.client.vcf.converters.file;
 
 import lombok.val;
-import org.icgc.dcc.pcawg.client.tsv.transformer.impl.DccTransformerContext;
+import org.icgc.dcc.pcawg.client.core.model.ssm.metadata.SSMMetadata;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.core.types.DataTypes;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.types.DataTypes;
+import org.icgc.dcc.pcawg.client.tsv.transformer.impl.DccTransformerContext;
 import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
-import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
+import static org.icgc.dcc.pcawg.client.core.model.ssm.metadata.impl.PcawgSSMMetadata.newPcawgSSMMetadata;
 import static org.icgc.dcc.pcawg.client.tsv.transformer.impl.DccTransformerContext.newDccTransformerContext;
-import static org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata.newPcawgSSMMetadata;
 
 public class MetadataDTCConverter {
 

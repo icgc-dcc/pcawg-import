@@ -10,18 +10,18 @@ import org.assertj.core.api.Assertions;
 import org.icgc.dcc.common.core.util.stream.Collectors;
 import org.icgc.dcc.common.core.util.stream.Streams;
 import org.icgc.dcc.pcawg.client.core.Factory;
+import org.icgc.dcc.pcawg.client.core.model.ssm.metadata.SSMMetadata;
+import org.icgc.dcc.pcawg.client.core.model.ssm.metadata.impl.PcawgSSMMetadata;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimaryFieldMapping;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.impl.PlainSSMPrimary;
+import org.icgc.dcc.pcawg.client.core.types.DataTypes;
+import org.icgc.dcc.pcawg.client.core.types.NACodeTypes;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.data.metadata.ConsensusSampleMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.ConsensusSampleMetadata.ConsensusSampleMetadataBuilder;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
-import org.icgc.dcc.pcawg.client.model.NACodes;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
 import org.icgc.dcc.pcawg.client.utils.SetLogic;
-import org.icgc.dcc.pcawg.client.model.types.DataTypes;
-import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy.VariantConverterStrategyMux;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,10 +36,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.util.Joiners.COLON;
 import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.DEFAULT_STUDY;
-import static org.icgc.dcc.pcawg.client.model.types.DataTypes.INDEL;
-import static org.icgc.dcc.pcawg.client.model.types.DataTypes.SNV_MNV;
+import static org.icgc.dcc.pcawg.client.core.types.DataTypes.INDEL;
+import static org.icgc.dcc.pcawg.client.core.types.DataTypes.SNV_MNV;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newVariantStream;
-import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.vcf.converters.variant.ConsensusVariantProcessor.newConsensusVariantProcessor;
 
 @Slf4j
@@ -393,7 +393,7 @@ public class SSMTest {
   public void testUsSSMMetadata() {
     val ssmMetadata = createSSMMetadata(DUMMY_US_CONSENSUS_SAMPLE_METADATA);
     assertCommonSMMMetadata(ssmMetadata);
-    assertThat(ssmMetadata.getRawDataRepository()).isEqualTo(NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString());
+    assertThat(ssmMetadata.getRawDataRepository()).isEqualTo(NACodeTypes.DATA_VERIFIED_TO_BE_UNKNOWN.toString());
     assertThat(ssmMetadata.getRawDataAccession()).isEqualTo(
         COLON.join(DUMMY_US_CONSENSUS_SAMPLE_METADATA.getAnalyzedFileId(), DUMMY_US_CONSENSUS_SAMPLE_METADATA.getMatchedFileId()));
   }

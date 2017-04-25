@@ -2,7 +2,7 @@ package org.icgc.dcc.pcawg.client.storage;
 
 import lombok.Getter;
 import lombok.NonNull;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 
 public class LocalStorageFileNotFoundException extends RuntimeException{
 

@@ -2,8 +2,8 @@ package org.icgc.dcc.pcawg.client.vcf;
 
 import lombok.NonNull;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.types.DataTypes;
-import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.core.types.DataTypes;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 
 import java.util.Map;
 import java.util.Set;
@@ -12,15 +12,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newEnumMap;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
-import static org.icgc.dcc.pcawg.client.model.types.DataTypes.INDEL;
-import static org.icgc.dcc.pcawg.client.model.types.DataTypes.SNV_MNV;
-import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.BROAD;
-import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.CONSENSUS;
-import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.DKFZ_EMBL;
-import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.MUSE;
-import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.SANGER;
-import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.SMUFIN;
-import static org.icgc.dcc.pcawg.client.model.types.WorkflowTypes.UNKNOWN;
+import static org.icgc.dcc.pcawg.client.core.types.DataTypes.INDEL;
+import static org.icgc.dcc.pcawg.client.core.types.DataTypes.SNV_MNV;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.BROAD;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.CONSENSUS;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.DKFZ_EMBL;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.MUSE;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.SANGER;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.SMUFIN;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.UNKNOWN;
 
 /**
  * Rules for resolving the variantion_calling_algorithm text for a given workflowType and dataType

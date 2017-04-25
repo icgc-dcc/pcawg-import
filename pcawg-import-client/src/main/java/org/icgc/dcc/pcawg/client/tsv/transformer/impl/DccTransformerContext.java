@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.tsv.transformer.impl;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 
 @Value
 @RequiredArgsConstructor

@@ -3,20 +3,20 @@ package org.icgc.dcc.pcawg.client.core;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.tsv.DccTransformerFactory;
-import org.icgc.dcc.pcawg.client.tsv.fscontroller.FsController;
+import org.icgc.dcc.pcawg.client.core.model.ssm.SSMValidator;
+import org.icgc.dcc.pcawg.client.core.model.ssm.metadata.SSMMetadata;
+import org.icgc.dcc.pcawg.client.core.model.ssm.metadata.SSMMetadataFieldMapping;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.core.model.ssm.primary.SSMPrimaryFieldMapping;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.storage.impl.PortalStorage;
-import org.icgc.dcc.pcawg.client.model.ssm.SSMValidator;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryFieldMapping;
+import org.icgc.dcc.pcawg.client.tsv.DccTransformerFactory;
 import org.icgc.dcc.pcawg.client.tsv.converter.TSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.converter.impl.SSMMetadataTSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.converter.impl.SSMPrimaryTSVConverter;
+import org.icgc.dcc.pcawg.client.tsv.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.utils.DictionaryCreator;
-import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 import java.nio.file.Path;
@@ -36,13 +36,13 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_M
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
+import static org.icgc.dcc.pcawg.client.download.query.PortalCollabVcfFileQueryCreator.newPcawgCollabQueryCreator;
+import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.downloadFileByURL;
+import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.newPortalStorage;
+import static org.icgc.dcc.pcawg.client.tsv.DccTransformerFactory.newDccTransformerFactory;
 import static org.icgc.dcc.pcawg.client.tsv.fscontroller.impl.HadoopFsController.newHadoopFsController;
 import static org.icgc.dcc.pcawg.client.tsv.fscontroller.impl.HadoopFsControllerAdapter.newHadoopFsControllerAdapter;
 import static org.icgc.dcc.pcawg.client.tsv.fscontroller.impl.LocalFsController.newLocalFsController;
-import static org.icgc.dcc.pcawg.client.tsv.DccTransformerFactory.newDccTransformerFactory;
-import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.downloadFileByURL;
-import static org.icgc.dcc.pcawg.client.storage.impl.PortalStorage.newPortalStorage;
-import static org.icgc.dcc.pcawg.client.download.query.PortalCollabVcfFileQueryCreator.newPcawgCollabQueryCreator;
 import static org.icgc.dcc.pcawg.client.utils.DictionaryCreator.newDictionaryCreator;
 
 @NoArgsConstructor(access = PRIVATE)

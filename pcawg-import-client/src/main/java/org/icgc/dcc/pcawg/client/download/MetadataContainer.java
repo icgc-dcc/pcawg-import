@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadataNotFoundException;
 import org.icgc.dcc.pcawg.client.download.context.MetadataContext;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 
 import java.io.Serializable;
 import java.util.List;

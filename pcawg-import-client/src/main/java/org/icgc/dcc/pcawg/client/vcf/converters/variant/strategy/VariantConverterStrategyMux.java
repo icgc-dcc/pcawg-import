@@ -1,7 +1,7 @@
 package org.icgc.dcc.pcawg.client.vcf.converters.variant.strategy;
 
 import htsjdk.variant.variantcontext.VariantContext;
-import org.icgc.dcc.pcawg.client.model.types.MutationTypes;
+import org.icgc.dcc.pcawg.client.core.types.MutationTypes;
 
 public class VariantConverterStrategyMux {
   private static final DeletionVariantConverterStrategy DELETION_VARIANT_CONVERTER_STRATEGY = new DeletionVariantConverterStrategy();

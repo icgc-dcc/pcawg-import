@@ -4,7 +4,7 @@ import com.google.common.io.Resources;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.assertj.core.util.Maps;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -14,9 +14,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import static org.icgc.dcc.pcawg.client.model.portal.PortalFilename.newPortalFilename;
-import static org.icgc.dcc.pcawg.client.storage.impl.LocalStorage.newLocalStorage;
+import static org.icgc.dcc.pcawg.client.core.model.portal.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
+import static org.icgc.dcc.pcawg.client.storage.impl.LocalStorage.newLocalStorage;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFEncoder;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFFileReader;
 

@@ -3,8 +3,8 @@ package org.icgc.dcc.pcawg.client.download.context;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 import org.icgc.dcc.pcawg.client.data.metadata.SampleMetadata;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 
 import java.io.Serializable;
 

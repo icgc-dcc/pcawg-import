@@ -1,6 +1,6 @@
 package org.icgc.dcc.pcawg.client.data.metadata;
 
-import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
 
 public interface SampleMetadata {
 

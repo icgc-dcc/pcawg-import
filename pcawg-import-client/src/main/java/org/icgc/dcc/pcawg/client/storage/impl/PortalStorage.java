@@ -24,7 +24,7 @@ import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 import org.icgc.dcc.pcawg.client.storage.Storage;
 
 import java.io.File;

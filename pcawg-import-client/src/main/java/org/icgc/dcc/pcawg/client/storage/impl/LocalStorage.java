@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.portal.PortalFilename;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalFilename;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 import org.icgc.dcc.pcawg.client.storage.LocalStorageFileNotFoundException;
 import org.icgc.dcc.pcawg.client.storage.Storage;
 

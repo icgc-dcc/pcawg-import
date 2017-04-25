@@ -3,8 +3,8 @@ package org.icgc.dcc.pcawg.client.data.portal;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 import org.icgc.dcc.pcawg.client.data.BasicDao;
-import org.icgc.dcc.pcawg.client.model.portal.PortalMetadata;
 
 import java.io.Serializable;
 import java.util.List;

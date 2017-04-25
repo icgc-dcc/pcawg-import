@@ -8,11 +8,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.tsv.converter.TSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.fscontroller.FsController;
 import org.icgc.dcc.pcawg.client.tsv.transformer.Transformer;
 import org.icgc.dcc.pcawg.client.tsv.writer.impl.LocalWriterContext;
-import org.icgc.dcc.pcawg.client.tsv.converter.TSVConverter;
-import org.icgc.dcc.pcawg.client.model.types.WorkflowTypes;
 
 import java.io.IOException;
 import java.io.Writer;
