@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.vcf;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;

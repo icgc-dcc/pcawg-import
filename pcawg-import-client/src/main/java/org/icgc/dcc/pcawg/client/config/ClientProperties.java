@@ -44,8 +44,11 @@ public class ClientProperties {
   public static final String SAMPLE_SHEET_TSV_URL = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/sample_sheet/"+SAMPLE_SHEET_TSV_FILENAME;
 
   public static final String OUTPUT_TSV_DIRECTORY = "/tmp/tsvDir."+System.currentTimeMillis();
-  public static final String SSM_P_TSV_FILENAME = "ssm_p.txt";
-  public static final String SSM_M_TSV_FILENAME = "ssm_m.txt";
 
+  public static final String SSM_P_TSV_FILENAME_PREFIX = "ssm_p";
+  public static final String SSM_P_TSV_FILENAME_EXTENSION = "txt";
+
+  public static final String SSM_M_TSV_FILENAME_PREFIX = "ssm_m";
+  public static final String SSM_M_TSV_FILENAME_EXTENSION = "txt";
 
 }

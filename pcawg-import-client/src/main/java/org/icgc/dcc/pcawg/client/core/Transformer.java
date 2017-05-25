@@ -29,7 +29,6 @@ public class Transformer<T> implements Closeable{
   private Transformer( final TSVConverter<T> tsvConverter, final Writer writer, final boolean writeHeader){
     this.tsvConverter = tsvConverter;
     this.writeHeader = writeHeader;
-    log.info("WriterHeader: {}", writeHeader);
     this.writer = writer;
   }
 

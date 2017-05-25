@@ -12,12 +12,15 @@ import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.PlainSSMPrimary;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary;
 
@@ -38,8 +41,10 @@ public class SSMTest {
   private static final String MULTIPLE_BASE_SUBSTITUTION_MUTATION_TYPE =
       "multiple base substitution (>=2bp and <=200bp)";
 
-  private static final String FIXED_CONSENSUS_WORKFLOW = "consensus";
-  private static final String DUMMY_ANALYSIS_ID = "myDccProjectCode_"+FIXED_CONSENSUS_WORKFLOW+"_myDataType";
+  private static final WorkflowTypes FIXED_CONSENSUS_WORKFLOW = WorkflowTypes.CONSENSUS;
+  private static final DataTypes FIXED_INDEL_DATATYPE = DataTypes.INDEL;
+  private static final String DUMMY_ANALYSIS_ID = UNDERSCORE.join("myDccProjectCode",
+      FIXED_CONSENSUS_WORKFLOW.getName(), FIXED_INDEL_DATATYPE.getName());
   private static final String DUMMY_ANALYZED_SAMPLE_ID = "myAnalyzedSampleId";
   private static final String DUMMY_MATCHED_SAMPLE_ID = "myMatchedSampleId";
 
@@ -56,9 +61,9 @@ public class SSMTest {
       .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
       .matchedSampleId(DUMMY_MATCHED_SAMPLE_ID)
       .aliquotId("myAliquotId")
-      .dataType("myDataType")
+      .dataType(DataTypes.INDEL)
       .dccProjectCode("myDccProjectCode")
-      .workflow(FIXED_CONSENSUS_WORKFLOW);
+      .workflowType(FIXED_CONSENSUS_WORKFLOW);
 
   private static final SampleMetadata DUMMY_NON_US_SAMPLE_METADATA = TEMPLATE_SAMPLE_METADATA_BUILDER
       .isUsProject(false)
@@ -269,7 +274,8 @@ public class SSMTest {
 
   private static final SSMMetadata createSSMMetadata(SampleMetadata sampleMetadata){
     return PcawgSSMMetadata.newSSMMetadataImpl(
-        sampleMetadata.getWorkflow(),
+        sampleMetadata.getWorkflowType().getName(),
+        sampleMetadata.getDataType().getName(),
         sampleMetadata.getMatchedSampleId(),
         sampleMetadata.getAnalysisId(),
         sampleMetadata.getAnalyzedSampleId(),

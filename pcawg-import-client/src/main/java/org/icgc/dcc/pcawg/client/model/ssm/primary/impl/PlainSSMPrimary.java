@@ -9,6 +9,33 @@ import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 @Value
 public class PlainSSMPrimary implements SSMPrimary {
 
+  public static PlainSSMPrimaryBuilder builderWith(SSMPrimary p){
+    return builder()
+              .analysisId                      (p.getAnalysisId())
+              .analyzedSampleId                (p.getAnalyzedSampleId())
+              .mutationType                    (p.getMutationType())
+              .pcawgFlag                       (p.getPcawgFlag())
+              .chromosome                      (p.getChromosome())
+              .chromosomeStart                 (p.getChromosomeStart())
+              .chromosomeEnd                   (p.getChromosomeEnd())
+              .chromosomeStrand                (p.getChromosomeStrand())
+              .referenceGenomeAllele           (p.getReferenceGenomeAllele())
+              .controlGenotype                 (p.getControlGenotype())
+              .mutatedFromAllele               (p.getMutatedFromAllele())
+              .tumorGenotype                   (p.getTumorGenotype())
+              .mutatedToAllele                 (p.getMutatedToAllele())
+              .expressedAllele                 (p.getExpressedAllele())
+              .qualityScore                    (p.getQualityScore())
+              .probability                     (p.getProbability())
+              .totalReadCount                  (p.getTotalReadCount())
+              .mutantAlleleReadCount           (p.getMutantAlleleReadCount())
+              .verificationStatus              (p.getVerificationStatus())
+              .verificationPlatform            (p.getVerificationPlatform())
+              .biologicalValidationStatus      (p.getBiologicalValidationStatus())
+              .biologicalValidationPlatform    (p.getBiologicalValidationPlatform())
+              .note                            (p.getNote());
+  }
+
  @NonNull private final String   analysisId;
  @NonNull private final String   analyzedSampleId;
  @NonNull private final String   mutationType;

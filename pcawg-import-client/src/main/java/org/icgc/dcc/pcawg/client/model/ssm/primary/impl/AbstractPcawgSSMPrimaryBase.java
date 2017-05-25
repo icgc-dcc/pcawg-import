@@ -10,10 +10,10 @@ import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 
-import java.util.Optional;
-
-import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PROTECTED;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getAltCount;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getChomosome;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getRefCount;
 
 /**
  * Common implementations for all subclasses of AbstractPcawgSSMPrimaryBase
@@ -23,9 +23,11 @@ public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {
 
   private static final int DEFAULT_STRAND = 1;
   private static final String DEFAULT_VERIFICATION_STATUS = "not tested";
-  private static final String T_REF_COUNT = "t_ref_count";
-  private static final String T_ALT_COUNT = "t_alt_count";
   private static final Joiner ALLELE_JOINER = Joiners.SLASH;
+
+  public static String joinAlleles(String ref, String alt){
+    return ALLELE_JOINER.join(ref, alt);
+  }
 
 
   @NonNull
@@ -48,7 +50,7 @@ public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {
 
   @Override
   public String getChromosome() {
-    return variant.getContig();
+    return getChomosome(variant);
   }
 
   @Override
@@ -71,27 +73,11 @@ public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {
     return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
-  private Optional<Integer> getIntAttribute(String attr) {
-    val info = variant.getCommonInfo();
-    if (!info.hasAttribute(attr)){
-      return Optional.empty();
-    }
-    return Optional.of(info.getAttributeAsInt(attr, -1));
-  }
-
-  private Optional<Integer> getAltCount() {
-    return getIntAttribute(T_ALT_COUNT);
-  }
-
-  private Optional<Integer> getRefCount() {
-    return getIntAttribute(T_REF_COUNT);
-  }
-
   //TODO: this is only for consensus and is baked in for now. Will need CallProcessors that implement specific ways to get the data needed, such as total_read_count, mutant_allele_read_count...etc
   @Override
   public int getTotalReadCount() {
-    val altCount = getAltCount();
-    val refCount = getRefCount();
+    val altCount = getAltCount(variant);
+    val refCount = getRefCount(variant);
     if (altCount.isPresent() && refCount.isPresent()){
       return altCount.get()+refCount.get();
     } else {
@@ -101,7 +87,7 @@ public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {
 
   @Override
   public int getMutantAlleleReadCount() {
-    val altCount = getAltCount();
+    val altCount = getAltCount(variant);
     if (altCount.isPresent()){
       return altCount.get();
     } else {
@@ -138,36 +124,6 @@ public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {
   @Override
   public boolean getPcawgFlag() {
     return true;
-  }
-
-  protected int getReferenceAlleleLength(){
-    return variant.getReference().length();
-  }
-
-  protected String getReferenceAlleleString(){
-    return variant.getReference().getBaseString();
-  }
-
-  /**
-   * TODO: Assumption is there there is ONLY ONE alternative allele.
-   * @throws IllegalStateException for when there is more than one alternative allele
-   */
-  protected int getAlternativeAlleleLength(){
-    checkState(variant.getAlternateAlleles().size() == 1, "There is more than one alternative allele");
-    return variant.getAlternateAllele(0).length();
-  }
-
-  /**
-   * TODO: Assumption is there there is ONLY ONE alternative allele.
-   * @throws IllegalStateException for when there is more than one alternative allele
-   */
-  protected String getAlternativeAlleleString() {
-    checkState(getVariant().getAlternateAlleles().size() == 1, "There is more than one alternative allele");
-    return getVariant().getAlternateAllele(0).getBaseString(); //get first alternative allele
-  }
-
-  protected String joinAlleles(String ref, String alt){
-    return ALLELE_JOINER.join(ref, alt);
   }
 
 }

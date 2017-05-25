@@ -40,5 +40,4 @@ public class ApplicationConfig {
       @NonNull
       private String hdfs_port = "8020";
 
-      private boolean append = false;
 }

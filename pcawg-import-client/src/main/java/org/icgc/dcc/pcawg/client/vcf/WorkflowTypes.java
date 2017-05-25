@@ -17,39 +17,90 @@
  */
 package org.icgc.dcc.pcawg.client.vcf;
 
-import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 import java.util.Set;
+import java.util.function.Predicate;
+
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
+import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 
 @RequiredArgsConstructor
 @Getter
 public enum WorkflowTypes {
 
-  CONSENSUS("consensus", ImmutableSet.of(" PCAWG SNV-MNV callers", "PCAWG InDel callers")),
-  SANGER("sanger", ImmutableSet.of("Sanger variant call pipeline")),
-  DKFZ_EMBL("dkfz/embl", ImmutableSet.of("DKFZ/EMBL variant call pipeline")),
-  BROAD("broad", ImmutableSet.of("Broad variant call pipeline")),
-  MUSE("muse", ImmutableSet.of("MUSE variant call pipeline") );
+  CONSENSUS("consensus", set(" PCAWG SNV-MNV callers", "PCAWG InDel callers")),
+  SANGER("sanger", set("Sanger variant call pipeline")),
+  DKFZ_EMBL("dkfz", set("DKFZ/EMBL variant call pipeline")),
+  BROAD("broad", set("Broad variant call pipeline")),
+  MUSE("muse", set("MUSE variant call pipeline") ),
+  SMUFIN("smufin", set("SMUFIN variant call pipeline") ),
+  UNKNOWN("unknown", set("UNKNOWN variant call pipeline") );
+
+  private static final boolean DEFAULT_NO_ERRORS_FLAG = false;
+  private static Set<String> set(String ... strings){
+    return stream(strings).collect(toImmutableSet());
+  }
 
   @NonNull
-  private String realName;
+  private final String name;
 
   @NonNull
-  private Set<String> portalSoftwareNames;
+  private final Set<String> portalSoftwareNames;
 
   public boolean equals(@NonNull final String name) {
-    return getRealName().equals(name);
+    return this.getName().equals(name);
+  }
+
+  public boolean isAtBeginningOf(@NonNull final String name) {
+    return name.matches("^" + this.getName() + ".*");
   }
 
   public boolean isIn(@NonNull final String name) {
-    return name.matches("^" + getRealName() + ".*");
+    return name.contains(this.getName());
+  }
+
+  private static WorkflowTypes parse(String name, Predicate<WorkflowTypes> predicate){
+    for (val v : values()){
+      if (predicate.test(v)){
+        return v;
+      }
+    }
+    return WorkflowTypes.UNKNOWN;
+  }
+
+  public static WorkflowTypes parseStartsWith(String name, boolean check){
+    val workflowType = parse(name, w -> w.isAtBeginningOf(name) );
+    if (check){
+      checkState(workflowType != WorkflowTypes.UNKNOWN, "%s does not contain a workflowType that starts with [%s]", WorkflowTypes.class.getName(), name);
+    }
+    return workflowType;
+  }
+
+  public static WorkflowTypes parseMatch(String name, boolean check){
+    val workflowType = parse(name, w -> w.equals(name) );
+    if (check) {
+      checkState(workflowType != WorkflowTypes.UNKNOWN, "The name [%s] does not match any workflowType name in %s", name,
+          WorkflowTypes.class.getName());
+    }
+    return workflowType;
+  }
+
+  public static WorkflowTypes parseContains(String name, boolean check){
+    val workflowType = parse(name, w -> w.isIn(name) );
+    if (check) {
+      checkState(workflowType != WorkflowTypes.UNKNOWN, "The name [%s] does exist in any of the workflowTypes in %s", name,
+          WorkflowTypes.class.getName());
+    }
+    return workflowType;
   }
 
   @Override
   public String toString() {
-    return getRealName();
+    return this.getName();
   }
 }

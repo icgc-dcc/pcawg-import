@@ -6,6 +6,13 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getAlternativeAlleleLength;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getFirstAlternativeAllele;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAllele;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getReferenceAlleleLength;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.getStart;
+import static org.icgc.dcc.pcawg.client.vcf.VCF.removeFirstBase;
+
 @Slf4j
 public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
 
@@ -22,8 +29,9 @@ public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
   }
 
   private MutationTypes calcMutationType(){
-    val refLength = getReferenceAlleleLength();
-    val altLength = getAlternativeAlleleLength();
+    val v = getVariant();
+    val refLength = getReferenceAlleleLength(v);
+    val altLength = getAlternativeAlleleLength(v);
     if(altLength >refLength){
       return MutationTypes.INSERTION_LTE_200BP;
     } else if(altLength < refLength){
@@ -44,60 +52,63 @@ public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
 
   @Override
   public int getChromosomeStart() {
-    return getVariant().getStart()+1;
+    return getStart(getVariant())+1;
   }
 
   @Override
   public int getChromosomeEnd() {
+    val v = getVariant();
     int end = NACodes.CORRUPTED_DATA.toInt();
     if (mutationType == MutationTypes.INSERTION_LTE_200BP){
-      end = getVariant().getStart()+1;
+      end = getStart(v)+1;
     } else if (mutationType == MutationTypes.DELETION_LTE_200BP){
-      end = getVariant().getStart()+getReferenceAlleleLength()-1;
+      end = getStart(v)+getReferenceAlleleLength(v)-1;
     }
     return end;
   }
 
   @Override
   public String getReferenceGenomeAllele() {
-    return getValueBasedOnMutationType("-", getReferenceAlleleSubstring());
+    return getValueBasedOnMutationType("-", getStrippedReferenceAlleleString());
   }
 
   @Override
   public String getControlGenotype() {
-    val allele = getReferenceAlleleSubstring();
+    val allele = getStrippedReferenceAlleleString();
     return getValueBasedOnMutationType(
         joinAlleles("-","-"),
         joinAlleles(allele, allele));
   }
 
-  private String getReferenceAlleleSubstring(){
-    return getReferenceAlleleString().substring(1);
+  private String getStrippedReferenceAlleleString(){
+    return removeFirstBase(getReferenceAllele(getVariant()));
   }
 
   /**
    * TODO: Assumption is there there is ONLY ONE alternative allele.
    * @throws IllegalStateException for when there is more than one alternative allele
    */
-  private String getAlternativeAlleleSubstring(){
-    return getAlternativeAlleleString().substring(1);
+  private String getStrippedAlternativeAlleleString(){
+    val variant = getVariant();
+    val firstAllele = getFirstAlternativeAllele(variant);
+    return removeFirstBase(firstAllele);
   }
 
   @Override
   public String getMutatedFromAllele() {
-    return getValueBasedOnMutationType("-", getReferenceAlleleSubstring());
+    return getValueBasedOnMutationType("-", getStrippedReferenceAlleleString());
   }
 
   @Override
   public String getTumorGenotype() {
     return getValueBasedOnMutationType(
-        joinAlleles("-", getAlternativeAlleleSubstring()),
-        joinAlleles(getReferenceAlleleSubstring(),"-" ));
+        joinAlleles("-", getStrippedAlternativeAlleleString()),
+        joinAlleles(getStrippedReferenceAlleleString(),"-" ));
   }
 
   @Override
   public String getMutatedToAllele() {
-    return getValueBasedOnMutationType(getAlternativeAlleleSubstring(), "-");
+    return getValueBasedOnMutationType(getStrippedAlternativeAlleleString(), "-");
   }
 
   private String getValueBasedOnMutationType(String insertionOption, String deletionOption){

@@ -98,7 +98,7 @@ public class PortalFilename implements Serializable, Comparable<PortalFilename> 
     boolean found = false;
     WorkflowTypes foundWorkflowType = null;
     for (WorkflowTypes workflowType : WorkflowTypes.values()) {
-      if (workflowType.isIn(workflow)) {
+      if (workflowType.isAtBeginningOf(workflow)) {
         foundWorkflowType = workflowType;
         found = true;
         break;

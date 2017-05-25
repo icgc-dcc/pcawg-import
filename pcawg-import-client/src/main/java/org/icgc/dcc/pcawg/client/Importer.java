@@ -17,24 +17,23 @@
  */
 package org.icgc.dcc.pcawg.client;
 
-import htsjdk.variant.vcf.VCFFileReader;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.FileWriterContext;
-import org.icgc.dcc.pcawg.client.download.Storage;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
+import org.icgc.dcc.pcawg.client.core.writer.FileWriterContextFactory;
+import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter;
 
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME;
+import static org.icgc.dcc.common.core.util.Joiners.PATH;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_PREFIX;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_EXTENSION;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_PREFIX;
 import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformer;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformer;
-import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
+import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformerFactory;
+import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformerFactory;
+import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
 
 @Slf4j
 @Builder
@@ -60,36 +59,53 @@ public class Importer implements Runnable {
   @NonNull
   private final String hdfsPort;
 
-  private final boolean append;
 
-  private FileWriterContext.FileWriterContextBuilder createFileWriterContextBuilder(String dccProjectCode){
-    return FileWriterContext.builder()
-        .dccProjectCode(dccProjectCode)
+  // 1. now need to remove these members, and just make ssm_type_enum (with SSM_M and SMM_P), and then this method
+
+  private FileWriterContextFactory buildSSMPrimaryFWCtxFactory(){
+    return FileWriterContextFactory.builder()
         .outputDirectory(outputTsvDir)
+        .fileNamePrefix(SSM_P_TSV_FILENAME_PREFIX)
+        .fileExtension(SSM_P_TSV_FILENAME_EXTENSION)
+        .append(true)
         .hostname(hdfsHostname)
         .port(hdfsPort)
-        .append(append);
-  }
-  private FileWriterContext createSSMPrimaryFileWriterContext(String dccProjectCode){
-    return createFileWriterContextBuilder(dccProjectCode)
-        .outputTsvFilename(SSM_P_TSV_FILENAME)
         .build();
   }
 
-  private FileWriterContext createSSMMetadataFileWriterContext(String dccProjectCode){
-    return createFileWriterContextBuilder(dccProjectCode)
-        .outputTsvFilename(SSM_M_TSV_FILENAME)
+  private FileWriterContextFactory buildSSMMetadataFWCtxFactory(){
+    return FileWriterContextFactory.builder()
+        .outputDirectory(outputTsvDir)
+        .fileNamePrefix(SSM_M_TSV_FILENAME_PREFIX)
+        .fileExtension(SSM_M_TSV_FILENAME_EXTENSION)
+        .append(true)
+        .hostname(hdfsHostname)
+        .port(hdfsPort)
+        .build();
+  }
+
+  private ConsensusVCFConverter buildConsensusVCFConverter(){
+    val metadataTransformerFactory = newSSMMetadataTransformerFactory(hdfsEnabled);
+    val metadataFWCtxFactory = buildSSMMetadataFWCtxFactory();
+
+    val primaryTransformerFactory = newSSMPrimaryTransformerFactory(hdfsEnabled);
+    val primaryFWCtxFactory = buildSSMPrimaryFWCtxFactory();
+
+    return ConsensusVCFConverter.builder()
+        .metadataFWCtxFactory(metadataFWCtxFactory)
+        .metadataTransformerFactory(metadataTransformerFactory)
+        .primaryFWCtxFactory(primaryFWCtxFactory)
+        .primaryTransformerFactory(primaryTransformerFactory)
         .build();
   }
 
   @Override
   @SneakyThrows
   public void run() {
+    val consensusVCFConverter = buildConsensusVCFConverter();
     // Create container with all MetadataContexts
     val metadataContainer = newMetadataContainer();
 
-    // Create storage manager for downloading files
-    val storage = Storage.newStorage(persistVcfDownloads, outputVcfDir, bypassMD5Check, token);
 
     val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
     int countMetadataContexts = 0;
@@ -97,55 +113,33 @@ public class Importer implements Runnable {
     val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
     int countDccProjectCodes  = 0;
 
-    for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
-      log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
+    // Loop through each dccProjectCode
+    for (val dccProjectCode : metadataContainer.getDccProjectCodes()) {
+      log.info("Processing DccProjectCode ( {} / {} ): {}",
+          ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
 
-      //Create FileWriterContexts for this dccProjectCode
-      val ssmPrimaryFileWriterContext = createSSMPrimaryFileWriterContext(dccProjectCode);
-      val ssmMetadataFileWriterContext = createSSMMetadataFileWriterContext(dccProjectCode);
+      // Create storage manager for downloading files
+      val vcfDownloadDirectory = PATH.join(outputVcfDir, dccProjectCode);
+      val storage = newStorage(persistVcfDownloads, vcfDownloadDirectory , bypassMD5Check, token);
 
-      //Create transformers for this dccProjectCode
-      val ssmPrimaryTransformer  = newSSMPrimaryTransformer(ssmPrimaryFileWriterContext, hdfsEnabled);
-      val ssmMetadataTransformer = newSSMMetadataTransformer(ssmMetadataFileWriterContext,hdfsEnabled);
-
-      for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
-        val sampleMetadata = metadataContext.getSampleMetadata();
+      // Loop through each file for a particular dccProjectCode
+      for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)) {
         val portalMetadata = metadataContext.getPortalMetadata();
 
-        // Download file
-        val file = storage.downloadFile(portalMetadata);
+        log.info("Loading File ( {} / {} ): {}",
+            ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
 
-        val dataType = sampleMetadata.getDataType();
-        log.info("Loading File ( {} / {} ): {}", ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
+        // Download vcfFile
+        val vcfFile = storage.downloadFile(portalMetadata);
 
-        //Write SSM Metadata to file
-        val ssmMetadata = newSSMMetadata(sampleMetadata);
-        ssmMetadataTransformer.transform(ssmMetadata);
+        // Get sampleMetadata
+        val sampleMetadata = metadataContext.getSampleMetadata();
 
-        // Write SSM Primary to file
-        val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
-        for (val variant : vcf){
-          SSMPrimary ssmPrimary = null;
-          //TODO: clean up this hardcoding. Create VCF class that does this conversion and processing, and ecapsulated this logic
-            if (dataType.toLowerCase().contains("indel")){
-              ssmPrimary = newIndelSSMPrimary(
-                          variant,
-                          sampleMetadata.getAnalysisId(),
-                          sampleMetadata.getAnalyzedSampleId());
-            } else if(dataType.toLowerCase().contains("snv_mnv")){
-              ssmPrimary = SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary(
-                  variant,
-                  sampleMetadata.getAnalysisId(),
-                  sampleMetadata.getAnalyzedSampleId());
-            } else {
-              throw new IllegalStateException("The dataType "+dataType+" is unrecognized");
-            }
-          ssmPrimaryTransformer.transform(ssmPrimary);
-        }
+        // Converter Consensus VCF files
+        consensusVCFConverter.process(vcfFile, sampleMetadata);
       }
-      ssmPrimaryTransformer.close();
-      ssmMetadataTransformer.close();
     }
   }
+
 
 }

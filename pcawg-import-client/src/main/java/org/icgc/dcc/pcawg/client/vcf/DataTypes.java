@@ -17,20 +17,80 @@
  */
 package org.icgc.dcc.pcawg.client.vcf;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+
+import java.util.function.Predicate;
+
+import static com.google.common.base.Preconditions.checkState;
 
 @RequiredArgsConstructor
 public enum DataTypes {
   INDEL("indel"),
-  SNV_MNV("snv_mnv");
+  SNV_MNV("snv_mnv"),
+  CNV("cnv"),
+  SV("sv"),
+  UNKNOWN("unknown");
+
+  private static final String CLASS_NAME = DataTypes.class.getCanonicalName();
 
   @NonNull
+  @Getter
   private final String name;
+
+  public boolean equals(@NonNull final String name) {
+    return this.getName().equals(name);
+  }
+
+  public boolean isAtBeginningOf(@NonNull final String name) {
+    return name.matches("^" + this.getName() + ".*");
+  }
+
+  public boolean isIn(@NonNull final String name) {
+    return name.contains(this.getName());
+  }
+
+  private static DataTypes parse(String name, Predicate<DataTypes> predicate){
+    for (val v : values()){
+      if (predicate.test(v)){
+        return v;
+      }
+    }
+    return DataTypes.UNKNOWN;
+  }
+
+  public static DataTypes parseStartsWith(String name, boolean check){
+    val dataType = parse(name, d -> d.isAtBeginningOf(name) );
+    if (check){
+      checkState(dataType != DataTypes.UNKNOWN,
+          "%s does not contain a dataType that starts with [%s]", CLASS_NAME, name);
+    }
+    return dataType;
+  }
+
+  public static DataTypes parseMatch(String name, boolean check){
+    val dataType = parse(name, d -> d.equals(name) );
+    if (check) {
+      checkState(dataType != DataTypes.UNKNOWN,
+          "The name [%s] does not match any dataType name in %s", name, CLASS_NAME);
+    }
+    return dataType;
+  }
+
+  public static DataTypes parseContains(String name, boolean check){
+    val dataType = parse(name, d -> d.isIn(name) );
+    if (check) {
+      checkState(dataType != DataTypes.UNKNOWN,
+          "The name [%s] does exist in any of the dataTypes in %s", name, CLASS_NAME);
+    }
+    return dataType;
+  }
 
   @Override
   public String toString() {
-    return name();
+    return getName();
   }
 
 }

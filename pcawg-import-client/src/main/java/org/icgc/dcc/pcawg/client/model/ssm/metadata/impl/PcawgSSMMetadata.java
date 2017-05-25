@@ -17,6 +17,7 @@ public class PcawgSSMMetadata implements SSMMetadata {
   private static final String EGA = "EGA";
 
   public static final PcawgSSMMetadata newSSMMetadataImpl(String variationCallingAlgorithm,
+      String  dataTypeName,
       String matchedSampleId,
       String analysisId,
       String analyzedSampleId,

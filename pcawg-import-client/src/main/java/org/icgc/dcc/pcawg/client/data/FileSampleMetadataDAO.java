@@ -10,6 +10,8 @@ import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel;
 import org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,6 +28,8 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
 
   private static final String WGS = "WGS";
   private static final String NORMAL = "normal";
+  private static final boolean F_CHECK_CORRECT_WORKTYPE = true;
+  private static final boolean F_CHECK_CORRECT_DATATYPE = true;
 
   public static FileSampleMetadataDAO newFileSampleMetadataDAO(String sampleSheetFilename, boolean sampleSheetHasHeader,
       String uuid2BarcodeSheetFilename, boolean uuid2BarcodeSheetHasHeader){
@@ -112,8 +116,8 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
   @Override
   public SampleMetadata fetchSampleMetadata(PortalFilename portalFilename){
     val aliquotId = portalFilename.getAliquotId();
-    val workflow =  portalFilename.getWorkflow();
-    val dataType =  portalFilename.getDataType();
+    val workflowType = WorkflowTypes.parseStartsWith(portalFilename.getWorkflow(), F_CHECK_CORRECT_WORKTYPE);
+    val dataType = DataTypes.parseMatch(portalFilename.getDataType(), F_CHECK_CORRECT_DATATYPE);
     val sampleSheetByAliquotId = getFirstSampleSheet(aliquotId);
     val dccProjectCode = sampleSheetByAliquotId.getDccProjectCode();
     val submitterSampleId = sampleSheetByAliquotId.getSubmitterSampleId();
@@ -129,7 +133,7 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
         .aliquotId(aliquotId)
         .isUsProject(isUsProject)
         .dataType(dataType)
-        .workflow(workflow)
+        .workflowType(workflowType)
         .build();
   }
 
