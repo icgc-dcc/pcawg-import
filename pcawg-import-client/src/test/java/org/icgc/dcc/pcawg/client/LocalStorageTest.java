@@ -109,7 +109,6 @@ public class LocalStorageTest {
 
   @Test
   @SneakyThrows
-  @Ignore("used to verify number in portal")
   public void testFilter(){
     val printer = new FileWriter("rob.vcf", false);
     val varFiltFactory = newVariantFilterFactory(false, true);
@@ -212,6 +211,7 @@ public class LocalStorageTest {
 
   @Test
   @SneakyThrows
+  @Ignore("used to verify number in portal")
   public void testConsensusCount(){
     val dirpath = Paths.get("/Users/rtisma/Documents/oicr/pcawgConsensusVCFs/pcawg_consensus_vcf");
     val bypassMd5Check = false;
