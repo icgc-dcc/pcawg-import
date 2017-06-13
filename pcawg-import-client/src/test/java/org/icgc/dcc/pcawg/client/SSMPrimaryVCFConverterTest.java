@@ -181,8 +181,8 @@ public class SSMPrimaryVCFConverterTest {
     val vcfStreamFilter = newVCFStreamFilter(vcfPath,sampleMetadataConsensus,variantFilterFactory);
     vcfStreamFilter.streamFilteredVariants();
 
-    assertThat(vcfStreamFilter.getTotalNumVariants()).isEqualTo(totalNumVariants);
-    assertThat(vcfStreamFilter.getFilteredNumVariants()).isEqualTo(filteredNumVariants);
+    assertThat(vcfStreamFilter.getTotalVariantCounter().getCount()).isEqualTo(totalNumVariants);
+    assertThat(vcfStreamFilter.getAfterTCGSFilterCounter().getCount()).isEqualTo(filteredNumVariants);
   }
 
   private static final String DUMMY_ALIQUOT_ID = "1q2w3e4r5t";

@@ -2,6 +2,7 @@ package org.icgc.dcc.pcawg.client.vcf.converters.file;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -40,8 +41,9 @@ public class VCFStreamFilter {
   /**
    * State
    */
-  private Countable<Integer> variantBeforeFilterCounter ;
-  private Countable<Integer> variantAfterFilterCounter ;
+  @Getter private Countable<Integer> totalVariantCounter;
+  @Getter private Countable<Integer> afterQualityFilterCounter;
+  @Getter private Countable<Integer> afterTCGSFilterCounter;
 
   public VCFStreamFilter(VCFFileReader vcf, VariantFilter variantFilter) {
     this.vcf = vcf;
@@ -50,23 +52,18 @@ public class VCFStreamFilter {
   }
 
   private void resetStreamState(){
-    variantBeforeFilterCounter = newDefaultIntegerCounter();
-    variantAfterFilterCounter = newDefaultIntegerCounter();
+    totalVariantCounter = newDefaultIntegerCounter();
+    afterTCGSFilterCounter = newDefaultIntegerCounter();
+    afterQualityFilterCounter = newDefaultIntegerCounter();
   }
 
   public Stream<VariantContext> streamFilteredVariants(){
     return stream(vcf)
-        .map(variantBeforeFilterCounter::streamIncr)
-        .filter(variantFilter::passedAllFilters)
-        .map(variantAfterFilterCounter::streamIncr);
-  }
-
-  public int getTotalNumVariants(){
-    return variantBeforeFilterCounter.getCount();
-  }
-
-  public int getFilteredNumVariants(){
-    return variantAfterFilterCounter.getCount();
+        .map(totalVariantCounter::streamIncr)
+        .filter(variantFilter::passedNoiseFilter)
+        .map(afterQualityFilterCounter::streamIncr)
+        .filter(variantFilter::passedTcgaFilter)
+        .map(afterTCGSFilterCounter::streamIncr);
   }
 
 }

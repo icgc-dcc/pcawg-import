@@ -15,10 +15,10 @@ import java.io.IOException;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PORTAL_METADATA_DAO_COLLAB_PERSISTANCE_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PORTAL_METADATA_DAO_NO_COLLAB_PERSISTANCE_FILENAME;
+import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.data.portal.PortalMetadataDao.newPortalMetadataDao;
 import static org.icgc.dcc.pcawg.client.download.query.PortalAllVcfFileQueryCreator.newPortalAllVcfFileQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.query.PortalCollabVcfFileQueryCreator.newPcawgCollabQueryCreator;
-import static org.icgc.dcc.pcawg.client.core.types.WorkflowTypes.CONSENSUS;
 
 @AllArgsConstructor
 public class PortalMetadataDaoFactory {
