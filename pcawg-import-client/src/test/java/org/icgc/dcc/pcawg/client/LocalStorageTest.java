@@ -2,9 +2,16 @@ package org.icgc.dcc.pcawg.client;
 
 import com.google.common.io.Resources;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.assertj.core.util.Maps;
+import org.assertj.core.util.Sets;
+import org.icgc.dcc.pcawg.client.core.PersistedFactory;
 import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
+import org.icgc.dcc.pcawg.client.core.types.WorkflowTypes;
+import org.icgc.dcc.pcawg.client.data.factory.PortalMetadataDaoFactory;
+import org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory;
+import org.icgc.dcc.pcawg.client.utils.persistance.LocalFileRestorerFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -14,12 +21,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import static org.assertj.core.util.Lists.newArrayList;
 import static org.icgc.dcc.pcawg.client.core.model.portal.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.filter.variant.VariantFilterFactory.newVariantFilterFactory;
 import static org.icgc.dcc.pcawg.client.storage.impl.LocalStorage.newLocalStorage;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFEncoder;
 import static org.icgc.dcc.pcawg.client.vcf.VCF.newDefaultVCFFileReader;
+import static org.icgc.dcc.pcawg.client.vcf.converters.file.VCFStreamFilter.newVCFStreamFilter;
 
+@Slf4j
 public class LocalStorageTest {
 
   private static final String LOCAL_STORAGE_DIR_PATH = "fixtures/localStorage";
@@ -99,7 +109,7 @@ public class LocalStorageTest {
 
   @Test
   @SneakyThrows
-  @Ignore
+  @Ignore("used to verify number in portal")
   public void testFilter(){
     val printer = new FileWriter("rob.vcf", false);
     val varFiltFactory = newVariantFilterFactory(false, true);
@@ -198,6 +208,66 @@ public class LocalStorageTest {
 
 
 
+  }
+
+  @Test
+  @SneakyThrows
+  public void testConsensusCount(){
+    val dirpath = Paths.get("/Users/rtisma/Documents/oicr/pcawgConsensusVCFs/pcawg_consensus_vcf");
+    val bypassMd5Check = false;
+    val storage = newLocalStorage(dirpath,bypassMd5Check);
+    val f = LocalFileRestorerFactory.newFileRestorerFactory("rob.persistence");
+    val portalF = PortalMetadataDaoFactory.newAllPortalMetadataDaoFactory(f);
+    val portalMetadataDao = portalF.createPortalMetadataDao();
+    val variantFilterFactory = VariantFilterFactory.newVariantFilterFactory(false, false);
+    val persistedFactory = PersistedFactory.newPersistedFactory(f, true);
+    val sampleMetadataDao = persistedFactory.newSampleMetadataDAO();
+    long total = 0;
+    long afterFilterTotal = 0;
+    long fileCount = 0;
+
+    val US_POS = 0;
+    val NONUS_POS = 1;
+    val totalVariantsCountArray = new long[]{0,0};
+    val afterQualityFilterCountArray = new long[]{0,0};
+    val afterTcgaFilterCountArray = new long[]{0,0};
+    val totalFiles = new long[]{0,0};
+    val projects = newArrayList(Sets.<String>newHashSet(), Sets.<String>newHashSet());
+
+    val totaltotalFiles = portalMetadataDao.findAll().size();
+    for (val p : portalMetadataDao.findAll()){
+      val vcfFile = storage.getFile(p);
+      val workflow = WorkflowTypes.parseMatch(p.getPortalFilename().getWorkflow(), false);
+      if (workflow == WorkflowTypes.CONSENSUS){
+        val portalFilename = p.getPortalFilename();
+        val sampleMetadata = sampleMetadataDao.fetchSampleMetadata(portalFilename);
+        val isUsProject = sampleMetadata.isUsProject();
+        val dccProjectCode = sampleMetadata.getDccProjectCode();
+
+        val vcfStreamFilter = newVCFStreamFilter(vcfFile.toPath(),sampleMetadata, variantFilterFactory);
+        vcfStreamFilter.streamFilteredVariants().count();
+        val pos = isUsProject ? US_POS : NONUS_POS;
+          totalVariantsCountArray[pos] += vcfStreamFilter.getTotalVariantCounter().getCount();
+          afterQualityFilterCountArray[pos] += vcfStreamFilter.getAfterQualityFilterCounter().getCount();
+          afterTcgaFilterCountArray[pos] += vcfStreamFilter.getAfterTCGSFilterCounter().getCount();
+          totalFiles[pos]++;
+          projects.get(pos).add(dccProjectCode);
+        log.info("[{}]: Processed File ({} / {}) -- isUsProject: {}",dccProjectCode, ++fileCount, totaltotalFiles, isUsProject );
+      }
+    }
+    log.info("US Projects Summary:\n\ttotalProjects: {}\n\ttotalFiles: {}\n\ttotalVariantsCount: {}\n\tafterQualityFilterCount: {}\n\tafterTCGAFilterCount: {}",
+        projects.get(US_POS).size(),
+        totalFiles[US_POS],
+        totalVariantsCountArray[US_POS],
+        afterQualityFilterCountArray[US_POS],
+        afterTcgaFilterCountArray[US_POS]);
+
+    log.info("NON-US Projects Summary:\n\ttotalProjects: {}\n\ttotalFiles: {}\n\ttotalVariantsCount: {}\n\tafterQualityFilterCount: {}\n\tafterTCGAFilterCount: {}",
+        projects.get(NONUS_POS).size(),
+        totalFiles[NONUS_POS],
+        totalVariantsCountArray[NONUS_POS],
+        afterQualityFilterCountArray[NONUS_POS],
+        afterTcgaFilterCountArray[NONUS_POS]);
   }
 
 }
