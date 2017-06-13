@@ -62,6 +62,11 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
                 <artifactId>dcc-release-core</artifactId>
                 <version>5.0.0</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>dcc-release</artifactId>
+                <version>5.0.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -80,7 +85,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <properties>
         <!-- Versions - DCC -->
-        <dcc-common.version>4.2.15</dcc-common.version>
+        <dcc-common.version>4.3.11</dcc-common.version>
     </properties>
 
 </project>

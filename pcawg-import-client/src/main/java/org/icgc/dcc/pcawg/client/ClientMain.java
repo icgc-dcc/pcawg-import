@@ -27,6 +27,10 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Optional;
+
+import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
+
 @SpringBootApplication
 @Slf4j
 @Configuration
@@ -48,10 +52,19 @@ public class ClientMain implements CommandLineRunner {
         .persistVcfDownloads(applicationConfig.isPersist())
         .bypassMD5Check(applicationConfig.isBypass_md5())
         .outputTsvDir(applicationConfig.getTsv_dir())
-        .hdfsHostname(applicationConfig.getHdfs_hostname())
-        .hdfsPort(applicationConfig.getHdfs_port())
+        .optionalHdfsHostname(Optional.ofNullable(applicationConfig.getHdfs_hostname()))
+        .optionalHdfsPort(Optional.ofNullable(applicationConfig.getHdfs_port()))
+        .useCollab(applicationConfig.isUse_collab())
+        .bypassNoiseFiltering(applicationConfig.isBypass_noise_filter())
+        .bypassTcgaFiltering(applicationConfig.isBypass_tcga_filter())
+        .enableSSMValidation(applicationConfig.isEnable_ssm_validation())
         .build();
-    importer.run();
+
+    try{
+      importer.run();
+    } catch (Exception e){
+      log.error("Failed to run Importer with exception [{}] : [Message] -- {}:\n{} ", e.getClass().getSimpleName(), e.getMessage(), NEWLINE.join(e.getStackTrace()));
+    }
 
   }
 

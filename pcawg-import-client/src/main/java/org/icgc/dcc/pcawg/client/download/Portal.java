@@ -31,7 +31,7 @@ public class Portal {
   private final ObjectNodeConverter jsonQueryGenerator;
 
   @SneakyThrows
-  private  URL getUrl(int size, int from) {
+  public URL getUrl(int size, int from) {
     val endpoint = PORTAL_API + REPOSITORY_FILES_ENDPOINT;
     val include = "facets";
     val filters = URLEncoder.encode(jsonQueryGenerator.toObjectNode().toString(), UTF_8.name());

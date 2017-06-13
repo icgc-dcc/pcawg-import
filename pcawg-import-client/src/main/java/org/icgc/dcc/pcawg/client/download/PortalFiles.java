@@ -21,10 +21,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
+import lombok.val;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalFilename;
+import org.icgc.dcc.pcawg.client.core.model.portal.PortalMetadata;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
+import static org.icgc.dcc.pcawg.client.core.model.portal.PortalFilename.newPortalFilename;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class PortalFiles {
@@ -45,6 +47,10 @@ public final class PortalFiles {
   private static final String GENOME_BUILD = "genomeBuild";
   private static final String FILE_SIZE = "fileSize";
   private static final String FILE_MD5SUM = "fileMd5sum";
+  private static final String SUBMITTED_SAMPLE_ID= "submittedSampleId";
+  private static final String OTHER_IDENTIFIERS = "otherIdentifiers";
+  private static final String TCGA_SAMPLE_BARCODE = "tcgaSampleBarcode";
+  private static final String TCGA_ALIQUOT_BARCODE= "tcgaAliquotBarcode";
 
   public static String getObjectId(@NonNull ObjectNode file) {
     return file.path(OBJECT_ID).textValue();
@@ -80,6 +86,22 @@ public final class PortalFiles {
 
   public static String getSampleId(@NonNull ObjectNode file) {
     return getFirstDonor(file).path(SAMPLE_ID).get(0).textValue();
+  }
+
+  public static String getSubmittedSampleId(@NonNull ObjectNode file) {
+    return getFirstDonor(file).path(SUBMITTED_SAMPLE_ID).get(0).textValue();
+  }
+
+  public static String getTcgaSampleBarcode(@NonNull ObjectNode file) {
+    return getFirstDonor(file)
+        .path(OTHER_IDENTIFIERS)
+        .path(TCGA_SAMPLE_BARCODE).get(0).textValue();
+  }
+
+  public static String getTcgaAliquotBarcode(@NonNull ObjectNode file) {
+    return getFirstDonor(file)
+        .path(OTHER_IDENTIFIERS)
+        .path(TCGA_ALIQUOT_BARCODE).get(0).textValue();
   }
 
   public static String getStudy(@NonNull ObjectNode file) {
@@ -122,4 +144,28 @@ public final class PortalFiles {
     return newPortalFilename(getFileName(file));
   }
 
+  public static PortalMetadata convertToPortalMetadata(@NonNull final ObjectNode objectNode){
+    val objectId = getObjectId(objectNode);
+    val fileId = getFileId(objectNode);
+    val sampleId = getSampleId(objectNode);
+    val donorId = getDonorId(objectNode);
+    val dataType = getDataType(objectNode);
+    val referenceName = getReferenceName(objectNode);
+    val genomeBuild = getGenomeBuild(objectNode);
+    val portalFilename = getPortalFilename(objectNode);
+    val fileSize = getFileSize(objectNode);
+    val fileMd5sum = getFileMD5sum(objectNode);
+    return PortalMetadata.builder()
+        .objectId(objectId)
+        .fileId(fileId)
+        .sampleId(sampleId)
+        .donorId(donorId)
+        .dataType(dataType)
+        .referenceName(referenceName)
+        .genomeBuild(genomeBuild)
+        .fileSize(fileSize)
+        .fileMd5sum(fileMd5sum)
+        .portalFilename(portalFilename)
+        .build();
+  }
 }
